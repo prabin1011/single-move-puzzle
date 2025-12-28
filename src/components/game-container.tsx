@@ -28,6 +28,7 @@ export default function GameContainer() {
   const [imageIndex, setImageIndex] = useState(0);
   
   const [currentPuzzle, setCurrentPuzzle] = useState(() => generatePuzzle(currentLevel, currentLevel.imageUrls[imageIndex]));
+  const [retryCount, setRetryCount] = useState(0);
 
   const [gameState, setGameState] = useState<'PREVIEW' | 'PLAYING' | 'SOLVED' | 'FAILED'>('PREVIEW');
   const [showFacts, setShowFacts] = useState(false);
@@ -42,7 +43,7 @@ export default function GameContainer() {
     }
   }, [state]);
 
-  const { scrambledBoard, solvedBoard, imageUrl } = useMemo(() => {
+  const { scrambledBoard, solvedBoard, swapped, imageUrl } = useMemo(() => {
     return currentPuzzle;
   }, [currentPuzzle]);
 
@@ -61,6 +62,7 @@ export default function GameContainer() {
   };
 
   const resetForRetry = () => {
+    setRetryCount(prev => prev + 1);
     setCurrentPuzzle(generatePuzzle(currentLevel, currentLevel.imageUrls[imageIndex]));
     setGameState('PLAYING');
   };
@@ -70,18 +72,22 @@ export default function GameContainer() {
     setLevelIndex(newIndex);
     const newLevel = levels[newIndex];
     setCurrentLevel(newLevel);
-    setImageIndex(0); // Reset to the first image for the new level
-    setCurrentFacts(newLevel.facts); // Reset facts to the default for the level
+    setImageIndex(0);
+    setCurrentFacts(newLevel.facts);
     setCurrentPuzzle(generatePuzzle(newLevel, newLevel.imageUrls[0]));
     setGameState('PREVIEW');
     setShowFacts(false);
+    setRetryCount(0);
   }
 
   const handleNewImage = () => {
     const newImageIndex = (imageIndex + 1) % currentLevel.imageUrls.length;
     setImageIndex(newImageIndex);
     setCurrentPuzzle(generatePuzzle(currentLevel, currentLevel.imageUrls[newImageIndex]));
+    setRetryCount(0);
   }
+
+  const puzzleKey = `${currentLevel.id}-${imageUrl}-${retryCount}`;
 
   return (
     <Card className="w-full max-w-sm bg-background border-border shadow-2xl transition-all duration-500">
@@ -134,11 +140,12 @@ export default function GameContainer() {
         
         {(gameState === 'PLAYING' || gameState === 'FAILED') && (
            <PuzzleBoard
-              key={`playing-${currentLevel.id}-${imageUrl}-${gameState}`}
+              key={puzzleKey}
               imageUrl={imageUrl}
               grid={currentLevel.grid}
               boardState={scrambledBoard}
               targetState={solvedBoard}
+              swappedIndices={swapped}
               onSuccess={handleSuccess}
               onFail={handleFail}
               isReadOnly={gameState === 'FAILED'}

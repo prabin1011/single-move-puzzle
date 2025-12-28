@@ -107,8 +107,8 @@ export const levels: Level[] = [
     country: "China",
     imageUrls: [
         "https://images.unsplash.com/photo-1509031583471-93c83494025d?q=80&w=1200&h=1200&fit=crop",
-        "https://images.unsplash.com/photo-1529989637付费-425a5890c580?q=80&w=1200&h=1200&fit=crop",
-        "https://images.unsplash.com/photo-1616095919013-fd1072979213?q=80&w=1200&h=1200&fit-crop"
+        "https://images.unsplash.com/photo-1529989637425-a5890c580?q=80&w=1200&h=1200&fit=crop",
+        "https://images.unsplash.com/photo-1616095919013-fd1072979213?q=80&w=1200&h=1200&fit=crop"
     ],
     grid: 3,
     facts: [
@@ -125,8 +125,8 @@ export const levels: Level[] = [
     country: "Jordan",
     imageUrls: [
         "https://images.unsplash.com/photo-1568224599908-d21a3674e53c?q=80&w=1200&h=1200&fit=crop",
-        "https://images.unsplash.com/photo-1558034842-a146b9a735c9?q=80&w=1200&h=1200&fit-crop",
-        "https://images.unsplash.com/photo-160112104ूतक-a01f5a507886?q=80&w=1200&h=1200&fit=crop"
+        "https://images.unsplash.com/photo-1558034842-a146b9a735c9?q=80&w=1200&h=1200&fit=crop",
+        "https://images.unsplash.com/photo-1601121045244-a01f5a507886?q=80&w=1200&h=1200&fit=crop"
     ],
     grid: 3,
     facts: [
@@ -143,8 +143,8 @@ export const levels: Level[] = [
     country: "Brazil",
     imageUrls: [
         "https://images.unsplash.com/photo-1587282290693-76204b6c9343?q=80&w=1200&h=1200&fit=crop",
-        "https://images.unsplash.com/photo-159345731682SYN-77d0c3741b1d?q=80&w=1200&h=1200&fit=crop",
-        "https://images.unsplash.com/photo-1548232971-c5243G-9152b?q=80&w=1200&h=1200&fit=crop"
+        "https://images.unsplash.com/photo-1593457316828-77d0c3741b1d?q=80&w=1200&h=1200&fit=crop",
+        "https://images.unsplash.com/photo-1548232971-c5243d9152b9?q=80&w=1200&h=1200&fit=crop"
     ],
     grid: 3,
     facts: [
@@ -180,7 +180,7 @@ export const levels: Level[] = [
     imageUrls: [
         "https://images.unsplash.com/photo-1624322479549-0624a73c1664?q=80&w=1200&h=1200&fit=crop",
         "https://images.unsplash.com/photo-1549180030-487aba943493?q=80&w=1200&h=1200&fit=crop",
-        "https://images.unsplash.com/photo-15230596230-514734315254?q=80&w=1200&h=1200&fit=crop"
+        "https://images.unsplash.com/photo-1523059623051-4734315254?q=80&w=1200&h=1200&fit=crop"
     ],
     grid: 3,
     facts: [
@@ -208,14 +208,14 @@ export const generatePuzzle = (level: Level, imageUrl: string) => {
   const solvedBoard = Array.from({ length: level.grid * level.grid }, (_, i) => i);
   const scrambledBoard = [...solvedBoard];
   
-  // Perform the specified swap
-  const [index1, index2] = generateRandomSwap(level.grid);
+  const swappedIndices = generateRandomSwap(level.grid);
+  const [index1, index2] = swappedIndices;
   [scrambledBoard[index1], scrambledBoard[index2]] = [scrambledBoard[index2], scrambledBoard[index1]];
 
   return {
     solvedBoard,
     scrambledBoard,
-    swapped: [index1, index2],
-    imageUrl: imageUrl, // Pass the specific image URL to the puzzle
+    swapped: swappedIndices,
+    imageUrl: imageUrl,
   };
 };

@@ -8,6 +8,7 @@ interface PuzzleBoardProps {
   grid: number;
   boardState: number[];
   targetState: number[];
+  swappedIndices: number[];
   onSuccess: () => void;
   onFail: () => void;
   isReadOnly?: boolean;
@@ -18,17 +19,20 @@ export default function PuzzleBoard({
   grid,
   boardState,
   targetState,
+  swappedIndices,
   onSuccess,
   onFail,
   isReadOnly = false,
 }: PuzzleBoardProps) {
   const [board, setBoard] = useState(boardState);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
-  const PUZZLE_SIZE = 300; // The total size of the puzzle board in pixels.
+  const [showSolution, setShowSolution] = useState(false);
+  
+  const PUZZLE_SIZE = 300;
   const TILE_SIZE = PUZZLE_SIZE / grid;
 
   const handleTileClick = (boardIndex: number) => {
-    if (isReadOnly || selectedIndices.includes(boardIndex) || selectedIndices.length >= 2) {
+    if (isReadOnly || selectedIndices.includes(boardIndex) || selectedIndices.length >= 2 || showSolution) {
       return;
     }
     setSelectedIndices([...selectedIndices, boardIndex]);
@@ -39,7 +43,11 @@ export default function PuzzleBoard({
     if (isSolved) {
       onSuccess();
     } else {
-      onFail();
+      setShowSolution(true);
+      setTimeout(() => {
+        onFail();
+        setShowSolution(false);
+      }, 1500); 
     }
   }, [targetState, onSuccess, onFail]);
   
@@ -55,8 +63,6 @@ export default function PuzzleBoard({
     
     setTimeout(() => checkSolution(newBoard), 300);
 
-    setTimeout(() => setSelectedIndices([]), 500);
-
   }, [board, selectedIndices, checkSolution]);
 
   useEffect(() => {
@@ -69,6 +75,7 @@ export default function PuzzleBoard({
   useEffect(() => {
     setBoard(boardState);
     setSelectedIndices([]);
+    setShowSolution(false);
   }, [boardState]);
 
 
@@ -86,6 +93,7 @@ export default function PuzzleBoard({
           const row = Math.floor(tileValue / grid);
           const col = tileValue % grid;
           const isSelected = selectedIndices.includes(boardIndex);
+          const shouldHighlight = showSolution && swappedIndices.includes(boardIndex);
 
           return (
             <div
@@ -93,8 +101,9 @@ export default function PuzzleBoard({
               onClick={() => handleTileClick(boardIndex)}
               className={cn(
                 'relative overflow-hidden rounded-md transition-all duration-300',
-                !isReadOnly && 'cursor-pointer',
-                isSelected && 'ring-4 ring-primary ring-inset'
+                !isReadOnly && !showSolution && 'cursor-pointer',
+                isSelected && 'ring-4 ring-primary ring-inset',
+                shouldHighlight && 'ring-4 ring-red-500 ring-inset animate-pulse'
               )}
               style={{
                 width: `${TILE_SIZE}px`,
@@ -108,8 +117,9 @@ export default function PuzzleBoard({
         })}
       </div>
        <div className="h-6 text-center">
-          {!isReadOnly && selectedIndices.length === 0 && <p className="text-sm text-muted-foreground">Select the first tile to swap.</p>}
-          {!isReadOnly && selectedIndices.length === 1 && <p className="text-sm text-muted-foreground">Select the second tile to swap.</p>}
+          {!isReadOnly && !showSolution && selectedIndices.length === 0 && <p className="text-sm text-muted-foreground">Select the first tile to swap.</p>}
+          {!isReadOnly && !showSolution && selectedIndices.length === 1 && <p className="text-sm text-muted-foreground">Select the second tile to swap.</p>}
+          {showSolution && <p className="text-sm text-yellow-400 animate-pulse">Showing correct swap...</p>}
        </div>
     </div>
   );

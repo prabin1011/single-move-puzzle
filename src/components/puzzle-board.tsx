@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { type Level } from '@/lib/levels';
 import { cn } from '@/lib/utils';
-import { Button } from './ui/button';
 
 interface PuzzleBoardProps {
   level: Level;
@@ -54,7 +53,6 @@ export default function PuzzleBoard({
     setBoard(newBoard);
     setSelectedIndices([]);
     
-    // Check the solution right after the swap
     checkSolution(newBoard);
 
   }, [board, selectedIndices, checkSolution]);
@@ -66,11 +64,14 @@ export default function PuzzleBoard({
     }
   }, [selectedIndices, performSwap]);
   
-  // Reset board when the level changes
   useEffect(() => {
     setBoard(boardState);
     setSelectedIndices([]);
   }, [boardState]);
+
+  const TILE_SIZE = 100; // The dimension of each tile in the source image
+  const PUZZLE_SIZE = TILE_SIZE * grid;
+
 
   return (
     <div className="flex flex-col items-center gap-4">
@@ -82,8 +83,6 @@ export default function PuzzleBoard({
           const row = Math.floor(tileValue / grid);
           const col = tileValue % grid;
           const isSelected = selectedIndices.includes(boardIndex);
-          const tileSize = 100; // Each tile is a "full" tile
-          const containerSize = 100 * grid;
 
           return (
             <div
@@ -98,18 +97,16 @@ export default function PuzzleBoard({
               <Image
                 src={imageUrl}
                 alt={`Tile ${boardIndex + 1}`}
-                fill
+                width={PUZZLE_SIZE}
+                height={PUZZLE_SIZE}
                 priority
                 style={{
                   objectFit: 'none',
-                  objectPosition: `${col * -tileSize}px ${row * -tileSize}px`,
-                  width: `${containerSize}px`,
-                  height: `${containerSize}px`,
+                  objectPosition: `-${col * TILE_SIZE}px -${row * TILE_SIZE}px`,
                   maxWidth: 'none',
-                  transform: `scale(${100 / containerSize})`,
+                  transform: `scale(${1 / grid})`,
                   transformOrigin: 'top left',
                 }}
-                unoptimized
               />
             </div>
           );

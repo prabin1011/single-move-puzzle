@@ -57,6 +57,7 @@ const Board = ({
       const row = Math.floor(tileValue / gridSize);
       const col = tileValue % gridSize;
       const isSelected = selectedIndices?.includes(boardIndex);
+      const tileSize = 100 / (gridSize - 1);
 
       return (
         <div
@@ -71,8 +72,12 @@ const Board = ({
             priority
             style={{
               objectFit: 'none',
-              transform: `scale(${gridSize})`,
-              transformOrigin: `${col * 100/(gridSize - 1)}% ${row * 100/(gridSize-1)}%`,
+              objectPosition: `${col * tileSize}% ${row * tileSize}%`,
+              width: `${gridSize * 100}%`,
+              height: `${gridSize * 100}%`,
+              maxWidth: 'none',
+              transform: `scale(${1/gridSize})`,
+              transformOrigin: 'top left'
             }}
             unoptimized // Prevents Next.js image optimization from changing the URL
           />
@@ -101,7 +106,7 @@ export default function Game() {
     setBoard(newBoard);
     setMoves(moves + 1);
     setSelectedIndices([]);
-  }, [board, selectedIndices]);
+  }, [board, selectedIndices, moves]);
 
   useEffect(() => {
     if (selectedIndices.length === 2) {
@@ -115,6 +120,7 @@ export default function Game() {
     if (moves > 0) {
       checkSolution();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [board, moves]);
 
 

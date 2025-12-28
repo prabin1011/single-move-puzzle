@@ -24,7 +24,8 @@ export default function PuzzleBoard({
   const [board, setBoard] = useState(boardState);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
   const { grid, imageUrl } = level;
-  const TILE_SIZE = 100; // Base size for a tile, adjust as needed
+  const PUZZLE_SIZE = 300; // The total size of the puzzle board in pixels.
+  const TILE_SIZE = PUZZLE_SIZE / grid;
 
   const handleTileClick = (boardIndex: number) => {
     if (isReadOnly || selectedIndices.includes(boardIndex) || selectedIndices.length >= 2) {
@@ -52,8 +53,10 @@ export default function PuzzleBoard({
     
     setBoard(newBoard);
     
-    setTimeout(() => checkSolution(newBoard), 100);
+    // Short delay to allow the user to see the swap animation before the result is shown
+    setTimeout(() => checkSolution(newBoard), 300);
 
+    // Reset selection after a brief moment
     setTimeout(() => setSelectedIndices([]), 500);
 
   }, [board, selectedIndices, checkSolution]);
@@ -66,6 +69,7 @@ export default function PuzzleBoard({
   }, [selectedIndices, performSwap]);
   
   useEffect(() => {
+    // Reset the component state when the level changes
     setBoard(boardState);
     setSelectedIndices([]);
   }, [boardState]);
@@ -77,11 +81,12 @@ export default function PuzzleBoard({
         className="grid gap-1 rounded-lg bg-muted p-1 shadow-md"
         style={{ 
           gridTemplateColumns: `repeat(${grid}, 1fr)`,
-          width: `${grid * TILE_SIZE}px`,
-          height: `${grid * TILE_SIZE}px`,
+          width: `${PUZZLE_SIZE}px`,
+          height: `${PUZZLE_SIZE}px`,
         }}
       >
         {board.map((tileValue, boardIndex) => {
+          // tileValue is the original position (0-8) of the piece that is now at boardIndex
           const row = Math.floor(tileValue / grid);
           const col = tileValue % grid;
           const isSelected = selectedIndices.includes(boardIndex);
@@ -99,7 +104,7 @@ export default function PuzzleBoard({
                 width: `${TILE_SIZE}px`,
                 height: `${TILE_SIZE}px`,
                 backgroundImage: `url(${imageUrl})`,
-                backgroundSize: `${grid * TILE_SIZE}px ${grid * TILE_SIZE}px`,
+                backgroundSize: `${PUZZLE_SIZE}px ${PUZZLE_SIZE}px`,
                 backgroundPosition: `-${col * TILE_SIZE}px -${row * TILE_SIZE}px`,
               }}
             />

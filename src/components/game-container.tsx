@@ -16,6 +16,7 @@ export default function GameContainer() {
   const [gameState, setGameState] = useState<'PREVIEW' | 'PLAYING' | 'SOLVED' | 'FAILED'>('PREVIEW');
   const [showFacts, setShowFacts] = useState(false);
 
+  // Memoize the puzzle generation so it only runs when the level changes
   const { scrambledBoard, solvedBoard } = useMemo(() => generatePuzzle(level), [level]);
 
   const startGame = () => {
@@ -24,6 +25,7 @@ export default function GameContainer() {
 
   const handleSuccess = () => {
     setGameState('SOLVED');
+    // Use a timeout to create a delay for the facts to appear, making it feel more rewarding
     setTimeout(() => setShowFacts(true), 500); 
   };
   
@@ -42,8 +44,8 @@ export default function GameContainer() {
   }
 
   return (
-    <Card className="w-full max-w-md bg-background border-border shadow-2xl transition-all duration-500">
-      <CardHeader className="text-center">
+    <Card className="w-full max-w-sm bg-background border-border shadow-2xl transition-all duration-500">
+      <CardHeader className="text-center min-h-[140px] flex justify-center">
         {gameState === 'PREVIEW' && (
           <>
             <CardTitle className="text-3xl font-bold">{level.place}</CardTitle>
@@ -77,7 +79,7 @@ export default function GameContainer() {
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-6 px-4 sm:px-6">
         {gameState === 'PREVIEW' && (
-          <div className="relative h-80 w-80 md:h-96 md:w-96 rounded-lg overflow-hidden shadow-lg border-2 border-border">
+          <div className="relative h-[300px] w-[300px] rounded-lg overflow-hidden shadow-lg border-2 border-border">
             <Image
               src={level.imageUrl}
               alt={level.place}
@@ -91,7 +93,7 @@ export default function GameContainer() {
         
         {(gameState === 'PLAYING' || gameState === 'FAILED') && (
            <PuzzleBoard
-              key={`playing-${level.id}-${gameState}`}
+              key={`playing-${level.id}-${gameState}`} // Using a key to force re-mount on retry
               level={level}
               boardState={scrambledBoard}
               targetState={solvedBoard}
@@ -103,7 +105,7 @@ export default function GameContainer() {
 
         {gameState === 'SOLVED' && (
           <div className="flex flex-col items-center w-full">
-            <div className="relative h-80 w-80 md:h-96 md:w-96 rounded-lg overflow-hidden shadow-lg mx-auto mb-6 border-2 border-green-400/50">
+            <div className="relative h-[300px] w-[300px] rounded-lg overflow-hidden shadow-lg mx-auto mb-6 border-2 border-green-400/50">
               <Image src={level.imageUrl} alt={level.place} fill style={{ objectFit: 'cover' }} sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
             </div>
             <div className={cn("transition-opacity duration-500 w-full", showFacts ? "opacity-100" : "opacity-0")}>
@@ -120,15 +122,18 @@ export default function GameContainer() {
         )}
 
       </CardContent>
-      <CardFooter className="flex justify-center p-6">
+      <CardFooter className="flex flex-col items-center justify-center p-6 space-y-4">
         {gameState === 'PREVIEW' && <Button onClick={startGame} size="lg" className="w-full">Start Puzzle</Button>}
         {gameState === 'FAILED' && <Button onClick={() => setGameState('PLAYING')} size="lg" className="w-full">Try Again</Button>}
         {gameState === 'SOLVED' && <Button onClick={nextLevel} size="lg" className="w-full">Next Puzzle <ArrowRight className="ml-2"/></Button>}
-        {gameState !== 'PREVIEW' && (
-            <Link href="/" passHref legacyBehavior>
-                <Button variant="link" className="absolute top-4 left-4 text-muted-foreground">Back to Home</Button>
-            </Link>
-        )}
+        
+        <div className="relative w-full text-center h-6">
+          {gameState !== 'PREVIEW' && (
+              <Link href="/" passHref legacyBehavior>
+                  <Button variant="link" className="absolute top-0 left-0 text-muted-foreground">Back to Home</Button>
+              </Link>
+          )}
+        </div>
       </CardFooter>
     </Card>
   );

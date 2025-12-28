@@ -18,11 +18,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { GameStatus, Stats } from '@/lib/types';
-import { Award, BrainCircuit, Lightbulb, Repeat, Timer, Zap, LogIn, LogOut, User } from 'lucide-react';
+import { Award, BrainCircuit, Lightbulb, Repeat, Timer, Zap, LogOut, User } from 'lucide-react';
 import { getStatsMessage } from '@/lib/actions';
 import { Skeleton } from '../ui/skeleton';
 import { useUser } from '@/firebase';
-import { getAuth, signInAnonymously, signOut } from 'firebase/auth';
+import { getAuth, signOut } from 'firebase/auth';
 
 interface GameSidebarProps {
   stats: Stats;
@@ -56,15 +56,6 @@ export function GameSidebar({
       setAiMessage('');
     }
   }, [stats.levelsCompleted, user]);
-
-  const handleLogin = async () => {
-    const auth = getAuth();
-    try {
-      await signInAnonymously(auth);
-    } catch (error) {
-      console.error("Authentication error:", error);
-    }
-  };
 
   const handleLogout = async () => {
     const auth = getAuth();
@@ -106,9 +97,10 @@ export function GameSidebar({
                     </Button>
                   </>
                 ) : (
-                  <Button onClick={handleLogin} className="w-full" disabled={userLoading}>
-                    <User className="mr-2" /> Play as Guest
-                  </Button>
+                  <div className="flex items-center justify-center p-4">
+                    <User className="mr-2" />
+                    <span>Loading player...</span>
+                  </div>
                 )}
             </CardContent>
         </Card>

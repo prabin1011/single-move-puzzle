@@ -19,10 +19,11 @@ import { areBoardsEqual, applyUserMove } from './game-logic';
 import { Button } from '@/components/ui/button';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppLogo } from '../icons';
-import { useUser, useFirestore, useDoc } from '@/firebase';
+import { useUser, useFirestore, useDoc, useAuth } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { signInAnonymously } from 'firebase/auth';
 
 const INITIAL_STATS: Stats = {
   levelsCompleted: 0,
@@ -40,15 +41,29 @@ export function GameContainer() {
   const [hint, setHint] = useState<SolutionMove | null>(null);
   const { toast } = useToast();
   
+  const auth = useAuth();
   const { user, loading: userLoading } = useUser();
   const firestore = useFirestore();
+
+  useEffect(() => {
+    if (!user && !userLoading && auth) {
+      signInAnonymously(auth).catch((error) => {
+        console.error("Anonymous sign-in failed:", error);
+        toast({
+          title: "Authentication Error",
+          description: "Could not sign in as guest. Please refresh the page.",
+          variant: "destructive",
+        });
+      });
+    }
+  }, [user, userLoading, auth, toast]);
 
   const userStatsRef = useMemo(() => {
     if (!firestore || !user) return null;
     return doc(firestore, 'users', user.uid);
   }, [firestore, user]);
 
-  const { data: userStats, loading: statsLoading, error: statsError } = useDoc<Stats>(userStatsRef, { listen: !!user });
+  const { data: userStats, loading: statsLoading } = useDoc<Stats>(userStatsRef, { listen: !!user });
 
   const stats = useMemo(() => userStats || INITIAL_STATS, [userStats]);
   
@@ -205,7 +220,7 @@ export function GameContainer() {
             <h2 className="text-2xl font-semibold mb-4">Welcome!</h2>
             <p className="text-muted-foreground mb-6">Select a difficulty to start your first puzzle.</p>
             <Button onClick={() => startNewGame(difficulty)} disabled={!user || isLoading}>
-              {user ? 'Start Game' : 'Play as Guest to Start'}
+              Start Game
             </Button>
           </div>
         )}

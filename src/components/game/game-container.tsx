@@ -19,11 +19,6 @@ import { areBoardsEqual, applyUserMove } from './game-logic';
 import { Button } from '@/components/ui/button';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppLogo } from '../icons';
-import { useUser, useFirestore, useDoc, useAuth } from '@/firebase';
-import { doc, setDoc } from 'firebase/firestore';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
-import { signInAnonymously } from 'firebase/auth';
 
 const INITIAL_STATS: Stats = {
   levelsCompleted: 0,
@@ -41,45 +36,13 @@ export function GameContainer() {
   const [hint, setHint] = useState<SolutionMove | null>(null);
   const { toast } = useToast();
   
-  const auth = useAuth();
-  const { user, loading: userLoading } = useUser();
-  const firestore = useFirestore();
-
-  useEffect(() => {
-    if (!user && !userLoading && auth) {
-      signInAnonymously(auth).catch((error) => {
-        console.error("Anonymous sign-in failed:", error);
-        toast({
-          title: "Authentication Error",
-          description: "Could not sign in as guest. Please refresh the page.",
-          variant: "destructive",
-        });
-      });
-    }
-  }, [user, userLoading, auth, toast]);
-
-  const userStatsRef = useMemo(() => {
-    if (!firestore || !user) return null;
-    return doc(firestore, 'users', user.uid);
-  }, [firestore, user]);
-
-  const { data: userStats, loading: statsLoading } = useDoc<Stats>(userStatsRef, { listen: !!user });
-
-  const stats = useMemo(() => userStats || INITIAL_STATS, [userStats]);
+  const [stats, setStats] = useState<Stats>(INITIAL_STATS);
   
   const boardSize = useMemo(() => puzzle ? Math.sqrt(puzzle.initialBoardState.length) : 0, [puzzle]);
 
   const { time, reset: resetTimer } = useGameTimer(gameStatus === 'playing');
 
   const startNewGame = useCallback(async (newDifficulty: 'easy' | 'medium' | 'hard') => {
-    if (!user) {
-      toast({
-          title: 'Please wait',
-          description: 'Authenticating before starting a new game.',
-      });
-      return;
-    }
-    
     setGameStatus('loading');
     setDifficulty(newDifficulty);
     setHint(null);
@@ -106,7 +69,7 @@ export function GameContainer() {
       });
       setGameStatus('initial');
     }
-  }, [toast, resetTimer, user]);
+  }, [toast, resetTimer]);
 
   const handleTileClick = (index: number) => {
     if (gameStatus !== 'playing' || !puzzle) return;
@@ -129,37 +92,22 @@ export function GameContainer() {
   };
 
   const checkSolution = (board: Board) => {
-    if (!puzzle || !userStatsRef) return;
+    if (!puzzle) return;
 
     if (areBoardsEqual(board, puzzle.targetBoardState)) {
       setGameStatus('won');
-      const newLevelsCompleted = stats.levelsCompleted + 1;
-      const newCurrentStreak = stats.currentStreak + 1;
-      const newStats: Stats = {
-        levelsCompleted: newLevelsCompleted,
-        timeTaken: stats.timeTaken + time,
-        currentStreak: newCurrentStreak,
-        longestStreak: Math.max(stats.longestStreak, newCurrentStreak),
-      };
-      setDoc(userStatsRef, newStats, { merge: true }).catch(err => {
-        const permissionError = new FirestorePermissionError({
-          path: userStatsRef.path,
-          operation: 'update',
-          requestResourceData: newStats,
-        });
-        errorEmitter.emit('permission-error', permissionError);
+      setStats(prevStats => {
+        const newCurrentStreak = prevStats.currentStreak + 1;
+        return {
+          levelsCompleted: prevStats.levelsCompleted + 1,
+          timeTaken: prevStats.timeTaken + time,
+          currentStreak: newCurrentStreak,
+          longestStreak: Math.max(prevStats.longestStreak, newCurrentStreak),
+        };
       });
     } else {
       setGameStatus('lost');
-      const newStats: Stats = { ...stats, currentStreak: 0 };
-      setDoc(userStatsRef, newStats, { merge: true }).catch(err => {
-         const permissionError = new FirestorePermissionError({
-          path: userStatsRef.path,
-          operation: 'update',
-          requestResourceData: newStats,
-        });
-        errorEmitter.emit('permission-error', permissionError);
-      });
+      setStats(prevStats => ({ ...prevStats, currentStreak: 0 }));
     }
   };
 
@@ -180,7 +128,7 @@ export function GameContainer() {
     });
   }
 
-  const isLoading = gameStatus === 'loading' || userLoading || (user && statsLoading);
+  const isLoading = gameStatus === 'loading';
 
   return (
     <>
@@ -197,7 +145,7 @@ export function GameContainer() {
           difficulty={difficulty}
           onDifficultyChange={(d) => {
             setDifficulty(d);
-            if (user) startNewGame(d);
+            startNewGame(d);
           }}
           onNewGame={() => startNewGame(difficulty)}
           onShowHint={showHint}
@@ -210,7 +158,7 @@ export function GameContainer() {
            <div className="flex flex-col items-center justify-center gap-4">
              <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-accent"></div>
              <p className="text-muted-foreground">
-              {userLoading || (user && statsLoading) ? 'Loading player data...' : 'Generating your puzzle...'}
+              Generating your puzzle...
              </p>
           </div>
         )}
@@ -219,7 +167,7 @@ export function GameContainer() {
           <div className="text-center">
             <h2 className="text-2xl font-semibold mb-4">Welcome!</h2>
             <p className="text-muted-foreground mb-6">Select a difficulty to start your first puzzle.</p>
-            <Button onClick={() => startNewGame(difficulty)} disabled={!user}>
+            <Button onClick={() => startNewGame(difficulty)}>
               Start Game
             </Button>
           </div>

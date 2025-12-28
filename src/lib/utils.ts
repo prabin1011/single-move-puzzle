@@ -6,20 +6,17 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export const TILE_COLORS = [
-  "bg-red-400",
-  "bg-blue-400",
-  "bg-green-400",
-  "bg-yellow-400",
-  "bg-purple-400",
-  "bg-pink-400",
-  "bg-indigo-400",
-  "bg-teal-400",
-  "bg-orange-400",
+  "bg-zinc-300", // 0
+  "bg-blue-500", // 1
+  "bg-green-500", // 2
+  "bg-yellow-500", // 3
+  "bg-purple-500", // 4
+  "bg-pink-500", // 5
+  "bg-indigo-500", // 6
+  "bg-teal-500", // 7
+  "bg-orange-500", // 8
 ];
 
-export function getTileColor(value: number | null): string {
-  if (value === null) {
-    return "bg-muted/50";
-  }
-  return TILE_COLORS[value % TILE_COLORS.length];
+export function getTileColor(value: number): string {
+  return TILE_COLORS[value] || "bg-muted";
 }

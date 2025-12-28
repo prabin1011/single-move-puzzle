@@ -71,6 +71,96 @@ export const levels: Level[] = [
     ],
     hint: "Look at the central dome.",
     difficulty: "medium"
+  },
+  {
+    id: "lvl_005",
+    place: "Machu Picchu",
+    country: "Peru",
+    imageUrl: "https://images.unsplash.com/photo-1526392060635-9d6019884377?q=80&w=1200&h=1200&fit=crop",
+    grid: 3,
+    swapped: [1, 7],
+    facts: [
+        "It was an Inca citadel built in the 15th century.",
+        "It is often called the 'Lost City of the Incas'.",
+        "The site is comprised of over 150 buildings."
+    ],
+    hint: "Focus on the main structures.",
+    difficulty: "hard"
+  },
+  {
+    id: "lvl_006",
+    place: "Great Wall of China",
+    country: "China",
+    imageUrl: "https://images.unsplash.com/photo-1509031583471-93c83494025d?q=80&w=1200&h=1200&fit=crop",
+    grid: 3,
+    swapped: [0, 8],
+    facts: [
+        "It is not a single continuous wall, but a system of fortifications.",
+        "It is the longest man-made structure in the world.",
+        "It is not visible from the moon with the naked eye."
+    ],
+    hint: "Look at the path of the wall.",
+    difficulty: "medium"
+  },
+  {
+    id: "lvl_007",
+    place: "Petra",
+    country: "Jordan",
+    imageUrl: "https://images.unsplash.com/photo-1568224599908-d21a3674e53c?q=80&w=1200&h=1200&fit=crop",
+    grid: 3,
+    swapped: [2, 5],
+    facts: [
+        "It is famous for its rock-cut architecture.",
+        "It is also known as the 'Rose City' due to the color of the stone.",
+        "Featured in 'Indiana Jones and the Last Crusade'."
+    ],
+    hint: "Focus on the main Treasury building.",
+    difficulty: "hard"
+  },
+  {
+    id: "lvl_008",
+    place: "Christ the Redeemer",
+    country: "Brazil",
+    imageUrl: "https://images.unsplash.com/photo-1587282290693-76204b6c9343?q=80&w=1200&h=1200&fit=crop",
+    grid: 3,
+    swapped: [0, 6],
+    facts: [
+        "It is an Art Deco statue of Jesus Christ in Rio de Janeiro.",
+        "It is 30 meters tall, not including its 8-meter pedestal.",
+        "It is made of reinforced concrete and soapstone."
+    ],
+    hint: "Look at the statue's arms.",
+    difficulty: "easy"
+  },
+  {
+    id: "lvl_009",
+    place: "Pyramids of Giza",
+    country: "Egypt",
+    imageUrl: "https://images.unsplash.com/photo-1572094389608-5173cb4321ac?q=80&w=1200&h=1200&fit=crop",
+    grid: 3,
+    swapped: [3, 5],
+    facts: [
+        "The Great Pyramid was the tallest man-made structure for over 3,800 years.",
+        "They were built as tombs for the pharaohs.",
+        "They are the oldest of the Seven Wonders of the Ancient World."
+    ],
+    hint: "Focus on the alignment of the pyramids.",
+    difficulty: "medium"
+  },
+  {
+    id: "lvl_010",
+    place: "Sydney Opera House",
+    country: "Australia",
+    imageUrl: "https://images.unsplash.com/photo-1624322479549-0624a73c1664?q=80&w=1200&h=1200&fit=crop",
+    grid: 3,
+    swapped: [2, 8],
+    facts: [
+        "Its roof is made of more than 1 million tiles.",
+        "It hosts over 1,500 performances each year.",
+        "It was designed by Danish architect Jørn Utzon."
+    ],
+    hint: "Look at the 'sails' of the roof.",
+    difficulty: "easy"
   }
 ];
 

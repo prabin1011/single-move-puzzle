@@ -1,0 +1,16 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // Matches any document in the 'users' collection
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+  }
+}

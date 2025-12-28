@@ -19,6 +19,8 @@ import { areBoardsEqual, applyUserMove } from './game-logic';
 import { Button } from '@/components/ui/button';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppLogo } from '../icons';
+import { useUser, useFirestore, useDoc, useAuth } from '@/firebase';
+import { doc, setDoc } from 'firebase/firestore';
 
 const INITIAL_STATS: Stats = {
   levelsCompleted: 0,
@@ -31,11 +33,22 @@ export function GameContainer() {
   const [puzzle, setPuzzle] = useState<Puzzle | null>(null);
   const [currentBoard, setCurrentBoard] = useState<Board>([]);
   const [gameStatus, setGameStatus] = useState<GameStatus>('initial');
-  const [stats, setStats] = useState<Stats>(INITIAL_STATS);
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('easy');
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
   const [hint, setHint] = useState<SolutionMove | null>(null);
   const { toast } = useToast();
+  
+  const { user, loading: userLoading } = useUser();
+  const firestore = useFirestore();
+
+  const userStatsRef = useMemo(() => {
+    if (!firestore || !user) return null;
+    return doc(firestore, 'users', user.uid);
+  }, [firestore, user]);
+
+  const { data: userStats, loading: statsLoading } = useDoc<Stats>(userStatsRef);
+
+  const stats = useMemo(() => userStats || INITIAL_STATS, [userStats]);
   
   const boardSize = useMemo(() => puzzle ? Math.sqrt(puzzle.initialBoardState.length) : 0, [puzzle]);
 
@@ -91,20 +104,22 @@ export function GameContainer() {
   };
 
   const checkSolution = (board: Board) => {
-    if (!puzzle) return;
+    if (!puzzle || !userStatsRef) return;
     if (areBoardsEqual(board, puzzle.targetBoardState)) {
       setGameStatus('won');
       const newLevelsCompleted = stats.levelsCompleted + 1;
       const newCurrentStreak = stats.currentStreak + 1;
-      setStats({
+      const newStats: Stats = {
         levelsCompleted: newLevelsCompleted,
         timeTaken: stats.timeTaken + time,
         currentStreak: newCurrentStreak,
         longestStreak: Math.max(stats.longestStreak, newCurrentStreak),
-      });
+      };
+      setDoc(userStatsRef, newStats, { merge: true });
     } else {
       setGameStatus('lost');
-      setStats(prev => ({ ...prev, currentStreak: 0 }));
+      const newStats: Stats = { ...stats, currentStreak: 0 };
+      setDoc(userStatsRef, newStats, { merge: true });
     }
   };
 
@@ -150,7 +165,9 @@ export function GameContainer() {
           <div className="text-center">
             <h2 className="text-2xl font-semibold mb-4">Welcome!</h2>
             <p className="text-muted-foreground mb-6">Select a difficulty to start your first puzzle.</p>
-            <Button onClick={() => startNewGame(difficulty)}>Start Game</Button>
+            <Button onClick={() => startNewGame(difficulty)} disabled={!user}>
+              {user ? 'Start Game' : 'Log in to play'}
+            </Button>
           </div>
         )}
         {(gameStatus === 'playing' || gameStatus === 'lost' || gameStatus === 'won' || gameStatus === 'loading') && puzzle && (
@@ -167,10 +184,12 @@ export function GameContainer() {
             />
           </div>
         )}
-        {gameStatus === 'loading' && (
+        {(gameStatus === 'loading' || userLoading || statsLoading) && gameStatus !== 'initial' && (
           <div className="flex flex-col items-center justify-center gap-4">
              <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-accent"></div>
-             <p className="text-muted-foreground">Generating your puzzle...</p>
+             <p className="text-muted-foreground">
+              {userLoading || statsLoading ? 'Loading player data...' : 'Generating your puzzle...'}
+             </p>
           </div>
         )}
         <GameStatusModal

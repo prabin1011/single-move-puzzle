@@ -21,12 +21,13 @@ const generateSolvedBoard = () => {
 // Scrambles the board by swapping two random tiles
 const scrambleBoard = (board: number[]) => {
   const newBoard = [...board];
-  const firstIndex = Math.floor(Math.random() * newBoard.length);
+  let firstIndex = Math.floor(Math.random() * newBoard.length);
   let secondIndex = Math.floor(Math.random() * newBoard.length);
   
   // Ensure the second index is different from the first
   while (firstIndex === secondIndex) {
     secondIndex = Math.floor(Math.random() * newBoard.length);
+    firstIndex = Math.floor(Math.random() * newBoard.length);
   }
 
   // Swap the two tiles
@@ -42,13 +43,13 @@ const Board = ({
   onTileClick,
   imageUrl,
   gridSize,
-  isTarget = false,
+  selectedIndices,
 }: {
   board: number[];
   onTileClick?: (index: number) => void;
   imageUrl: string;
   gridSize: number;
-  isTarget?: boolean;
+  selectedIndices?: number[];
 }) => (
   <div
     className="grid gap-1 rounded-lg bg-muted p-1"
@@ -58,12 +59,13 @@ const Board = ({
       const row = Math.floor(tileValue / gridSize);
       const col = tileValue % gridSize;
       const tileSize = 100 / (gridSize - 1);
+      const isSelected = selectedIndices?.includes(boardIndex);
 
       return (
         <div
           key={boardIndex}
           onClick={() => onTileClick?.(boardIndex)}
-          className={`relative h-20 w-20 overflow-hidden rounded-md ${onTileClick ? 'cursor-pointer' : ''}`}
+          className={`relative h-20 w-20 overflow-hidden rounded-md transition-all duration-300 ${onTileClick ? 'cursor-pointer' : ''} ${isSelected ? 'ring-4 ring-accent ring-inset' : ''}`}
         >
           <Image
             src={imageUrl}
@@ -73,7 +75,7 @@ const Board = ({
             style={{
               objectFit: 'cover',
               objectPosition: `${col * tileSize}% ${row * tileSize}%`,
-              transform: 'scale(1.55)', // Adjust scale to make each piece a close-up
+              transform: `scale(${1 + 1 / (gridSize * 2)})`,
             }}
             unoptimized // Prevents Next.js image optimization from changing the URL
           />
@@ -92,7 +94,9 @@ export default function Game() {
 
   useEffect(() => {
     if (selectedIndices.length === 2) {
-      handleMove();
+      // Use a short timeout to allow the user to see the second selection
+      const timer = setTimeout(() => handleMove(), 300);
+      return () => clearTimeout(timer);
     }
   }, [selectedIndices]);
 
@@ -104,7 +108,7 @@ export default function Game() {
 
 
   const handleTileClick = (index: number) => {
-    if (moves >= 1 || isSolved || selectedIndices.includes(index)) return;
+    if (moves >= 1 || isSolved || selectedIndices.includes(index) || selectedIndices.length >= 2) return;
 
     setSelectedIndices([...selectedIndices, index]);
   };
@@ -131,7 +135,8 @@ export default function Game() {
   };
 
   const resetGame = () => {
-    setBoard(scrambleBoard(SOLVED_BOARD));
+    const newInitialBoard = scrambleBoard(SOLVED_BOARD);
+    setBoard(newInitialBoard);
     setMoves(0);
     setIsSolved(false);
     setSelectedIndices([]);
@@ -150,7 +155,7 @@ export default function Game() {
           <CardDescription>Memorize the image, then solve the puzzle in one move.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center gap-6">
-          <div className="relative h-64 w-64 rounded-lg overflow-hidden">
+          <div className="relative h-64 w-64 rounded-lg overflow-hidden shadow-lg">
             <Image
               src={PUZZLE_IMAGE.imageUrl}
               alt="Full puzzle"
@@ -183,13 +188,18 @@ export default function Game() {
               onTileClick={handleTileClick} 
               imageUrl={PUZZLE_IMAGE.imageUrl}
               gridSize={GRID_SIZE}
+              selectedIndices={selectedIndices}
             />
           </div>
         </div>
 
-        {isSolved && <p className="font-bold text-green-600">Congratulations! You solved it!</p>}
-        {moves >= 1 && !isSolved && <p className="font-bold text-red-600">Not quite! Try again.</p>}
-        {selectedIndices.length > 0 && <p className="text-sm text-muted-foreground">Select a second tile to swap.</p>}
+        {isSolved && <p className="font-bold text-green-500">Congratulations! You solved it!</p>}
+        {moves >= 1 && !isSolved && <p className="font-bold text-destructive">Not quite! Try again.</p>}
+        
+        <div className="h-4">
+          {moves === 0 && !isSolved && selectedIndices.length === 0 && <p className="text-sm text-muted-foreground">Select the first tile to swap.</p>}
+          {moves === 0 && !isSolved && selectedIndices.length === 1 && <p className="text-sm text-muted-foreground">Select the second tile to swap.</p>}
+        </div>
 
       </CardContent>
       <CardFooter className="flex justify-center">

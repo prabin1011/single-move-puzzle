@@ -1,32 +1,55 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useActionState } from 'react';
 import PuzzleBoard from './puzzle-board';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
-import { levels, generatePuzzle } from '@/lib/levels';
-import { CheckCircle, XCircle, ArrowRight } from 'lucide-react';
+import { levels as initialLevels, generatePuzzle, type Level } from '@/lib/levels';
+import { CheckCircle, XCircle, ArrowRight, RefreshCw, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { getLandmarkData } from '@/lib/actions';
 
 export default function GameContainer() {
+  const [levels, setLevels] = useState(initialLevels);
   const [levelIndex, setLevelIndex] = useState(0);
-  const level = levels[levelIndex];
+  const [currentLevel, setCurrentLevel] = useState<Level>(levels[levelIndex]);
+
   const [gameState, setGameState] = useState<'PREVIEW' | 'PLAYING' | 'SOLVED' | 'FAILED'>('PREVIEW');
   const [showFacts, setShowFacts] = useState(false);
+  const [generatedFacts, setGeneratedFacts] = useState<string[]>([]);
 
-  // Memoize the puzzle generation so it only runs when the level changes
-  const { scrambledBoard, solvedBoard } = useMemo(() => generatePuzzle(level), [level]);
+  // Action state for fetching new landmark data
+  const [state, getNewLandmarkData, isPending] = useActionState(getLandmarkData, null);
+
+  // Update level data when new data is fetched
+  useEffect(() => {
+    if (state?.imageUrl && state?.facts) {
+      const updatedLevel = { ...currentLevel, imageUrl: state.imageUrl, facts: state.facts };
+      setCurrentLevel(updatedLevel);
+      const updatedLevels = [...levels];
+      updatedLevels[levelIndex] = updatedLevel;
+      setLevels(updatedLevels);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
+
+
+  const { scrambledBoard, solvedBoard } = useMemo(() => generatePuzzle(currentLevel), [currentLevel]);
 
   const startGame = () => {
     setGameState('PLAYING');
   };
 
-  const handleSuccess = () => {
+  const handleSuccess = async () => {
     setGameState('SOLVED');
-    // Use a timeout to create a delay for the facts to appear, making it feel more rewarding
-    setTimeout(() => setShowFacts(true), 500); 
+    if (state?.facts) {
+      setGeneratedFacts(state.facts);
+    } else {
+      setGeneratedFacts(currentLevel.facts);
+    }
+    setTimeout(() => setShowFacts(true), 500);
   };
   
   const handleFail = () => {
@@ -39,8 +62,14 @@ export default function GameContainer() {
   };
   
   const nextLevel = () => {
-    setLevelIndex((prevIndex) => (prevIndex + 1) % levels.length);
+    const newIndex = (levelIndex + 1) % levels.length;
+    setLevelIndex(newIndex);
+    setCurrentLevel(levels[newIndex]);
     resetGame();
+  }
+
+  const handleNewImage = () => {
+    getNewLandmarkData({ landmarkName: currentLevel.place });
   }
 
   return (
@@ -48,7 +77,7 @@ export default function GameContainer() {
       <CardHeader className="text-center min-h-[140px] flex justify-center">
         {gameState === 'PREVIEW' && (
           <>
-            <CardTitle className="text-3xl font-bold">{level.place}</CardTitle>
+            <CardTitle className="text-3xl font-bold">{currentLevel.place}</CardTitle>
             <CardDescription className="text-muted-foreground">Memorize the image, then find the single swap.</CardDescription>
           </>
         )}
@@ -63,8 +92,8 @@ export default function GameContainer() {
              <div className="flex justify-center text-green-400">
                <CheckCircle className="h-16 w-16" />
              </div>
-             <CardTitle className="text-3xl font-bold pt-4">{level.place}</CardTitle>
-             <CardDescription className="text-lg text-muted-foreground">{level.country}</CardDescription>
+             <CardTitle className="text-3xl font-bold pt-4">{currentLevel.place}</CardTitle>
+             <CardDescription className="text-lg text-muted-foreground">{currentLevel.country}</CardDescription>
            </>
         )}
         {gameState === 'FAILED' && (
@@ -80,21 +109,21 @@ export default function GameContainer() {
       <CardContent className="flex flex-col items-center gap-6 px-4 sm:px-6">
         {gameState === 'PREVIEW' && (
           <div className="relative h-[300px] w-[300px] rounded-lg overflow-hidden shadow-lg border-2 border-border">
-            <Image
-              src={level.imageUrl}
-              alt={level.place}
-              fill
+             <Image
+              src={currentLevel.imageUrl}
+              alt={currentLevel.place}
+              width={300}
+              height={300}
               priority
-              style={{ objectFit: 'cover' }}
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="object-cover"
             />
           </div>
         )}
         
         {(gameState === 'PLAYING' || gameState === 'FAILED') && (
            <PuzzleBoard
-              key={`playing-${level.id}-${gameState}`} // Using a key to force re-mount on retry
-              level={level}
+              key={`playing-${currentLevel.id}-${currentLevel.imageUrl}-${gameState}`}
+              level={currentLevel}
               boardState={scrambledBoard}
               targetState={solvedBoard}
               onSuccess={handleSuccess}
@@ -106,11 +135,11 @@ export default function GameContainer() {
         {gameState === 'SOLVED' && (
           <div className="flex flex-col items-center w-full">
             <div className="relative h-[300px] w-[300px] rounded-lg overflow-hidden shadow-lg mx-auto mb-6 border-2 border-green-400/50">
-              <Image src={level.imageUrl} alt={level.place} fill style={{ objectFit: 'cover' }} sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
+              <Image src={currentLevel.imageUrl} alt={currentLevel.place} width={300} height={300} className="object-cover" />
             </div>
             <div className={cn("transition-opacity duration-500 w-full", showFacts ? "opacity-100" : "opacity-0")}>
               <ul className="space-y-3 text-left text-lg">
-                {level.facts.map((fact, index) => (
+                {generatedFacts.map((fact, index) => (
                   <li key={index} className="flex items-start gap-3 p-3 bg-secondary rounded-md">
                       <span className="text-primary mt-1">✓</span>
                       <span>{fact}</span>
@@ -123,7 +152,15 @@ export default function GameContainer() {
 
       </CardContent>
       <CardFooter className="flex flex-col items-center justify-center p-6 space-y-4">
-        {gameState === 'PREVIEW' && <Button onClick={startGame} size="lg" className="w-full">Start Puzzle</Button>}
+        {gameState === 'PREVIEW' && (
+          <div className="w-full space-y-2">
+            <Button onClick={startGame} size="lg" className="w-full">Start Puzzle</Button>
+            <Button onClick={handleNewImage} size="lg" variant="secondary" className="w-full" disabled={isPending}>
+              {isPending ? <Loader2 className="animate-spin" /> : <RefreshCw />}
+              New Image
+            </Button>
+          </div>
+        )}
         {gameState === 'FAILED' && <Button onClick={() => setGameState('PLAYING')} size="lg" className="w-full">Try Again</Button>}
         {gameState === 'SOLVED' && <Button onClick={nextLevel} size="lg" className="w-full">Next Puzzle <ArrowRight className="ml-2"/></Button>}
         

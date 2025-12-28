@@ -48,7 +48,7 @@ export function GameContainer() {
     return doc(firestore, 'users', user.uid);
   }, [firestore, user]);
 
-  const { data: userStats, loading: statsLoading, error: statsError } = useDoc<Stats>(userStatsRef);
+  const { data: userStats, loading: statsLoading, error: statsError } = useDoc<Stats>(userStatsRef, { listen: !!user });
 
   const stats = useMemo(() => userStats || INITIAL_STATS, [userStats]);
   
@@ -57,13 +57,12 @@ export function GameContainer() {
   const { time, reset: resetTimer } = useGameTimer(gameStatus === 'playing');
 
   const startNewGame = useCallback(async (newDifficulty: 'easy' | 'medium' | 'hard') => {
-    // Prevent starting a game if we are already loading or if the user/stats are not ready
-    if (userLoading || statsLoading || !user) {
-        toast({
-            title: 'Please wait',
-            description: 'Loading user data before starting a new game.',
-        });
-        return;
+    if (!user || statsLoading) {
+      toast({
+          title: 'Please wait',
+          description: 'Loading user data before starting a new game.',
+      });
+      return;
     }
     
     setGameStatus('loading');
@@ -92,7 +91,7 @@ export function GameContainer() {
       });
       setGameStatus('initial');
     }
-  }, [toast, resetTimer, user, userLoading, statsLoading]);
+  }, [toast, resetTimer, user, statsLoading]);
 
   const handleTileClick = (index: number) => {
     if (gameStatus !== 'playing' || !puzzle) return;
@@ -183,7 +182,7 @@ export function GameContainer() {
           difficulty={difficulty}
           onDifficultyChange={(d) => {
             setDifficulty(d);
-            startNewGame(d);
+            if (user) startNewGame(d);
           }}
           onNewGame={() => startNewGame(difficulty)}
           onShowHint={showHint}
@@ -196,7 +195,7 @@ export function GameContainer() {
            <div className="flex flex-col items-center justify-center gap-4">
              <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-accent"></div>
              <p className="text-muted-foreground">
-              {userLoading || statsLoading ? 'Loading player data...' : 'Generating your puzzle...'}
+              {userLoading || (user && statsLoading) ? 'Loading player data...' : 'Generating your puzzle...'}
              </p>
           </div>
         )}
@@ -206,7 +205,7 @@ export function GameContainer() {
             <h2 className="text-2xl font-semibold mb-4">Welcome!</h2>
             <p className="text-muted-foreground mb-6">Select a difficulty to start your first puzzle.</p>
             <Button onClick={() => startNewGame(difficulty)} disabled={!user || isLoading}>
-              {user ? 'Start Game' : 'Log in to play'}
+              {user ? 'Start Game' : 'Play as Guest to Start'}
             </Button>
           </div>
         )}

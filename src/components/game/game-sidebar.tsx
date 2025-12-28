@@ -18,11 +18,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { GameStatus, Stats } from '@/lib/types';
-import { Award, BrainCircuit, Lightbulb, Repeat, Timer, Zap, LogIn, LogOut } from 'lucide-react';
+import { Award, BrainCircuit, Lightbulb, Repeat, Timer, Zap, LogIn, LogOut, User } from 'lucide-react';
 import { getStatsMessage } from '@/lib/actions';
 import { Skeleton } from '../ui/skeleton';
 import { useUser } from '@/firebase';
-import { getAuth, GoogleAuthProvider, signInWithRedirect, signOut } from 'firebase/auth';
+import { getAuth, signInAnonymously, signOut } from 'firebase/auth';
 
 interface GameSidebarProps {
   stats: Stats;
@@ -59,9 +59,8 @@ export function GameSidebar({
 
   const handleLogin = async () => {
     const auth = getAuth();
-    const provider = new GoogleAuthProvider();
     try {
-      await signInWithRedirect(auth, provider);
+      await signInAnonymously(auth);
     } catch (error) {
       console.error("Authentication error:", error);
     }
@@ -103,12 +102,12 @@ export function GameSidebar({
                         <Lightbulb className="mr-2" /> Get Hint
                     </Button>
                     <Button variant="ghost" onClick={handleLogout} className="w-full">
-                      <LogOut className="mr-2" /> Logout
+                      <LogOut className="mr-2" /> End Session
                     </Button>
                   </>
                 ) : (
                   <Button onClick={handleLogin} className="w-full" disabled={userLoading}>
-                    <LogIn className="mr-2" /> Login with Google
+                    <User className="mr-2" /> Play as Guest
                   </Button>
                 )}
             </CardContent>
@@ -118,7 +117,7 @@ export function GameSidebar({
             <CardHeader>
                 <CardTitle>Your Progress</CardTitle>
                 <CardDescription>
-                  {user ? 'Track your puzzle-solving journey.' : 'Log in to save your progress.'}
+                  {user ? 'Track your puzzle-solving journey.' : 'Play as a guest to save your progress.'}
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -161,7 +160,7 @@ export function GameSidebar({
                         </div>
                     ) : (
                         <p className="text-sm text-muted-foreground italic">
-                            {aiMessage || (user ? "Solve your first puzzle to get a motivational message!" : "Log in to get personalized encouragement.")}
+                            {aiMessage || (user ? "Solve your first puzzle to get a motivational message!" : "Play as a guest to get personalized encouragement.")}
                         </p>
                     )}
                 </div>

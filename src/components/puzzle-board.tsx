@@ -39,18 +39,22 @@ export default function PuzzleBoard({
   };
 
   const checkSolution = useCallback((currentBoard: number[]) => {
-    const isSolved = JSON.stringify(currentBoard) === JSON.stringify(targetState);
-    if (isSolved) {
-      onSuccess();
-    } else {
-      setShowSolution(true);
-      setTimeout(() => {
-        onFail();
-        setShowSolution(false);
-      }, 1500); 
-    }
-  }, [targetState, onSuccess, onFail]);
-  
+      // This is the correct logic. We just need to see if the player
+      // swapped the two originally swapped tiles.
+      const [first, second] = selectedIndices;
+      const isCorrectSwap = (swappedIndices.includes(first) && swappedIndices.includes(second));
+
+      if (isCorrectSwap) {
+        onSuccess();
+      } else {
+        setShowSolution(true);
+        setTimeout(() => {
+          onFail();
+          // Don't reset solution state here, it's handled by parent state
+        }, 1500); 
+      }
+  }, [selectedIndices, swappedIndices, onSuccess, onFail]);
+
   const performSwap = useCallback(() => {
     if (selectedIndices.length !== 2) return;
 
@@ -72,6 +76,7 @@ export default function PuzzleBoard({
     }
   }, [selectedIndices, performSwap]);
   
+  // Reset component state when the underlying puzzle changes
   useEffect(() => {
     setBoard(boardState);
     setSelectedIndices([]);
@@ -108,7 +113,7 @@ export default function PuzzleBoard({
               style={{
                 width: `${TILE_SIZE}px`,
                 height: `${TILE_SIZE}px`,
-                backgroundImage: `url(${imageUrl})`,
+                backgroundImage: `url('${imageUrl}')`,
                 backgroundSize: `${PUZZLE_SIZE}px ${PUZZLE_SIZE}px`,
                 backgroundPosition: `-${col * TILE_SIZE}px -${row * TILE_SIZE}px`,
               }}
@@ -120,6 +125,7 @@ export default function PuzzleBoard({
           {!isReadOnly && !showSolution && selectedIndices.length === 0 && <p className="text-sm text-muted-foreground">Select the first tile to swap.</p>}
           {!isReadOnly && !showSolution && selectedIndices.length === 1 && <p className="text-sm text-muted-foreground">Select the second tile to swap.</p>}
           {showSolution && <p className="text-sm text-yellow-400 animate-pulse">Showing correct swap...</p>}
+          {isReadOnly && !showSolution && <p className="text-sm text-muted-foreground">&nbsp;</p> }
        </div>
     </div>
   );

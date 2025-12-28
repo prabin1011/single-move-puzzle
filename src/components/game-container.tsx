@@ -87,6 +87,7 @@ export default function GameContainer() {
     setRetryCount(0);
   }
 
+  // This key is crucial for re-rendering the puzzle board on retry
   const puzzleKey = `${currentLevel.id}-${imageUrl}-${retryCount}`;
 
   return (
@@ -155,7 +156,7 @@ export default function GameContainer() {
         {gameState === 'SOLVED' && (
           <div className="flex flex-col items-center w-full">
             <div className="relative h-[300px] w-[300px] rounded-lg overflow-hidden shadow-lg mx-auto mb-6 border-2 border-green-400/50">
-              <Image src={imageUrl} alt={currentLevel.place} width={300} height={300} className="object-cover" />
+              <Image src={imageUrl} alt={currentLevel.place} width={300} height={300} className="object-cover" priority/>
             </div>
             <div className={cn("transition-opacity duration-500 w-full", showFacts ? "opacity-100" : "opacity-0")}>
               <ul className="space-y-3 text-left text-lg">

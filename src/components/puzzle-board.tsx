@@ -51,9 +51,12 @@ export default function PuzzleBoard({
     [newBoard[firstIndex], newBoard[secondIndex]] = [newBoard[secondIndex], newBoard[firstIndex]];
     
     setBoard(newBoard);
-    setSelectedIndices([]);
     
-    checkSolution(newBoard);
+    // Defer checking the solution to allow the state to update and re-render
+    setTimeout(() => checkSolution(newBoard), 100);
+
+    // Don't clear selected indices immediately to show the failed state
+    setTimeout(() => setSelectedIndices([]), 500);
 
   }, [board, selectedIndices, checkSolution]);
 
@@ -69,8 +72,10 @@ export default function PuzzleBoard({
     setSelectedIndices([]);
   }, [boardState]);
 
-  const TILE_SIZE = 100; // The dimension of each tile in the source image
+  const TILE_SIZE = 100;
   const PUZZLE_SIZE = TILE_SIZE * grid;
+  const TILE_DISPLAY_SIZE = 80; // Size of the tile on screen (w-20 in tailwind)
+  const TILE_DISPLAY_SIZE_MD = 96; // md:w-24
 
 
   return (
@@ -89,22 +94,24 @@ export default function PuzzleBoard({
               key={boardIndex}
               onClick={() => handleTileClick(boardIndex)}
               className={cn(
-                'relative h-24 w-24 md:h-32 md:w-32 overflow-hidden rounded-md transition-all duration-200',
+                'relative h-20 w-20 md:h-24 md:w-24 overflow-hidden rounded-md transition-all duration-200',
                 !isReadOnly && 'cursor-pointer',
                 isSelected && 'ring-4 ring-primary ring-inset'
               )}
             >
               <Image
                 src={imageUrl}
-                alt={`Tile ${boardIndex + 1}`}
+                alt={`Tile ${tileValue + 1}`}
                 width={PUZZLE_SIZE}
                 height={PUZZLE_SIZE}
                 priority
+                className="absolute top-0 left-0 max-w-none transition-transform duration-300"
                 style={{
+                  width: PUZZLE_SIZE,
+                  height: PUZZLE_SIZE,
                   objectFit: 'none',
                   objectPosition: `-${col * TILE_SIZE}px -${row * TILE_SIZE}px`,
-                  maxWidth: 'none',
-                  transform: `scale(${1 / grid})`,
+                  transform: `scale(calc(${TILE_DISPLAY_SIZE} / ${PUZZLE_SIZE}))`,
                   transformOrigin: 'top left',
                 }}
               />

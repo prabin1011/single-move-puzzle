@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import Image from 'next/image';
 import { type Level } from '@/lib/levels';
 import { cn } from '@/lib/utils';
 
@@ -25,6 +24,7 @@ export default function PuzzleBoard({
   const [board, setBoard] = useState(boardState);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
   const { grid, imageUrl } = level;
+  const TILE_SIZE = 100; // Base size for a tile, adjust as needed
 
   const handleTileClick = (boardIndex: number) => {
     if (isReadOnly || selectedIndices.includes(boardIndex) || selectedIndices.length >= 2) {
@@ -41,7 +41,7 @@ export default function PuzzleBoard({
       onFail();
     }
   }, [targetState, onSuccess, onFail]);
-
+  
   const performSwap = useCallback(() => {
     if (selectedIndices.length !== 2) return;
 
@@ -70,17 +70,16 @@ export default function PuzzleBoard({
     setSelectedIndices([]);
   }, [boardState]);
 
-  const TILE_SIZE = 400; // The intrinsic size of one tile in the source image (1200 / 3)
-  const PUZZLE_SIZE = TILE_SIZE * grid;
-  const TILE_DISPLAY_SIZE = 80;
-  const TILE_DISPLAY_SIZE_MD = 96;
-
 
   return (
     <div className="flex flex-col items-center gap-4">
       <div
         className="grid gap-1 rounded-lg bg-muted p-1 shadow-md"
-        style={{ gridTemplateColumns: `repeat(${grid}, 1fr)` }}
+        style={{ 
+          gridTemplateColumns: `repeat(${grid}, 1fr)`,
+          width: `${grid * TILE_SIZE}px`,
+          height: `${grid * TILE_SIZE}px`,
+        }}
       >
         {board.map((tileValue, boardIndex) => {
           const row = Math.floor(tileValue / grid);
@@ -92,26 +91,18 @@ export default function PuzzleBoard({
               key={boardIndex}
               onClick={() => handleTileClick(boardIndex)}
               className={cn(
-                'relative h-20 w-20 md:h-24 md:w-24 overflow-hidden rounded-md transition-all duration-200',
+                'relative overflow-hidden rounded-md transition-all duration-300',
                 !isReadOnly && 'cursor-pointer',
                 isSelected && 'ring-4 ring-primary ring-inset'
               )}
-            >
-              <Image
-                src={imageUrl}
-                alt={`Tile ${tileValue + 1}`}
-                width={PUZZLE_SIZE}
-                height={PUZZLE_SIZE}
-                priority
-                className="absolute max-w-none transition-transform duration-300"
-                style={{
-                  objectFit: 'none',
-                  objectPosition: `-${col * TILE_SIZE}px -${row * TILE_SIZE}px`,
-                  transform: `scale(calc(${TILE_DISPLAY_SIZE_MD} / ${PUZZLE_SIZE}))`,
-                  transformOrigin: 'top left',
-                }}
-              />
-            </div>
+              style={{
+                width: `${TILE_SIZE}px`,
+                height: `${TILE_SIZE}px`,
+                backgroundImage: `url(${imageUrl})`,
+                backgroundSize: `${grid * TILE_SIZE}px ${grid * TILE_SIZE}px`,
+                backgroundPosition: `-${col * TILE_SIZE}px -${row * TILE_SIZE}px`,
+              }}
+            />
           );
         })}
       </div>

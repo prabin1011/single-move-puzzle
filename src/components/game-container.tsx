@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { levels, generatePuzzle } from '@/lib/levels';
 import { CheckCircle, XCircle, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 export default function GameContainer() {
   const [levelIndex, setLevelIndex] = useState(0);
@@ -76,7 +77,7 @@ export default function GameContainer() {
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-6 px-4 sm:px-6">
         {gameState === 'PREVIEW' && (
-          <div className="relative h-96 w-96 rounded-lg overflow-hidden shadow-lg border-2 border-border">
+          <div className="relative h-80 w-80 md:h-96 md:w-96 rounded-lg overflow-hidden shadow-lg border-2 border-border">
             <Image
               src={level.imageUrl}
               alt={level.place}
@@ -102,7 +103,7 @@ export default function GameContainer() {
 
         {gameState === 'SOLVED' && (
           <div className="flex flex-col items-center w-full">
-            <div className="relative h-96 w-96 rounded-lg overflow-hidden shadow-lg mx-auto mb-6 border-2 border-green-400/50">
+            <div className="relative h-80 w-80 md:h-96 md:w-96 rounded-lg overflow-hidden shadow-lg mx-auto mb-6 border-2 border-green-400/50">
               <Image src={level.imageUrl} alt={level.place} fill style={{ objectFit: 'cover' }} sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
             </div>
             <div className={cn("transition-opacity duration-500 w-full", showFacts ? "opacity-100" : "opacity-0")}>
@@ -123,6 +124,11 @@ export default function GameContainer() {
         {gameState === 'PREVIEW' && <Button onClick={startGame} size="lg" className="w-full">Start Puzzle</Button>}
         {gameState === 'FAILED' && <Button onClick={() => setGameState('PLAYING')} size="lg" className="w-full">Try Again</Button>}
         {gameState === 'SOLVED' && <Button onClick={nextLevel} size="lg" className="w-full">Next Puzzle <ArrowRight className="ml-2"/></Button>}
+        {gameState !== 'PREVIEW' && (
+            <Link href="/" passHref legacyBehavior>
+                <Button variant="link" className="absolute top-4 left-4 text-muted-foreground">Back to Home</Button>
+            </Link>
+        )}
       </CardFooter>
     </Card>
   );

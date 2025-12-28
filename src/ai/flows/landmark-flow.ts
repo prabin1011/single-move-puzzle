@@ -39,7 +39,7 @@ const findImageTool = ai.defineTool(
         const randomId = Math.random().toString(36).substring(7);
         // This is a placeholder. A real implementation would use the Unsplash API.
         // We'll use a fixed image for predictability in this context.
-        return { imageUrl: `https://images.unsplash.com/photo-1552832230-c01979b880ca?q=80&w=1200&h=1200&fit=crop` };
+        return { imageUrl: `https://source.unsplash.com/1200x1200/?${formattedQuery}` };
     }
 );
 
@@ -66,10 +66,9 @@ export const landmarkEnhancerFlow = ai.defineFlow(
     if (!output) {
         throw new Error("The AI model did not return the expected output.");
     }
-    // A real implementation would use the tool's output for the image URL.
-    // To ensure a working image, we are overriding it here.
+    // Use the image URL returned by the tool
     return {
-        imageUrl: `https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?q=80&w=1200&h=1200&fit=crop`,
+        imageUrl: output.imageUrl,
         facts: output.facts,
     }
   }

@@ -1,10 +1,10 @@
 {
   "placeholderImages": [
     {
-      "id": "puzzle-1",
-      "description": "A vibrant abstract painting.",
-      "imageUrl": "https://picsum.photos/seed/puzzle1/600/600",
-      "imageHint": "abstract painting"
+      "id": "swayambhunath",
+      "description": "Swayambhunath Stupa in Kathmandu, Nepal.",
+      "imageUrl": "https://images.unsplash.com/photo-1544439585-649f8a842602?q=80&w=1200&h=1200&fit=crop",
+      "imageHint": "nepal temple"
     }
   ]
 }

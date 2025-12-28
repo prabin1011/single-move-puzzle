@@ -1,10 +1,13 @@
-import type {Metadata} from 'next';
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 
+const inter = Inter({ subsets: ['latin'] })
+
 export const metadata: Metadata = {
-  title: 'My App',
-  description: 'Built with Firebase Studio',
+  title: 'Single Move Puzzle',
+  description: 'Solve a simple puzzle. Discover famous places.',
 };
 
 export default function RootLayout({
@@ -14,12 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-      </head>
-      <body className="antialiased">
+      <body className={`${inter.className} antialiased`}>
           {children}
         <Toaster />
       </body>

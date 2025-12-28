@@ -1,3 +1,10 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "puzzle-1",
+      "description": "A vibrant abstract painting.",
+      "imageUrl": "https://picsum.photos/seed/puzzle1/600/600",
+      "imageHint": "abstract painting"
+    }
+  ]
 }

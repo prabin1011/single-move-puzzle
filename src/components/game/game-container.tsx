@@ -19,8 +19,10 @@ import { areBoardsEqual, applyUserMove } from './game-logic';
 import { Button } from '@/components/ui/button';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppLogo } from '../icons';
-import { useUser, useFirestore, useDoc, useAuth } from '@/firebase';
+import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const INITIAL_STATS: Stats = {
   levelsCompleted: 0,
@@ -46,7 +48,7 @@ export function GameContainer() {
     return doc(firestore, 'users', user.uid);
   }, [firestore, user]);
 
-  const { data: userStats, loading: statsLoading } = useDoc<Stats>(userStatsRef);
+  const { data: userStats, loading: statsLoading, error: statsError } = useDoc<Stats>(userStatsRef);
 
   const stats = useMemo(() => userStats || INITIAL_STATS, [userStats]);
   
@@ -55,6 +57,15 @@ export function GameContainer() {
   const { time, reset: resetTimer } = useGameTimer(gameStatus === 'playing');
 
   const startNewGame = useCallback(async (newDifficulty: 'easy' | 'medium' | 'hard') => {
+    // Prevent starting a game if we are already loading or if the user/stats are not ready
+    if (userLoading || statsLoading || !user) {
+        toast({
+            title: 'Please wait',
+            description: 'Loading user data before starting a new game.',
+        });
+        return;
+    }
+    
     setGameStatus('loading');
     setDifficulty(newDifficulty);
     setHint(null);
@@ -81,7 +92,7 @@ export function GameContainer() {
       });
       setGameStatus('initial');
     }
-  }, [toast, resetTimer]);
+  }, [toast, resetTimer, user, userLoading, statsLoading]);
 
   const handleTileClick = (index: number) => {
     if (gameStatus !== 'playing' || !puzzle) return;
@@ -105,6 +116,7 @@ export function GameContainer() {
 
   const checkSolution = (board: Board) => {
     if (!puzzle || !userStatsRef) return;
+
     if (areBoardsEqual(board, puzzle.targetBoardState)) {
       setGameStatus('won');
       const newLevelsCompleted = stats.levelsCompleted + 1;
@@ -115,11 +127,25 @@ export function GameContainer() {
         currentStreak: newCurrentStreak,
         longestStreak: Math.max(stats.longestStreak, newCurrentStreak),
       };
-      setDoc(userStatsRef, newStats, { merge: true });
+      setDoc(userStatsRef, newStats, { merge: true }).catch(err => {
+        const permissionError = new FirestorePermissionError({
+          path: userStatsRef.path,
+          operation: 'update',
+          requestResourceData: newStats,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      });
     } else {
       setGameStatus('lost');
       const newStats: Stats = { ...stats, currentStreak: 0 };
-      setDoc(userStatsRef, newStats, { merge: true });
+      setDoc(userStatsRef, newStats, { merge: true }).catch(err => {
+         const permissionError = new FirestorePermissionError({
+          path: userStatsRef.path,
+          operation: 'update',
+          requestResourceData: newStats,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      });
     }
   };
 
@@ -140,6 +166,8 @@ export function GameContainer() {
     });
   }
 
+  const isLoading = gameStatus === 'loading' || userLoading || (user && statsLoading);
+
   return (
     <>
       <SidebarHeader className="flex items-center justify-between border-b">
@@ -153,7 +181,10 @@ export function GameContainer() {
         <GameSidebar
           stats={stats}
           difficulty={difficulty}
-          onDifficultyChange={startNewGame}
+          onDifficultyChange={(d) => {
+            setDifficulty(d);
+            startNewGame(d);
+          }}
           onNewGame={() => startNewGame(difficulty)}
           onShowHint={showHint}
           gameStatus={gameStatus}
@@ -161,16 +192,26 @@ export function GameContainer() {
       </SidebarContent>
 
       <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8 bg-background">
-        {gameStatus === 'initial' && (
+        {isLoading && (
+           <div className="flex flex-col items-center justify-center gap-4">
+             <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-accent"></div>
+             <p className="text-muted-foreground">
+              {userLoading || statsLoading ? 'Loading player data...' : 'Generating your puzzle...'}
+             </p>
+          </div>
+        )}
+
+        {!isLoading && gameStatus === 'initial' && (
           <div className="text-center">
             <h2 className="text-2xl font-semibold mb-4">Welcome!</h2>
             <p className="text-muted-foreground mb-6">Select a difficulty to start your first puzzle.</p>
-            <Button onClick={() => startNewGame(difficulty)} disabled={!user}>
+            <Button onClick={() => startNewGame(difficulty)} disabled={!user || isLoading}>
               {user ? 'Start Game' : 'Log in to play'}
             </Button>
           </div>
         )}
-        {(gameStatus === 'playing' || gameStatus === 'lost' || gameStatus === 'won' || gameStatus === 'loading') && puzzle && (
+
+        {!isLoading && (gameStatus === 'playing' || gameStatus === 'lost' || gameStatus === 'won') && puzzle && (
           <div className="w-full max-w-md mx-auto flex flex-col items-center gap-8">
             <TargetPattern board={puzzle.targetBoardState} size={boardSize} />
             <GameBoard
@@ -184,14 +225,7 @@ export function GameContainer() {
             />
           </div>
         )}
-        {(gameStatus === 'loading' || userLoading || statsLoading) && gameStatus !== 'initial' && (
-          <div className="flex flex-col items-center justify-center gap-4">
-             <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-accent"></div>
-             <p className="text-muted-foreground">
-              {userLoading || statsLoading ? 'Loading player data...' : 'Generating your puzzle...'}
-             </p>
-          </div>
-        )}
+        
         <GameStatusModal
           status={gameStatus}
           onNext={() => startNewGame(difficulty)}

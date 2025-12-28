@@ -55,7 +55,7 @@ export function GameSidebar({
     } else {
       setAiMessage('');
     }
-  }, [stats, user]);
+  }, [stats.levelsCompleted, user]);
 
   const handleLogin = async () => {
     const auth = getAuth();
@@ -72,6 +72,8 @@ export function GameSidebar({
     await signOut(auth);
   };
 
+  const isLoading = gameStatus === 'loading' || userLoading;
+
   return (
     <div className="p-4 flex flex-col gap-6 h-full">
         <Card>
@@ -83,7 +85,7 @@ export function GameSidebar({
                   <>
                     <div>
                         <label className="text-sm font-medium mb-2 block">Difficulty</label>
-                        <Select value={difficulty} onValueChange={(value: 'easy' | 'medium' | 'hard') => onDifficultyChange(value)} disabled={gameStatus === 'loading'}>
+                        <Select value={difficulty} onValueChange={onDifficultyChange} disabled={isLoading}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select difficulty" />
                             </SelectTrigger>
@@ -94,7 +96,7 @@ export function GameSidebar({
                             </SelectContent>
                         </Select>
                     </div>
-                    <Button onClick={onNewGame} className="w-full" disabled={gameStatus === 'loading'}>
+                    <Button onClick={onNewGame} className="w-full" disabled={isLoading}>
                         <Repeat className="mr-2" /> New Puzzle
                     </Button>
                      <Button variant="outline" onClick={onShowHint} className="w-full" disabled={gameStatus !== 'playing'}>
@@ -120,24 +122,35 @@ export function GameSidebar({
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                <div className="flex justify-between items-center">
-                    <span className="flex items-center gap-2 text-muted-foreground"><BrainCircuit /> Levels Solved</span>
-                    <span className="font-bold text-lg">{user ? stats.levelsCompleted : 0}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                    <span className="flex items-center gap-2 text-muted-foreground"><Timer /> Avg. Time</span>
-                    <span className="font-bold text-lg">
-                        {user && stats.levelsCompleted > 0 ? (stats.timeTaken / stats.levelsCompleted).toFixed(1) : 0}s
-                    </span>
-                </div>
-                <div className="flex justify-between items-center">
-                    <span className="flex items-center gap-2 text-muted-foreground"><Zap /> Current Streak</span>
-                    <span className="font-bold text-lg">{user ? stats.currentStreak : 0}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                    <span className="flex items-center gap-2 text-muted-foreground"><Award /> Longest Streak</span>
-                    <span className="font-bold text-lg">{user ? stats.longestStreak : 0}</span>
-                </div>
+              { userLoading ? (
+                <>
+                  <div className="flex justify-between items-center"><Skeleton className="h-5 w-24" /><Skeleton className="h-5 w-8" /></div>
+                  <div className="flex justify-between items-center"><Skeleton className="h-5 w-20" /><Skeleton className="h-5 w-12" /></div>
+                  <div className="flex justify-between items-center"><Skeleton className="h-5 w-28" /><Skeleton className="h-5 w-8" /></div>
+                  <div className="flex justify-between items-center"><Skeleton className="h-5 w-28" /><Skeleton className="h-5 w-8" /></div>
+                </>
+              ) : (
+                <>
+                  <div className="flex justify-between items-center">
+                      <span className="flex items-center gap-2 text-muted-foreground"><BrainCircuit /> Levels Solved</span>
+                      <span className="font-bold text-lg">{user ? stats.levelsCompleted : 0}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                      <span className="flex items-center gap-2 text-muted-foreground"><Timer /> Avg. Time</span>
+                      <span className="font-bold text-lg">
+                          {user && stats.levelsCompleted > 0 ? (stats.timeTaken / stats.levelsCompleted).toFixed(1) : 0}s
+                      </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                      <span className="flex items-center gap-2 text-muted-foreground"><Zap /> Current Streak</span>
+                      <span className="font-bold text-lg">{user ? stats.currentStreak : 0}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                      <span className="flex items-center gap-2 text-muted-foreground"><Award /> Longest Streak</span>
+                      <span className="font-bold text-lg">{user ? stats.longestStreak : 0}</span>
+                  </div>
+                </>
+              )}
                 <Separator className="my-4" />
                 <div className="space-y-2">
                     <h4 className="text-sm font-medium">AI Motivator</h4>

@@ -5,62 +5,44 @@ import PuzzleBoard from './puzzle-board';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
-import { levels as initialLevels, generatePuzzle, type Level, generateRandomSwap } from '@/lib/levels';
+import { levels as initialLevels, generatePuzzle, type Level } from '@/lib/levels';
 import { CheckCircle, XCircle, ArrowRight, RefreshCw, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { getLandmarkData } from '@/lib/actions';
 
 function shuffle(array: any[]) {
-  let currentIndex = array.length,  randomIndex;
-
-  // While there remain elements to shuffle.
+  let currentIndex = array.length, randomIndex;
   while (currentIndex > 0) {
-
-    // Pick a remaining element.
     randomIndex = Math.floor(Math.random() * currentIndex);
     currentIndex--;
-
-    // And swap it with the current element.
-    [array[currentIndex], array[randomIndex]] = [
-      array[randomIndex], array[currentIndex]];
+    [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
   }
-
   return array;
 }
-
 
 export default function GameContainer() {
   const [levels, setLevels] = useState(() => shuffle([...initialLevels]));
   const [levelIndex, setLevelIndex] = useState(0);
   const [currentLevel, setCurrentLevel] = useState<Level>(levels[levelIndex]);
-  const [currentPuzzle, setCurrentPuzzle] = useState(() => generatePuzzle(currentLevel));
+  const [imageIndex, setImageIndex] = useState(0);
+  
+  const [currentPuzzle, setCurrentPuzzle] = useState(() => generatePuzzle(currentLevel, currentLevel.imageUrls[imageIndex]));
 
   const [gameState, setGameState] = useState<'PREVIEW' | 'PLAYING' | 'SOLVED' | 'FAILED'>('PREVIEW');
   const [showFacts, setShowFacts] = useState(false);
+
+  const [state, getNewFacts, isPending] = useActionState(getLandmarkData, null);
   
-  // Action state for fetching new landmark data
-  const [state, getNewLandmarkData, isPending] = useActionState(getLandmarkData, null);
+  const [currentFacts, setCurrentFacts] = useState(currentLevel.facts);
 
-  // Update level data when new data is fetched
   useEffect(() => {
-    if (state?.imageUrl && state?.facts) {
-      const updatedLevelData = { ...currentLevel, imageUrl: state.imageUrl, facts: state.facts };
-      
-      setCurrentLevel(updatedLevelData);
-      
-      const updatedLevels = [...levels];
-      updatedLevels[levelIndex] = updatedLevelData;
-      setLevels(updatedLevels);
-
-      // We need a new puzzle with the new image, but we can keep the swap
-      setCurrentPuzzle(generatePuzzle(updatedLevelData, currentPuzzle.scrambledBoard));
+    if (state?.facts) {
+      setCurrentFacts(state.facts);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 
-
-  const { scrambledBoard, solvedBoard } = useMemo(() => {
+  const { scrambledBoard, solvedBoard, imageUrl } = useMemo(() => {
     return currentPuzzle;
   }, [currentPuzzle]);
 
@@ -70,6 +52,7 @@ export default function GameContainer() {
 
   const handleSuccess = async () => {
     setGameState('SOLVED');
+    getNewFacts({ landmarkName: currentLevel.place });
     setTimeout(() => setShowFacts(true), 500);
   };
   
@@ -78,7 +61,7 @@ export default function GameContainer() {
   };
 
   const resetForRetry = () => {
-    setCurrentPuzzle(generatePuzzle(currentLevel)); // Generate a new random swap
+    setCurrentPuzzle(generatePuzzle(currentLevel, currentLevel.imageUrls[imageIndex]));
     setGameState('PLAYING');
   };
   
@@ -87,13 +70,17 @@ export default function GameContainer() {
     setLevelIndex(newIndex);
     const newLevel = levels[newIndex];
     setCurrentLevel(newLevel);
-    setCurrentPuzzle(generatePuzzle(newLevel));
+    setImageIndex(0); // Reset to the first image for the new level
+    setCurrentFacts(newLevel.facts); // Reset facts to the default for the level
+    setCurrentPuzzle(generatePuzzle(newLevel, newLevel.imageUrls[0]));
     setGameState('PREVIEW');
     setShowFacts(false);
   }
 
   const handleNewImage = () => {
-    getNewLandmarkData({ landmarkName: currentLevel.place });
+    const newImageIndex = (imageIndex + 1) % currentLevel.imageUrls.length;
+    setImageIndex(newImageIndex);
+    setCurrentPuzzle(generatePuzzle(currentLevel, currentLevel.imageUrls[newImageIndex]));
   }
 
   return (
@@ -134,8 +121,8 @@ export default function GameContainer() {
         {gameState === 'PREVIEW' && (
           <div className="relative h-[300px] w-[300px] rounded-lg overflow-hidden shadow-lg border-2 border-border">
              <Image
-              key={currentLevel.imageUrl} // Force re-render on image change
-              src={currentLevel.imageUrl}
+              key={imageUrl}
+              src={imageUrl}
               alt={currentLevel.place}
               width={300}
               height={300}
@@ -147,8 +134,9 @@ export default function GameContainer() {
         
         {(gameState === 'PLAYING' || gameState === 'FAILED') && (
            <PuzzleBoard
-              key={`playing-${currentLevel.id}-${currentLevel.imageUrl}-${gameState}-${JSON.stringify(scrambledBoard)}`}
-              level={currentLevel}
+              key={`playing-${currentLevel.id}-${imageUrl}-${gameState}`}
+              imageUrl={imageUrl}
+              grid={currentLevel.grid}
               boardState={scrambledBoard}
               targetState={solvedBoard}
               onSuccess={handleSuccess}
@@ -160,17 +148,21 @@ export default function GameContainer() {
         {gameState === 'SOLVED' && (
           <div className="flex flex-col items-center w-full">
             <div className="relative h-[300px] w-[300px] rounded-lg overflow-hidden shadow-lg mx-auto mb-6 border-2 border-green-400/50">
-              <Image src={currentLevel.imageUrl} alt={currentLevel.place} width={300} height={300} className="object-cover" />
+              <Image src={imageUrl} alt={currentLevel.place} width={300} height={300} className="object-cover" />
             </div>
             <div className={cn("transition-opacity duration-500 w-full", showFacts ? "opacity-100" : "opacity-0")}>
               <ul className="space-y-3 text-left text-lg">
-                {(state?.facts || currentLevel.facts).map((fact, index) => (
+                {currentFacts.map((fact, index) => (
                   <li key={index} className="flex items-start gap-3 p-3 bg-secondary rounded-md">
                       <span className="text-primary mt-1">✓</span>
                       <span>{fact}</span>
                   </li>
                 ))}
               </ul>
+               <Button onClick={() => getNewFacts({ landmarkName: currentLevel.place })} className="w-full mt-4" variant="secondary" size="sm" disabled={isPending}>
+                  {isPending ? <Loader2 className="animate-spin" /> : <RefreshCw />}
+                  Get New Facts
+                </Button>
             </div>
           </div>
         )}
@@ -180,8 +172,8 @@ export default function GameContainer() {
         {gameState === 'PREVIEW' && (
           <div className="w-full space-y-2">
             <Button onClick={startGame} size="lg" className="w-full">Start Puzzle</Button>
-            <Button onClick={handleNewImage} size="lg" variant="secondary" className="w-full" disabled={isPending}>
-              {isPending ? <Loader2 className="animate-spin" /> : <RefreshCw />}
+            <Button onClick={handleNewImage} size="lg" variant="secondary" className="w-full">
+              <RefreshCw />
               New Image
             </Button>
           </div>

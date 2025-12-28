@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { type Level } from '@/lib/levels';
 import { cn } from '@/lib/utils';
 
 interface PuzzleBoardProps {
-  level: Level;
+  imageUrl: string;
+  grid: number;
   boardState: number[];
   targetState: number[];
   onSuccess: () => void;
@@ -14,7 +14,8 @@ interface PuzzleBoardProps {
 }
 
 export default function PuzzleBoard({
-  level,
+  imageUrl,
+  grid,
   boardState,
   targetState,
   onSuccess,
@@ -23,7 +24,6 @@ export default function PuzzleBoard({
 }: PuzzleBoardProps) {
   const [board, setBoard] = useState(boardState);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
-  const { grid, imageUrl } = level;
   const PUZZLE_SIZE = 300; // The total size of the puzzle board in pixels.
   const TILE_SIZE = PUZZLE_SIZE / grid;
 
@@ -53,10 +53,8 @@ export default function PuzzleBoard({
     
     setBoard(newBoard);
     
-    // Short delay to allow the user to see the swap animation before the result is shown
     setTimeout(() => checkSolution(newBoard), 300);
 
-    // Reset selection after a brief moment
     setTimeout(() => setSelectedIndices([]), 500);
 
   }, [board, selectedIndices, checkSolution]);
@@ -69,7 +67,6 @@ export default function PuzzleBoard({
   }, [selectedIndices, performSwap]);
   
   useEffect(() => {
-    // Reset the component state when the level changes
     setBoard(boardState);
     setSelectedIndices([]);
   }, [boardState]);
@@ -86,7 +83,6 @@ export default function PuzzleBoard({
         }}
       >
         {board.map((tileValue, boardIndex) => {
-          // tileValue is the original position (0-8) of the piece that is now at boardIndex
           const row = Math.floor(tileValue / grid);
           const col = tileValue % grid;
           const isSelected = selectedIndices.includes(boardIndex);

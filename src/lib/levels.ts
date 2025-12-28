@@ -164,17 +164,28 @@ export const levels: Level[] = [
   }
 ];
 
+export const generateRandomSwap = (gridSize: number): [number, number] => {
+    const totalTiles = gridSize * gridSize;
+    let index1 = Math.floor(Math.random() * totalTiles);
+    let index2 = Math.floor(Math.random() * totalTiles);
+    while (index1 === index2) {
+        index2 = Math.floor(Math.random() * totalTiles);
+    }
+    return [index1, index2];
+}
+
 // Helper function to generate the initial board state for a level
-export const generatePuzzle = (level: Level) => {
+export const generatePuzzle = (level: Level, fixedSwap?: [number, number]) => {
   const solvedBoard = Array.from({ length: level.grid * level.grid }, (_, i) => i);
   const scrambledBoard = [...solvedBoard];
   
   // Perform the specified swap
-  const [index1, index2] = level.swapped;
+  const [index1, index2] = fixedSwap ?? generateRandomSwap(level.grid);
   [scrambledBoard[index1], scrambledBoard[index2]] = [scrambledBoard[index2], scrambledBoard[index1]];
 
   return {
     solvedBoard,
-    scrambledBoard
+    scrambledBoard,
+    swapped: [index1, index2]
   };
 };

@@ -5,38 +5,64 @@ import PuzzleBoard from './puzzle-board';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
-import { levels as initialLevels, generatePuzzle, type Level } from '@/lib/levels';
+import { levels as initialLevels, generatePuzzle, type Level, generateRandomSwap } from '@/lib/levels';
 import { CheckCircle, XCircle, ArrowRight, RefreshCw, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { getLandmarkData } from '@/lib/actions';
 
+function shuffle(array: any[]) {
+  let currentIndex = array.length,  randomIndex;
+
+  // While there remain elements to shuffle.
+  while (currentIndex > 0) {
+
+    // Pick a remaining element.
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    // And swap it with the current element.
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex], array[currentIndex]];
+  }
+
+  return array;
+}
+
+
 export default function GameContainer() {
-  const [levels, setLevels] = useState(initialLevels);
+  const [levels, setLevels] = useState(() => shuffle([...initialLevels]));
   const [levelIndex, setLevelIndex] = useState(0);
   const [currentLevel, setCurrentLevel] = useState<Level>(levels[levelIndex]);
+  const [currentPuzzle, setCurrentPuzzle] = useState(() => generatePuzzle(currentLevel));
 
   const [gameState, setGameState] = useState<'PREVIEW' | 'PLAYING' | 'SOLVED' | 'FAILED'>('PREVIEW');
   const [showFacts, setShowFacts] = useState(false);
-  const [generatedFacts, setGeneratedFacts] = useState<string[]>([]);
-
+  
   // Action state for fetching new landmark data
   const [state, getNewLandmarkData, isPending] = useActionState(getLandmarkData, null);
 
   // Update level data when new data is fetched
   useEffect(() => {
     if (state?.imageUrl && state?.facts) {
-      const updatedLevel = { ...currentLevel, imageUrl: state.imageUrl, facts: state.facts };
-      setCurrentLevel(updatedLevel);
+      const updatedLevelData = { ...currentLevel, imageUrl: state.imageUrl, facts: state.facts };
+      
+      setCurrentLevel(updatedLevelData);
+      
       const updatedLevels = [...levels];
-      updatedLevels[levelIndex] = updatedLevel;
+      updatedLevels[levelIndex] = updatedLevelData;
       setLevels(updatedLevels);
+
+      // We need a new puzzle with the new image, but we can keep the swap
+      setCurrentPuzzle(generatePuzzle(updatedLevelData, currentPuzzle.scrambledBoard));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 
 
-  const { scrambledBoard, solvedBoard } = useMemo(() => generatePuzzle(currentLevel), [currentLevel]);
+  const { scrambledBoard, solvedBoard } = useMemo(() => {
+    return currentPuzzle;
+  }, [currentPuzzle]);
 
   const startGame = () => {
     setGameState('PLAYING');
@@ -44,11 +70,6 @@ export default function GameContainer() {
 
   const handleSuccess = async () => {
     setGameState('SOLVED');
-    if (state?.facts) {
-      setGeneratedFacts(state.facts);
-    } else {
-      setGeneratedFacts(currentLevel.facts);
-    }
     setTimeout(() => setShowFacts(true), 500);
   };
   
@@ -56,16 +77,19 @@ export default function GameContainer() {
     setGameState('FAILED');
   };
 
-  const resetGame = () => {
-    setGameState('PREVIEW');
-    setShowFacts(false);
+  const resetForRetry = () => {
+    setCurrentPuzzle(generatePuzzle(currentLevel)); // Generate a new random swap
+    setGameState('PLAYING');
   };
   
   const nextLevel = () => {
     const newIndex = (levelIndex + 1) % levels.length;
     setLevelIndex(newIndex);
-    setCurrentLevel(levels[newIndex]);
-    resetGame();
+    const newLevel = levels[newIndex];
+    setCurrentLevel(newLevel);
+    setCurrentPuzzle(generatePuzzle(newLevel));
+    setGameState('PREVIEW');
+    setShowFacts(false);
   }
 
   const handleNewImage = () => {
@@ -110,6 +134,7 @@ export default function GameContainer() {
         {gameState === 'PREVIEW' && (
           <div className="relative h-[300px] w-[300px] rounded-lg overflow-hidden shadow-lg border-2 border-border">
              <Image
+              key={currentLevel.imageUrl} // Force re-render on image change
               src={currentLevel.imageUrl}
               alt={currentLevel.place}
               width={300}
@@ -122,7 +147,7 @@ export default function GameContainer() {
         
         {(gameState === 'PLAYING' || gameState === 'FAILED') && (
            <PuzzleBoard
-              key={`playing-${currentLevel.id}-${currentLevel.imageUrl}-${gameState}`}
+              key={`playing-${currentLevel.id}-${currentLevel.imageUrl}-${gameState}-${JSON.stringify(scrambledBoard)}`}
               level={currentLevel}
               boardState={scrambledBoard}
               targetState={solvedBoard}
@@ -139,7 +164,7 @@ export default function GameContainer() {
             </div>
             <div className={cn("transition-opacity duration-500 w-full", showFacts ? "opacity-100" : "opacity-0")}>
               <ul className="space-y-3 text-left text-lg">
-                {generatedFacts.map((fact, index) => (
+                {(state?.facts || currentLevel.facts).map((fact, index) => (
                   <li key={index} className="flex items-start gap-3 p-3 bg-secondary rounded-md">
                       <span className="text-primary mt-1">✓</span>
                       <span>{fact}</span>
@@ -161,7 +186,7 @@ export default function GameContainer() {
             </Button>
           </div>
         )}
-        {gameState === 'FAILED' && <Button onClick={() => setGameState('PLAYING')} size="lg" className="w-full">Try Again</Button>}
+        {gameState === 'FAILED' && <Button onClick={resetForRetry} size="lg" className="w-full">Try Again</Button>}
         {gameState === 'SOLVED' && <Button onClick={nextLevel} size="lg" className="w-full">Next Puzzle <ArrowRight className="ml-2"/></Button>}
         
         <div className="relative w-full text-center h-6">

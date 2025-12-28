@@ -1,46 +1,6 @@
 {
-  "entities": {
-    "UserProfile": {
-      "title": "User Profile",
-      "description": "Represents a user's profile information.",
-      "type": "object",
-      "properties": {
-        "levelsCompleted": {
-          "type": "number",
-          "description": "The number of levels the user has completed."
-        },
-        "timeTaken": {
-          "type": "number",
-          "description": "The total time taken by the user to complete levels (in seconds)."
-        },
-        "currentStreak": {
-          "type": "number",
-          "description": "The user's current streak of consecutive level completions."
-        },
-        "longestStreak": {
-          "type": "number",
-          "description": "The user's longest streak of consecutive level completions."
-        }
-      },
-      "required": [
-        "levelsCompleted",
-        "timeTaken",
-        "currentStreak",
-        "longestStreak"
-      ]
-    }
-  },
+  "entities": {},
   "auth": {
-    "providers": [
-      "anonymous"
-    ]
-  },
-  "firestore": {
-    "/users/{userId}": {
-      "schema": {
-        "$ref": "#/backend/entities/UserProfile"
-      },
-      "description": "Stores user profile data, including game statistics."
-    }
+    "providers": []
   }
 }

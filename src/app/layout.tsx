@@ -3,8 +3,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
-  title: 'Single Move Master',
-  description: 'A puzzle game where you solve each board in a single move.',
+  title: 'My App',
+  description: 'Built with Firebase Studio',
 };
 
 export default function RootLayout({

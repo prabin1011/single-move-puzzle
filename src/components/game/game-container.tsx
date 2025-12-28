@@ -72,10 +72,10 @@ export function GameContainer() {
   const { time, reset: resetTimer } = useGameTimer(gameStatus === 'playing');
 
   const startNewGame = useCallback(async (newDifficulty: 'easy' | 'medium' | 'hard') => {
-    if (!user || statsLoading) {
+    if (!user) {
       toast({
           title: 'Please wait',
-          description: 'Loading user data before starting a new game.',
+          description: 'Authenticating before starting a new game.',
       });
       return;
     }
@@ -106,7 +106,7 @@ export function GameContainer() {
       });
       setGameStatus('initial');
     }
-  }, [toast, resetTimer, user, statsLoading]);
+  }, [toast, resetTimer, user]);
 
   const handleTileClick = (index: number) => {
     if (gameStatus !== 'playing' || !puzzle) return;
@@ -219,7 +219,7 @@ export function GameContainer() {
           <div className="text-center">
             <h2 className="text-2xl font-semibold mb-4">Welcome!</h2>
             <p className="text-muted-foreground mb-6">Select a difficulty to start your first puzzle.</p>
-            <Button onClick={() => startNewGame(difficulty)} disabled={!user || isLoading}>
+            <Button onClick={() => startNewGame(difficulty)} disabled={!user}>
               Start Game
             </Button>
           </div>

@@ -1,10 +1,28 @@
 {
   "placeholderImages": [
     {
-      "id": "swayambhunath",
-      "description": "Swayambhunath Stupa in Kathmandu, Nepal.",
-      "imageUrl": "https://images.unsplash.com/photo-1544439585-649f8a842602?q=80&w=1200&h=1200&fit=crop",
-      "imageHint": "nepal temple"
+      "id": "eiffel-tower",
+      "description": "Eiffel Tower in Paris, France.",
+      "imageUrl": "https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?q=80&w=1200&h=1200&fit=crop",
+      "imageHint": "paris france"
+    },
+    {
+      "id": "colosseum",
+      "description": "The Colosseum in Rome, Italy.",
+      "imageUrl": "https://images.unsplash.com/photo-1552832230-c01979b880ca?q=80&w=1200&h=1200&fit=crop",
+      "imageHint": "rome italy"
+    },
+    {
+      "id": "statue-of-liberty",
+      "description": "The Statue of Liberty in New York, USA.",
+      "imageUrl": "https://images.unsplash.com/photo-1503575689137-5dc338426774?q=80&w=1200&h=1200&fit=crop",
+      "imageHint": "new-york usa"
+    },
+    {
+      "id": "taj-mahal",
+      "description": "The Taj Mahal in Agra, India.",
+      "imageUrl": "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?q=80&w=1200&h=1200&fit=crop",
+      "imageHint": "agra india"
     }
   ]
 }

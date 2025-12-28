@@ -1,4 +1,3 @@
-import { PlaceHolderImages } from './placeholder-images';
 
 export interface Level {
   id: string;
@@ -12,26 +11,9 @@ export interface Level {
   difficulty: 'easy' | 'medium' | 'hard' | 'expert' | 'master';
 }
 
-const swayambhunathImage = PlaceHolderImages.find(img => img.id === 'swayambhunath');
-
 export const levels: Level[] = [
   {
     id: "lvl_001",
-    place: "Swayambhunath",
-    country: "Nepal",
-    imageUrl: swayambhunathImage?.imageUrl || "https://images.unsplash.com/photo-1544439585-649f8a842602?q=80&w=1200&h=1200&fit=crop",
-    grid: 3,
-    swapped: [1, 7],
-    facts: [
-      "Also known as the Monkey Temple",
-      "Over 1,500 years old",
-      "One of the holiest Buddhist sites in Nepal"
-    ],
-    hint: "Look at the stupa alignment",
-    difficulty: "easy"
-  },
-  {
-    id: "lvl_002",
     place: "Eiffel Tower",
     country: "France",
     imageUrl: "https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?q=80&w=1200&h=1200&fit=crop",
@@ -46,7 +28,7 @@ export const levels: Level[] = [
     difficulty: "easy"
   },
   {
-      id: "lvl_003",
+      id: "lvl_002",
       place: "Colosseum",
       country: "Italy",
       imageUrl: "https://images.unsplash.com/photo-1552832230-c01979b880ca?q=80&w=1200&h=1200&fit=crop",
@@ -59,6 +41,36 @@ export const levels: Level[] = [
       ],
       hint: "Look at the arches.",
       difficulty: "medium"
+  },
+  {
+    id: "lvl_003",
+    place: "Statue of Liberty",
+    country: "USA",
+    imageUrl: "https://images.unsplash.com/photo-1503575689137-5dc338426774?q=80&w=1200&h=1200&fit=crop",
+    grid: 3,
+    swapped: [2, 6],
+    facts: [
+      "It was a gift to the United States from the people of France in 1886.",
+      "The crown's seven rays represent the seven continents.",
+      "The outer skin is made of copper and is only 3/32 of an inch thick."
+    ],
+    hint: "Focus on the tablet.",
+    difficulty: "easy"
+  },
+  {
+    id: "lvl_004",
+    place: "Taj Mahal",
+    country: "India",
+    imageUrl: "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?q=80&w=1200&h=1200&fit=crop",
+    grid: 3,
+    swapped: [4, 7],
+    facts: [
+      "It's a mausoleum built by emperor Shah Jahan for his wife Mumtaz Mahal.",
+      "It took over 20,000 artisans 22 years to build.",
+      "The building appears to change color depending on the time of day."
+    ],
+    hint: "Look at the central dome.",
+    difficulty: "medium"
   }
 ];
 

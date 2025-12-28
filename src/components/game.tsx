@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
@@ -56,7 +56,6 @@ const Board = ({
     {board.map((tileValue, boardIndex) => {
       const row = Math.floor(tileValue / gridSize);
       const col = tileValue % gridSize;
-      const tileSize = 100 / (gridSize - 1);
       const isSelected = selectedIndices?.includes(boardIndex);
 
       return (
@@ -72,10 +71,8 @@ const Board = ({
             priority
             style={{
               objectFit: 'none',
-              objectPosition: `-${col * 100}% -${row * 100}%`,
-              width: `${gridSize * 100}%`,
-              height: `${gridSize * 100}%`,
-              maxWidth: 'none',
+              transform: `scale(${gridSize})`,
+              transformOrigin: `${col * 100/(gridSize - 1)}% ${row * 100/(gridSize-1)}%`,
             }}
             unoptimized // Prevents Next.js image optimization from changing the URL
           />
@@ -91,6 +88,20 @@ export default function Game() {
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
   const [moves, setMoves] = useState(0);
   const [isSolved, setIsSolved] = useState(false);
+
+  const handleMove = useCallback(() => {
+    if (selectedIndices.length !== 2) return;
+
+    const newBoard = [...board];
+    const [firstIndex, secondIndex] = selectedIndices;
+    
+    // Swap the values at the selected board indices
+    [newBoard[firstIndex], newBoard[secondIndex]] = [newBoard[secondIndex], newBoard[firstIndex]];
+
+    setBoard(newBoard);
+    setMoves(moves + 1);
+    setSelectedIndices([]);
+  }, [board, selectedIndices]);
 
   useEffect(() => {
     if (selectedIndices.length === 2) {
@@ -108,25 +119,11 @@ export default function Game() {
 
 
   const handleTileClick = (index: number) => {
-    if (isSolved || selectedIndices.includes(index) || selectedIndices.length >= 2) return;
+    if (isSolved || selectedIndices.includes(index) || selectedIndices.length >= 2 || moves >= 1) return;
 
     setSelectedIndices([...selectedIndices, index]);
   };
   
-  function handleMove() {
-    if (selectedIndices.length !== 2) return;
-
-    const newBoard = [...board];
-    const [firstIndex, secondIndex] = selectedIndices;
-    
-    // Swap the values at the selected board indices
-    [newBoard[firstIndex], newBoard[secondIndex]] = [newBoard[secondIndex], newBoard[firstIndex]];
-
-    setBoard(newBoard);
-    setMoves(moves + 1);
-    setSelectedIndices([]);
-  };
-
   const checkSolution = () => {
     const solved = JSON.stringify(board) === JSON.stringify(SOLVED_BOARD);
     if (solved) {

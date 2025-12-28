@@ -27,7 +27,6 @@ const scrambleBoard = (board: number[]) => {
   // Ensure the second index is different from the first
   while (firstIndex === secondIndex) {
     secondIndex = Math.floor(Math.random() * newBoard.length);
-    firstIndex = Math.floor(Math.random() * newBoard.length);
   }
 
   // Swap the two tiles
@@ -36,7 +35,6 @@ const scrambleBoard = (board: number[]) => {
 };
 
 const SOLVED_BOARD = generateSolvedBoard();
-const INITIAL_BOARD = scrambleBoard(SOLVED_BOARD);
 
 const Board = ({
   board,
@@ -73,9 +71,11 @@ const Board = ({
             fill
             priority
             style={{
-              objectFit: 'cover',
-              objectPosition: `${col * tileSize}% ${row * tileSize}%`,
-              transform: `scale(${1 + 1 / (gridSize * 2)})`,
+              objectFit: 'none',
+              objectPosition: `-${col * 100}% -${row * 100}%`,
+              width: `${gridSize * 100}%`,
+              height: `${gridSize * 100}%`,
+              maxWidth: 'none',
             }}
             unoptimized // Prevents Next.js image optimization from changing the URL
           />
@@ -87,7 +87,7 @@ const Board = ({
 
 export default function Game() {
   const [gameState, setGameState] = useState<'PREVIEW' | 'PLAYING'>('PREVIEW');
-  const [board, setBoard] = useState(INITIAL_BOARD);
+  const [board, setBoard] = useState(scrambleBoard(generateSolvedBoard()));
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
   const [moves, setMoves] = useState(0);
   const [isSolved, setIsSolved] = useState(false);
@@ -98,7 +98,7 @@ export default function Game() {
       const timer = setTimeout(() => handleMove(), 300);
       return () => clearTimeout(timer);
     }
-  }, [selectedIndices]);
+  }, [selectedIndices, handleMove]);
 
   useEffect(() => {
     if (moves > 0) {
@@ -108,18 +108,18 @@ export default function Game() {
 
 
   const handleTileClick = (index: number) => {
-    if (moves >= 1 || isSolved || selectedIndices.includes(index) || selectedIndices.length >= 2) return;
+    if (isSolved || selectedIndices.includes(index) || selectedIndices.length >= 2) return;
 
     setSelectedIndices([...selectedIndices, index]);
   };
   
-  const handleMove = () => {
-    if (selectedIndices.length !== 2 || moves >= 1) return;
+  function handleMove() {
+    if (selectedIndices.length !== 2) return;
 
     const newBoard = [...board];
     const [firstIndex, secondIndex] = selectedIndices;
     
-    // Swap the tiles
+    // Swap the values at the selected board indices
     [newBoard[firstIndex], newBoard[secondIndex]] = [newBoard[secondIndex], newBoard[firstIndex]];
 
     setBoard(newBoard);
@@ -135,8 +135,7 @@ export default function Game() {
   };
 
   const resetGame = () => {
-    const newInitialBoard = scrambleBoard(SOLVED_BOARD);
-    setBoard(newInitialBoard);
+    setBoard(scrambleBoard(generateSolvedBoard()));
     setMoves(0);
     setIsSolved(false);
     setSelectedIndices([]);
@@ -197,8 +196,8 @@ export default function Game() {
         {moves >= 1 && !isSolved && <p className="font-bold text-destructive">Not quite! Try again.</p>}
         
         <div className="h-4">
-          {moves === 0 && !isSolved && selectedIndices.length === 0 && <p className="text-sm text-muted-foreground">Select the first tile to swap.</p>}
-          {moves === 0 && !isSolved && selectedIndices.length === 1 && <p className="text-sm text-muted-foreground">Select the second tile to swap.</p>}
+          {!isSolved && moves < 1 && selectedIndices.length === 0 && <p className="text-sm text-muted-foreground">Select the first tile to swap.</p>}
+          {!isSolved && moves < 1 && selectedIndices.length === 1 && <p className="text-sm text-muted-foreground">Select the second tile to swap.</p>}
         </div>
 
       </CardContent>

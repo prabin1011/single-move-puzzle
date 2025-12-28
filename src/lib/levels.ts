@@ -142,8 +142,8 @@ export const levels: Level[] = [
     place: "Christ the Redeemer",
     country: "Brazil",
     imageUrls: [
-        "https://images.unsplash.com/photo-1587282290693-76204b6c9343?q=80&w=1200&h=1200&fit=crop",
         "https://images.unsplash.com/photo-1593457316828-77d0c3741b1d?q=80&w=1200&h=1200&fit=crop",
+        "https://images.unsplash.com/photo-1587282290693-76204b6c9343?q=80&w=1200&h=1200&fit=crop",
         "https://images.unsplash.com/photo-1548232971-c5243d9152b9?q=80&w=1200&h=1200&fit=crop"
     ],
     grid: 3,
@@ -219,3 +219,4 @@ export const generatePuzzle = (level: Level, imageUrl: string) => {
     imageUrl: imageUrl,
   };
 };
+

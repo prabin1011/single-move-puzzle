@@ -551,5 +551,3 @@ export const generatePuzzle = (imageUrl: string, grid: number) => {
     imageUrl: imageUrl,
   };
 };
-
-    

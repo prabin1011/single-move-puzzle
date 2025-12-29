@@ -410,7 +410,7 @@ export const levels: Level[] = [
     hint: "A castle-like abbey on a small island.",
     category: "architecture",
     visualComplexity: "high",
-    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Mont_St_Michel_3.jpg/600px-Mont_St_Michel_3.jpg", hint: "normandy france" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Mont_Saint-Michel_by_The_Wookies.jpg/600px-Mont_Saint-Michel_by_The_Wookies.jpg", hint: "normandy france" }
   },
   {
     id: "lvl_040",

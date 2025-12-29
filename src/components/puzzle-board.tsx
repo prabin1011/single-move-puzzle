@@ -43,26 +43,28 @@ export default function PuzzleBoard({
         (swappedIndices.includes(first) && swappedIndices.includes(second));
 
       if (isCorrectSwap) {
-        onSuccess();
+        // Perform the final correct swap visually
+        const newBoard = [...board];
+        const [firstIndex, secondIndex] = selectedIndices;
+        [newBoard[firstIndex], newBoard[secondIndex]] = [newBoard[secondIndex], newBoard[firstIndex]];
+        setBoard(newBoard);
+
+        setTimeout(() => {
+            onSuccess();
+        }, 500);
+
       } else {
         setShowSolution(true);
         setTimeout(() => {
           onFail();
         }, 1500); 
       }
-  }, [selectedIndices, swappedIndices, onSuccess, onFail]);
+  }, [selectedIndices, swappedIndices, onSuccess, onFail, board]);
 
-  // Effect to handle the swap and check logic
+  // Effect to handle the check logic
   useEffect(() => {
     if (selectedIndices.length === 2) {
-      // Perform the swap visually first
-      const newBoard = [...board];
-      const [firstIndex, secondIndex] = selectedIndices;
-      [newBoard[firstIndex], newBoard[secondIndex]] = [newBoard[secondIndex], newBoard[firstIndex]];
-      setBoard(newBoard);
-
-      // Then check if it was the correct one after a short delay
-      const timer = setTimeout(checkSolution, 500);
+      const timer = setTimeout(checkSolution, 300); // Small delay to show selection
       return () => clearTimeout(timer);
     }
   }, [selectedIndices, checkSolution]);
@@ -121,5 +123,3 @@ export default function PuzzleBoard({
     </div>
   );
 }
-
-    

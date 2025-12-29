@@ -64,6 +64,23 @@ export default function GameContainer() {
   const [mistakeCount, setMistakeCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [currentLevel, setCurrentLevel] = useState<Level | null>(null);
+  const [currentPuzzle, setCurrentPuzzle] = useState<{
+      scrambledBoard: number[];
+      swapped: number[];
+      imageUrl: string;
+  } | null>(null);
+
+  const [retryCount, setRetryCount] = useState(0);
+
+  const [gameState, setGameState] = useState<
+    "READY" | "PREVIEW" | "PLAYING" | "SOLVED" | "FAILED" | "GAME_OVER"
+  >("READY");
+  const [showFacts, setShowFacts] = useState(false);
+  
+  const isTimerRunning = gameState === "PREVIEW";
+  const { time, reset: resetTimer, stop: stopTimer } = useGameTimer(isTimerRunning);
+
   // Load progress on mount
   useEffect(() => {
     const savedLevel = localStorage.getItem('currentLevelIndex');
@@ -76,35 +93,6 @@ export default function GameContainer() {
     setHighestLevel(initialHighest);
     setIsLoading(false);
   }, []);
-
-  const { grid: currentGridSize, categories } = useMemo(() => getLevelConfig(levelIndex), [levelIndex]);
-
-  const availableLevels = useMemo(() => {
-    if (categories.includes('all')) return levels;
-    const pastCategories = ['all'];
-    const seenIds = new Set<string>();
-    
-    return levels.filter(level => {
-        const isCorrectCategory = categories.includes(level.category) && !pastCategories.includes(level.category);
-        if (isCorrectCategory && !seenIds.has(level.id)) {
-            seenIds.add(level.id);
-            return true;
-        }
-        return false;
-    });
-  }, [levels, categories]);
-  
-  const currentLevel = useMemo(() => {
-    if (isLoading) return null;
-    if (!availableLevels.length) return levels[levelIndex % levels.length];
-    const levelFromTier = availableLevels[levelIndex % availableLevels.length];
-    return levelFromTier;
-  }, [availableLevels, levelIndex, levels, isLoading]);
-
-  const [currentPuzzle, setCurrentPuzzle] = useState(() => {
-    if (!currentLevel) return null;
-    return generatePuzzle(currentLevel.image.url, currentGridSize);
-  });
   
   // Save progress whenever level changes
   useEffect(() => {
@@ -116,7 +104,26 @@ export default function GameContainer() {
       localStorage.setItem('highestLevel', newHighest.toString());
     }
   }, [levelIndex, highestLevel, isLoading]);
-  
+
+  // Set current level and puzzle when levelIndex or levels change
+  useEffect(() => {
+    if (isLoading) return;
+
+    const { grid: currentGridSize, categories } = getLevelConfig(levelIndex);
+    
+    const availableLevels = categories.includes('all') 
+      ? levels 
+      : levels.filter(level => categories.includes(level.category));
+
+    const levelData = availableLevels.length > 0 
+      ? availableLevels[levelIndex % availableLevels.length] 
+      : levels[levelIndex % levels.length];
+      
+    setCurrentLevel(levelData);
+    setCurrentPuzzle(generatePuzzle(levelData.image.url, currentGridSize));
+    setRetryCount(0);
+  }, [levelIndex, levels, isLoading]);
+
   // Preload the next level's image
   useEffect(() => {
     const nextLevelIndex = (levelIndex + 1);
@@ -130,25 +137,7 @@ export default function GameContainer() {
     }
   }, [levelIndex, levels]);
   
-  // This effect now correctly handles puzzle generation when the level changes.
-  useEffect(() => {
-    if (currentLevel) {
-      setCurrentPuzzle(generatePuzzle(currentLevel.image.url, currentGridSize));
-      setRetryCount(0); // Reset retries for the new level
-    }
-  }, [currentLevel, currentGridSize]);
-
-
-  const [retryCount, setRetryCount] = useState(0);
-
-  const [gameState, setGameState] = useState<
-    "READY" | "PREVIEW" | "PLAYING" | "SOLVED" | "FAILED" | "GAME_OVER"
-  >("READY");
-  const [showFacts, setShowFacts] = useState(false);
-  
-  const isTimerRunning = gameState === "PREVIEW";
-  const { time, reset: resetTimer, stop: stopTimer } = useGameTimer(isTimerRunning);
-
+  // Game timer logic
   useEffect(() => {
     if (gameState === 'PREVIEW' && time >= PREVIEW_TIME) {
       stopTimer();
@@ -167,6 +156,7 @@ export default function GameContainer() {
   }
 
   const { scrambledBoard, swapped, imageUrl } = currentPuzzle;
+  const { grid: currentGridSize } = getLevelConfig(levelIndex);
 
 
   const handleSuccess = async () => {
@@ -187,9 +177,9 @@ export default function GameContainer() {
 
   const resetForRetry = () => {
     setRetryCount((prev) => prev + 1);
-    // Re-generate puzzle with a new swap for the same level
     setCurrentPuzzle(generatePuzzle(currentLevel.image.url, currentGridSize));
-    setGameState("PLAYING");
+    setGameState("PREVIEW"); // Go back to preview for another look
+    resetTimer();
   };
 
   const restartGame = () => {
@@ -274,7 +264,7 @@ export default function GameContainer() {
             </CardDescription>
           </>
         )}
-        {gameState === "PLAYING" && (
+        {(gameState === "PLAYING" || gameState === "FAILED") && (
           <>
             <CardTitle className="text-2xl font-semibold">
               Find the two swapped pieces.
@@ -366,7 +356,7 @@ export default function GameContainer() {
             swappedIndices={swapped}
             onSuccess={handleSuccess}
             onFail={handleFail}
-            isReadOnly={gameState === "FAILED"}
+            isReadOnly={gameState !== "PLAYING"}
           />
         )}
 

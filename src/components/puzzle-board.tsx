@@ -65,7 +65,7 @@ export default function PuzzleBoard({
       const timer = setTimeout(checkSolution, 500);
       return () => clearTimeout(timer);
     }
-  }, [selectedIndices, board, checkSolution]);
+  }, [selectedIndices, checkSolution]);
   
   // Reset component state when the underlying puzzle changes via key prop
   useEffect(() => {

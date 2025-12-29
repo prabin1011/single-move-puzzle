@@ -1,79 +1,92 @@
 {
   "entities": {
-    "User": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "User",
+    "UserProfile": {
+      "title": "User Profile",
       "type": "object",
-      "description": "Represents a user within the Single Move Master application.",
+      "description": "Represents a user's game progress and statistics.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the user.",
-          "format": "uuid"
+          "description": "Unique identifier for the user, matching their Firebase Auth UID."
         },
-        "anonymousId": {
-          "type": "string",
-          "description": "Identifier for anonymous users. If the user is not anonymous, this field is null.",
-          "format": "uuid"
-        },
-        "username": {
-          "type": "string",
-          "description": "The user's chosen username.  May be null for anonymous users.",
-          "format": "string"
-        },
-        "email": {
-          "type": "string",
-          "description": "The user's email address. May be null for anonymous users.",
-          "format": "email"
-        },
-        "creationDate": {
-          "type": "string",
-          "description": "The date and time when the user account was created.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "creationDate"
-      ]
-    },
-    "LeaderboardEntry": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "LeaderboardEntry",
-      "type": "object",
-      "description": "Represents a user's entry in the leaderboard for a particular puzzle.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the leaderboard entry.",
-          "format": "uuid"
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to the User. (Relationship: User 1:N LeaderboardEntry)"
-        },
-        "puzzleId": {
-          "type": "string",
-          "description": "Identifier of the puzzle for which the score is recorded."
-        },
-        "score": {
+        "currentLevel": {
           "type": "number",
-          "description": "The user's score for the puzzle.  The meaning of score will vary by puzzle.",
-          "format": "number"
+          "description": "The user's current level in the game."
         },
-        "timestamp": {
+        "bestLevel": {
+          "type": "number",
+          "description": "The highest level the user has achieved."
+        },
+        "lastPlayed": {
           "type": "string",
-          "description": "The date and time when the score was achieved.",
+          "description": "The timestamp of when the user last played.",
           "format": "date-time"
+        },
+        "stats": {
+          "type": "object",
+          "description": "Aggregated statistics for the user's gameplay.",
+          "properties": {
+            "attempts": {
+              "type": "number",
+              "description": "Total number of puzzle attempts."
+            },
+            "successRate": {
+              "type": "number",
+              "description": "The user's puzzle success rate (0.0 to 1.0)."
+            }
+          }
         }
       },
-      "required": [
-        "id",
-        "userId",
-        "puzzleId",
-        "score",
-        "timestamp"
-      ]
+      "required": ["id", "currentLevel", "bestLevel", "lastPlayed"]
+    },
+    "Landmark": {
+      "title": "Landmark",
+      "type": "object",
+      "description": "Represents a curated puzzle landmark with metadata for difficulty and display.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the landmark."
+        },
+        "name": {
+          "type": "string",
+          "description": "The common name of the landmark."
+        },
+        "country": {
+          "type": "string",
+          "description": "The country where the landmark is located."
+        },
+        "category": {
+          "type": "string",
+          "description": "The visual category of the landmark image.",
+          "enum": ["architecture", "nature", "sky", "city", "interior", "abstract"]
+        },
+        "visualComplexity": {
+          "type": "string",
+          "description": "A rating of the visual complexity of the image.",
+          "enum": ["low", "medium", "high"]
+        },
+        "allowedGrids": {
+          "type": "array",
+          "description": "An array of grid sizes (e.g., 3, 4, 5) that are appropriate for this landmark.",
+          "items": {
+            "type": "number"
+          }
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "The URL to the curated image, hosted on a reliable CDN like Firebase Storage.",
+          "format": "uri"
+        },
+        "facts": {
+          "type": "array",
+          "description": "An array of curated, interesting facts about the landmark.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["id", "name", "country", "category", "visualComplexity", "allowedGrids", "imageUrl", "facts"]
     }
   },
   "auth": {
@@ -87,36 +100,23 @@
       {
         "path": "/users/{userId}",
         "definition": {
-          "entityName": "User",
+          "entityName": "UserProfile",
           "schema": {
-            "$ref": "#/backend/entities/User"
+            "$ref": "#/entities/UserProfile"
           },
-          "description": "Stores user profiles. The 'userId' parameter corresponds to the unique user identifier.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user."
-            }
-          ]
+          "description": "Stores user profiles and game progress. The 'userId' corresponds to the Firebase Auth UID."
         }
       },
       {
-        "path": "/leaderboardEntries/{leaderboardEntryId}",
+        "path": "/landmarks/{landmarkId}",
         "definition": {
-          "entityName": "LeaderboardEntry",
+          "entityName": "Landmark",
           "schema": {
-            "$ref": "#/backend/entities/LeaderboardEntry"
+            "$ref": "#/entities/Landmark"
           },
-          "description": "Stores leaderboard entries, associating each entry with a specific user and puzzle. The 'leaderboardEntryId' parameter corresponds to the unique leaderboard entry identifier.",
-          "params": [
-            {
-              "name": "leaderboardEntryId",
-              "description": "The unique identifier for the leaderboard entry."
-            }
-          ]
+          "description": "Stores the curated list of all landmarks and their associated metadata for puzzles."
         }
       }
-    ],
-    "reasoning": "This Firestore structure prioritizes authorization independence and efficient data access for the Single Move Master application. It supports user authentication (anonymous and password), leaderboard functionality, and potential future expansion.\n\n1.  **Users Collection:** Stores user profiles, including authentication information (id, anonymousId, email), creation date, and chosen username. This collection allows for easy user management and profile retrieval.\n\n2.  **Leaderboard Entries Collection:** Stores leaderboard entries, associating each entry with a specific user and puzzle. This structure enables efficient leaderboard queries and score tracking. The `userId` field establishes the relationship between leaderboard entries and users. To ensure Authorization Independence, the `puzzleId` is stored with the leaderboard entry to avoid needing to perform `get()` operations on other documents.\n\n**Authorization Independence & Security Rules:**\n\n*   The structure is designed to avoid hierarchical authorization dependencies (`get()` calls in security rules). User-owned data is stored in a path-based structure (`/users/{userId}`).  Leaderboard entries are associated with users via the `userId` field, but no `get()` operations are needed to validate the relationship because `puzzleId` is included in the document. The data model avoids using `get()` operations, thus enabling atomic batch writes.\n\n**QAPs (Rules are not Filters):**\n\n*   The segregation of data into separate collections based on access control requirements ensures that rules are not used as filters.  Listing operations on `/leaderboardEntries` can be secured based on the properties of the `LeaderboardEntry` itself, without needing to filter based on user roles or other external factors.\n\n**Debugging & Maintainability:**\n\n*   The use of descriptive field names and a consistent naming convention improves the clarity of the data structure.  Explicit state modeling (e.g., using a dedicated `status` field if needed in the future) makes debugging easier.\n\nThe structure allows for efficient queries and scalable storage, providing a solid foundation for the Single Move Master application."
+    ]
   }
 }

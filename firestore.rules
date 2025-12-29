@@ -1,17 +1,13 @@
 /**
- * Core Philosophy: This ruleset establishes a hybrid security model. User profile data is strictly private and owner-controlled, while leaderboard data is publicly readable to foster competition but write-restricted to the user who earned the score.
+ * Core Philosophy: This ruleset establishes a hybrid security model. User profile data is strictly private and owner-controlled, while landmark data is publicly readable to allow the game client to fetch puzzle content.
  *
- * Data Structure: The data is organized into two distinct, top-level collections: /users for private profiles and /leaderboardEntries for public scores. This flat structure prevents complex rule inheritance and simplifies queries.
+ * Data Structure: The data is organized into two distinct, top-level collections: /users for private profiles and /landmarks for public game content. This flat structure prevents complex rule inheritance and simplifies security.
  *
  * Key Security Decisions:
- * - User privacy is paramount; listing users in the /users collection is explicitly disallowed to prevent data scraping.
- * - Leaderboard entries are public to read, allowing any client (authenticated or not) to build and display leaderboards.
- * - Writes to the leaderboard are strictly controlled, ensuring users can only submit or manage their own scores.
- * - The default security posture is to deny access unless explicitly granted.
- *
- * Denormalization for Authorization: To ensure fast and secure writes to the leaderboard, each /leaderboardEntries document contains a `userId` field. This denormalization allows rules to validate ownership directly from the document itself, avoiding slow and costly `get()` calls to other collections.
- *
- * Structural Segregation: User-private data (/users) and public-readable data (/leaderboardEntries) are stored in separate collections. This is a secure and performant pattern that prevents accidental data leakage and simplifies rules for list operations.
+ * - User privacy is paramount; a user can only read or write their own document in the /users collection. Listing all users is disabled to prevent data scraping.
+ * - Landmark content is public to read, allowing any client to fetch the data needed to construct puzzles.
+ * - Writes to the /landmarks collection are disabled for clients to protect the integrity of the curated game content. Admins or server-side processes should be used for content management.
+ * - The default security posture is to deny all access unless explicitly granted.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -35,42 +31,39 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    /**
-     * Checks if the document exists AND the current user is the owner.
-     * CRITICAL for safe update/delete operations to prevent acting on non-existent data.
-     */
-    function isExistingOwner(userId) {
-      return isOwner(userId) && resource != null;
-    }
+    // User Profiles Collection
+    // ===================================
 
     /**
-     * @description Manages access to user profile documents. Ensures users can only access their own profile.
+     * @description Manages access to user profile documents. Ensures users can only access their own data.
      * @path /users/{userId}
-     * @allow (create): A new, authenticated user creating their own profile document at `/users/USER_UID`.
-     * @deny (get): An authenticated user trying to read another user's profile at `/users/OTHER_USER_UID`.
-     * @principle Restricts access to a user's own data tree and prevents user enumeration.
+     * @allow (read, write): A user accessing their own document at `/users/USER_UID`.
+     * @deny (list): Any attempt to list all user documents, protecting user privacy.
+     * @deny (write): A user trying to modify another user's profile.
      */
     match /users/{userId} {
-      allow get: if isOwner(userId);
-      allow list: if false;
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isOwner(userId) && resource != null && request.resource.data.id == resource.data.id;
-      allow delete: if isOwner(userId) && resource != null;
+      allow read, write: if isOwner(userId);
+      allow list: if false; // Prevent enumeration of users
     }
 
+    // Landmarks Collection
+    // ===================================
+
     /**
-     * @description Secures leaderboard entries. Allows public reads for all users but restricts writes to the score owner.
-     * @path /leaderboardEntries/{leaderboardEntryId}
-     * @allow (list): Any client (authenticated or not) listing all leaderboard entries to build a leaderboard view.
-     * @deny (create): An authenticated user trying to create a leaderboard entry for another user (`request.resource.data.userId != request.auth.uid`).
-     * @principle Enforces a "Public Read, Owner-Only Write" pattern, critical for public-facing data with user-specific contributions.
+     * @description Secures the curated landmark content. Allows public reads for the game client but blocks all client-side writes.
+     * @path /landmarks/{landmarkId}
+     * @allow (get, list): Any client can read landmark data to display puzzles.
+     * @deny (write): All client-side create, update, and delete operations are blocked to protect content integrity.
      */
+    match /landmarks/{landmarkId} {
+      allow get, list: if true;
+      allow write: if false; // Protect curated content from client modification
+    }
+
+    // DEPRECATED - This collection is no longer in use per the new data model.
+    // This is kept temporarily to show the transition, but would be removed.
     match /leaderboardEntries/{leaderboardEntryId} {
-      allow get: if true;
-      allow list: if true;
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update: if isExistingOwner(resource.data.userId) && request.resource.data.userId == resource.data.userId;
-      allow delete: if isExistingOwner(resource.data.userId);
+        allow read, write: if false;
     }
   }
 }

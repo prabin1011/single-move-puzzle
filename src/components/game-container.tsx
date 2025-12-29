@@ -45,8 +45,15 @@ export default function GameContainer() {
   const [levelIndex, setLevelIndex] = useState(0);
   const [currentLevel, setCurrentLevel] = useState<Level>(levels[0]);
 
+  // Dynamic grid size for increasing difficulty
+  const currentGridSize = useMemo(() => {
+    // Starts at 3x3, increases to 4x4 at level 3, 5x5 at level 6, etc.
+    // Capped at 5x5 for now to keep it playable.
+    return Math.min(3 + Math.floor(levelIndex / 3), 5);
+  }, [levelIndex]);
+
   const [currentPuzzle, setCurrentPuzzle] = useState(() =>
-    generatePuzzle(currentLevel, "") // image will be injected later
+    generatePuzzle(currentLevel, "", currentGridSize) // image will be injected later
   );
   const [retryCount, setRetryCount] = useState(0);
 
@@ -74,12 +81,12 @@ export default function GameContainer() {
     }
   }, [state]);
 
-  // Whenever the image changes, regenerate the puzzle
+  // Whenever the image or grid size changes, regenerate the puzzle
   useEffect(() => {
     if (!currentImage) return;
-    setCurrentPuzzle(generatePuzzle(currentLevel, currentImage));
+    setCurrentPuzzle(generatePuzzle(currentLevel, currentImage, currentGridSize));
     setRetryCount(0);
-  }, [currentImage, currentLevel]);
+  }, [currentImage, currentLevel, currentGridSize]);
 
   const { scrambledBoard, solvedBoard, swapped, imageUrl } = useMemo(() => {
     return currentPuzzle;
@@ -102,18 +109,25 @@ export default function GameContainer() {
   const resetForRetry = () => {
     setRetryCount((prev) => prev + 1);
     if (currentImage) {
-      setCurrentPuzzle(generatePuzzle(currentLevel, currentImage));
+      setCurrentPuzzle(generatePuzzle(currentLevel, currentImage, currentGridSize));
     }
     setGameState("PLAYING");
   };
 
   const nextLevel = () => {
-    const newIndex = (levelIndex + 1) % levels.length;
-    const newLevel = levels[newIndex];
+    const newIndex = (levelIndex + 1); // Don't loop back for now
+    if (newIndex >= levels.length) {
+        // For now, let's just reset. Later we can add a "You won!" screen.
+        setLevelIndex(0);
+        setCurrentLevel(levels[0]);
+        setCurrentFacts(levels[0].facts);
+    } else {
+        const newLevel = levels[newIndex];
+        setLevelIndex(newIndex);
+        setCurrentLevel(newLevel);
+        setCurrentFacts(newLevel.facts);
+    }
 
-    setLevelIndex(newIndex);
-    setCurrentLevel(newLevel);
-    setCurrentFacts(newLevel.facts);
 
     setGameState("PREVIEW");
     setShowFacts(false);
@@ -139,7 +153,7 @@ export default function GameContainer() {
               {currentLevel.place}
             </CardTitle>
             <CardDescription className="text-muted-foreground">
-              Memorize the image, then find the single swap.
+              Level {levelIndex + 1} &bull; {currentGridSize}x{currentGridSize} Grid
             </CardDescription>
           </>
         )}
@@ -208,7 +222,7 @@ export default function GameContainer() {
           <PuzzleBoard
             key={puzzleKey}
             imageUrl={imageUrl}
-            grid={currentLevel.grid}
+            grid={currentGridSize}
             boardState={scrambledBoard}
             targetState={solvedBoard}
             swappedIndices={swapped}

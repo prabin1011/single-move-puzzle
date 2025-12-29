@@ -7,10 +7,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { AppLogo } from '@/components/icons';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useAuth, useUser } from '@/firebase';
+import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
+import { Loader2 } from 'lucide-react';
 
 export default function Home() {
   const router = useRouter();
   const [highestLevel, setHighestLevel] = useState(0);
+  const auth = useAuth();
+  const { user, isUserLoading } = useUser();
 
   useEffect(() => {
     const savedLevel = localStorage.getItem('highestLevel');
@@ -19,10 +24,26 @@ export default function Home() {
     }
   }, []);
 
+  useEffect(() => {
+    // When auth is ready and there's no user, sign in anonymously.
+    if (!isUserLoading && !user && auth) {
+      initiateAnonymousSignIn(auth);
+    }
+  }, [isUserLoading, user, auth]);
+
   const handleNewGame = () => {
     localStorage.removeItem('currentLevelIndex');
     router.push('/play');
   };
+
+  if (isUserLoading || !user) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-background">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        <p className="mt-4 text-muted-foreground">Connecting...</p>
+      </main>
+    );
+  }
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-background">
@@ -43,12 +64,12 @@ export default function Home() {
             <p className="flex items-start gap-3"><span className="mt-1 text-primary">✓</span><span>Learn a few fun facts.</span></p>
           </div>
           <div className="flex flex-col space-y-3 px-6">
-            <Button size="lg" className="w-full" onClick={handleNewGame}>
+            <Button size="lg" className="w-full" onClick={handleNewGame} disabled={isUserLoading}>
               New Game
             </Button>
             {highestLevel > 0 && (
               <Link href="/play" className="w-full">
-                <Button size="lg" variant="secondary" className="w-full">
+                <Button size="lg" variant="secondary" className="w-full" disabled={isUserLoading}>
                   Continue (Level {highestLevel + 1})
                 </Button>
               </Link>

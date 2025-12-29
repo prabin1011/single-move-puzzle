@@ -14,7 +14,7 @@ export interface Level {
 }
 
 // The 'grid' property is removed from here. It will now be determined by the game-config.
-// All images have been replaced with stable URLs from picsum.photos to guarantee availability.
+// All images have been replaced with stable URLs from Wikimedia to guarantee availability and relevance.
 export const levels: Level[] = [
   // 5 Easy Levels (3x3)
   {
@@ -25,7 +25,7 @@ export const levels: Level[] = [
     hint: "Focus on the structure's base.",
     category: "architecture",
     visualComplexity: "medium",
-    image: { url: "https://picsum.photos/seed/lvl_001/600/600", hint: "paris france" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Tour_Eiffel_Wikimedia_Commons.jpg/600px-Tour_Eiffel_Wikimedia_Commons.jpg", hint: "paris france" }
   },
   {
     id: "lvl_002",
@@ -35,7 +35,7 @@ export const levels: Level[] = [
     hint: "Look at the arches.",
     category: "architecture",
     visualComplexity: "high",
-    image: { url: "https://picsum.photos/seed/lvl_002/600/600", hint: "rome italy" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Colosseo_2020.jpg/600px-Colosseo_2020.jpg", hint: "rome italy" }
   },
   {
     id: "lvl_003",
@@ -45,7 +45,7 @@ export const levels: Level[] = [
     hint: "Focus on the snow-capped peak.",
     category: "nature",
     visualComplexity: "low",
-    image: { url: "https://picsum.photos/seed/lvl_003/600/600", hint: "japan fuji" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Skies_and_Mt._Fuji_seen_from_Lake_Tanuki_2013_November.jpg/600px-Skies_and_Mt._Fuji_seen_from_Lake_Tanuki_2013_November.jpg", hint: "japan fuji" }
   },
   {
     id: "lvl_004",
@@ -55,7 +55,7 @@ export const levels: Level[] = [
     hint: "Look for the blue domes.",
     category: "city",
     visualComplexity: "medium",
-    image: { url: "https://picsum.photos/seed/lvl_004/600/600", hint: "greece santorini" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Oia%2C_Santorini_%283024888372%29.jpg/600px-Oia%2C_Santorini_%283024888372%29.jpg", hint: "greece santorini" }
   },
   {
     id: "lvl_005",
@@ -65,7 +65,7 @@ export const levels: Level[] = [
     hint: "The sky is the main feature.",
     category: "sky",
     visualComplexity: "low",
-    image: { url: "https://picsum.photos/seed/lvl_005/600/600", hint: "aurora sky" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Aurora_in_Abisko_near_Tornetr%C3%A4sk.jpg/600px-Aurora_in_Abisko_near_Tornetr%C3%A4sk.jpg", hint: "aurora sky" }
   },
 
   // 10 Easy-Medium Levels (4x4)
@@ -77,7 +77,7 @@ export const levels: Level[] = [
     hint: "Focus on the tablet.",
     category: "architecture",
     visualComplexity: "medium",
-    image: { url: "https://picsum.photos/seed/lvl_006/600/600", hint: "new-york usa" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Statue_of_Liberty_7.jpg/600px-Statue_of_Liberty_7.jpg", hint: "new-york usa" }
   },
   {
     id: "lvl_007",
@@ -87,7 +87,7 @@ export const levels: Level[] = [
     hint: "Look at the central dome.",
     category: "architecture",
     visualComplexity: "medium",
-    image: { url: "https://picsum.photos/seed/lvl_007/600/600", hint: "agra india" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Taj_Mahal%2C_Agra%2C_India_edit3.jpg/600px-Taj_Mahal%2C_Agra%2C_India_edit3.jpg", hint: "agra india" }
   },
   {
     id: "lvl_008",
@@ -97,7 +97,7 @@ export const levels: Level[] = [
     hint: "Focus on the main structures.",
     category: "nature",
     visualComplexity: "high",
-    image: { url: "https://picsum.photos/seed/lvl_008/600/600", hint: "peru inca" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Machu_Picchu%2C_Peru.jpg/600px-Machu_Picchu%2C_Peru.jpg", hint: "peru inca" }
   },
   {
     id: "lvl_009",
@@ -107,7 +107,7 @@ export const levels: Level[] = [
     hint: "Look at the path of the wall.",
     category: "nature",
     visualComplexity: "high",
-    image: { url: "https://picsum.photos/seed/lvl_009/600/600", hint: "china wall" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/The_Great_Wall_of_China_at_Jinshanling-edit.jpg/600px-The_Great_Wall_of_China_at_Jinshanling-edit.jpg", hint: "china wall" }
   },
   {
     id: "lvl_010",
@@ -117,7 +117,7 @@ export const levels: Level[] = [
     hint: "Focus on the alignment of the pyramids.",
     category: "nature",
     visualComplexity: "high",
-    image: { url: "https://picsum.photos/seed/lvl_010/600/600", hint: "egypt pyramids" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/All_Gizah_Pyramids.jpg/600px-All_Gizah_Pyramids.jpg", hint: "egypt pyramids" }
   },
    {
     id: "lvl_011",
@@ -127,7 +127,7 @@ export const levels: Level[] = [
     hint: "Look at the statue's arms.",
     category: "architecture",
     visualComplexity: "medium",
-    image: { url: "https://picsum.photos/seed/lvl_011/600/600", hint: "brazil rio" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Christ_the_Redeemer_in_Rio_de_Janeiro_from_P%C3%A3o_de_A%C3%A7%C3%BAcar.jpg/600px-Christ_the_Redeemer_in_Rio_de_Janeiro_from_P%C3%A3o_de_A%C3%A7%C3%BAcar.jpg", hint: "brazil rio" }
   },
   {
     id: "lvl_012",
@@ -137,7 +137,7 @@ export const levels: Level[] = [
     hint: "Focus on the main Treasury building.",
     category: "architecture",
     visualComplexity: "high",
-    image: { url: "https://picsum.photos/seed/lvl_012/600/600", hint: "jordan petra" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/20190520_Petra_Ammann.jpg/600px-20190520_Petra_Ammann.jpg", hint: "jordan petra" }
   },
   {
     id: "lvl_013",
@@ -147,7 +147,7 @@ export const levels: Level[] = [
     hint: "Look for the river at the bottom.",
     category: "nature",
     visualComplexity: "high",
-    image: { url: "https://picsum.photos/seed/lvl_013/600/600", hint: "arizona usa" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Dawn_on_the_S_rim_of_the_Grand_Canyon_%288645178272%29.jpg/600px-Dawn_on_the_S_rim_of_the_Grand_Canyon_%288645178272%29.jpg", hint: "arizona usa" }
   },
   {
     id: "lvl_014",
@@ -157,7 +157,7 @@ export const levels: Level[] = [
     hint: "Focus on the gondolas.",
     category: "city",
     visualComplexity: "high",
-    image: { url: "https://picsum.photos/seed/lvl_014/600/600", hint: "venice italy" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Canal_Grande_in_Venedig.jpg/600px-Canal_Grande_in_Venedig.jpg", hint: "venice italy" }
   },
   {
     id: "lvl_015",
@@ -167,7 +167,7 @@ export const levels: Level[] = [
     hint: "Look at the 'sails' of the roof.",
     category: "architecture",
     visualComplexity: "medium",
-    image: { url: "https://picsum.photos/seed/lvl_015/600/600", hint: "sydney australia" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Sydney_Opera_House_and_Harbour_Bridge_Dusk_%282%29_2019-06-21.jpg/600px-Sydney_Opera_House_and_Harbour_Bridge_Dusk_%282%29_2019-06-21.jpg", hint: "sydney australia" }
   },
 
   // 15 Medium Levels (5x5)
@@ -179,7 +179,7 @@ export const levels: Level[] = [
     hint: "The building's pointed spire is key.",
     category: "architecture",
     visualComplexity: "medium",
-    image: { url: "https://picsum.photos/seed/lvl_016/600/600", hint: "dubai uae" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/en/thumb/9/93/Burj_Khalifa.jpg/600px-Burj_Khalifa.jpg", hint: "dubai uae" }
   },
   {
     id: "lvl_017",
@@ -189,7 +189,7 @@ export const levels: Level[] = [
     hint: "Focus on the glass pyramid.",
     category: "architecture",
     visualComplexity: "high",
-    image: { url: "https://picsum.photos/seed/lvl_017/600/600", hint: "paris france museum" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Louvre_Museum_Wikimedia_Commons.jpg/600px-Louvre_Museum_Wikimedia_Commons.jpg", hint: "paris france museum" }
   },
   {
     id: "lvl_018",
@@ -199,7 +199,7 @@ export const levels: Level[] = [
     hint: "The colorful onion domes are iconic.",
     category: "architecture",
     visualComplexity: "high",
-    image: { url: "https://picsum.photos/seed/lvl_018/600/600", hint: "moscow russia" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Saint_Basil%27s_Cathedral_in_Red_Square_at_night.jpg/600px-Saint_Basil%27s_Cathedral_in_Red_Square_at_night.jpg", hint: "moscow russia" }
   },
   {
     id: "lvl_019",
@@ -209,7 +209,7 @@ export const levels: Level[] = [
     hint: "The castle is perched on a rugged hill.",
     category: "architecture",
     visualComplexity: "high",
-    image: { url: "https://picsum.photos/seed/lvl_019/600/600", hint: "germany castle" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Schloss_Neuschwanstein_2013.jpg/600px-Schloss_Neuschwanstein_2013.jpg", hint: "germany castle" }
   },
     {
     id: "lvl_020",
@@ -219,7 +219,7 @@ export const levels: Level[] = [
     hint: "Focus on the five main towers.",
     category: "architecture",
     visualComplexity: "high",
-    image: { url: "https://picsum.photos/seed/lvl_020/600/600", hint: "cambodia temple" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Angkor_Wat_in_the_evening.jpg/600px-Angkor_Wat_in_the_evening.jpg", hint: "cambodia temple" }
   },
   {
     id: "lvl_021",
@@ -229,7 +229,7 @@ export const levels: Level[] = [
     hint: "The capsules are on the outside of the wheel.",
     category: "architecture",
     visualComplexity: "medium",
-    image: { url: "https://picsum.photos/seed/lvl_021/600/600", hint: "london uk" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/London_Eye_-_October_2008.jpg/600px-London_Eye_-_October_2008.jpg", hint: "london uk" }
   },
   {
     id: "lvl_022",
@@ -239,7 +239,7 @@ export const levels: Level[] = [
     hint: "Look for the large central dome and minarets.",
     category: "architecture",
     visualComplexity: "high",
-    image: { url: "https://picsum.photos/seed/lvl_022/600/600", hint: "istanbul turkey" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Hagia_Sophia_Mars_2013.jpg/600px-Hagia_Sophia_Mars_2013.jpg", hint: "istanbul turkey" }
   },
   {
     id: "lvl_023",
@@ -249,7 +249,7 @@ export const levels: Level[] = [
     hint: "The Parthenon temple is the most prominent feature.",
     category: "architecture",
     visualComplexity: "high",
-    image: { url: "https://picsum.photos/seed/lvl_023/600/600", hint: "athens greece" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/The_Acropolis_of_Athens_viewed_from_the_Hill_of_the_Muses_%2814343834484%29.jpg/600px-The_Acropolis_of_Athens_viewed_from_the_Hill_of_the_Muses_%2814343834484%29.jpg", hint: "athens greece" }
   },
   {
     id: "lvl_024",
@@ -259,7 +259,7 @@ export const levels: Level[] = [
     hint: "The two large towers are key.",
     category: "architecture",
     visualComplexity: "medium",
-    image: { url: "https://picsum.photos/seed/lvl_024/600/600", hint: "san-francisco usa" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/GoldenGateBridge-001.jpg/600px-GoldenGateBridge-001.jpg", hint: "san-francisco usa" }
   },
   {
     id: "lvl_025",
@@ -269,7 +269,7 @@ export const levels: Level[] = [
     hint: "The cranes and unique spires are a giveaway.",
     category: "architecture",
     visualComplexity: "high",
-    image: { url: "https://picsum.photos/seed/lvl_025/600/600", hint: "barcelona spain" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Sagrada_Familia_by_Zeres_2015.jpg/600px-Sagrada_Familia_by_Zeres_2015.jpg", hint: "barcelona spain" }
   },
   {
     id: "lvl_026",
@@ -279,7 +279,7 @@ export const levels: Level[] = [
     hint: "The building's shape resembles organ pipes.",
     category: "architecture",
     visualComplexity: "medium",
-    image: { url: "https://picsum.photos/seed/lvl_026/600/600", hint: "reykjavik iceland" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Hallgr%C3%ADmskirkja_in_Reykjavik_DSC01426.JPG/600px-Hallgr%C3%ADmskirkja_in_Reykjavik_DSC01426.JPG", hint: "reykjavik iceland" }
   },
   {
     id: "lvl_027",
@@ -289,7 +289,7 @@ export const levels: Level[] = [
     hint: "Look for the endless path of red gates.",
     category: "architecture",
     visualComplexity: "high",
-    image: { url: "https://picsum.photos/seed/lvl_027/600/600", hint: "kyoto japan" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Fushimi_Inari-taisha_on_a_busy_day.jpg/600px-Fushimi_Inari-taisha_on_a_busy_day.jpg", hint: "kyoto japan" }
   },
   {
     id: "lvl_028",
@@ -299,7 +299,7 @@ export const levels: Level[] = [
     hint: "The building has a distinctive triangular shape.",
     category: "architecture",
     visualComplexity: "medium",
-    image: { url: "https://picsum.photos/seed/lvl_028/600/600", hint: "new-york city" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Flatiron_Building_in_snow_-_edit2.jpg/600px-Flatiron_Building_in_snow_-_edit2.jpg", hint: "new-york city" }
   },
   {
     id: "lvl_029",
@@ -309,7 +309,7 @@ export const levels: Level[] = [
     hint: "A tall, pointed glass skyscraper.",
     category: "architecture",
     visualComplexity: "low",
-    image: { url: "https://picsum.photos/seed/lvl_029/600/600", hint: "london uk" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/The_Shard_and_The_London_Bridge_Station._%28114187391%29.jpeg/600px-The_Shard_and_The_London_Bridge_Station._%28114187391%29.jpeg", hint: "london uk" }
   },
   {
     id: "lvl_030",
@@ -319,7 +319,7 @@ export const levels: Level[] = [
     hint: "The building has a unique, curvy, metallic structure.",
     category: "architecture",
     visualComplexity: "high",
-    image: { url: "https://picsum.photos/seed/lvl_030/600/600", hint: "bilbao spain" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Guggenheim_Museum_Bilbao_July_2010_01.jpg/600px-Guggenheim_Museum_Bilbao_July_2010_01.jpg", hint: "bilbao spain" }
   },
   
   // 20 Hard Levels (6x6)
@@ -331,7 +331,7 @@ export const levels: Level[] = [
     hint: "The house is integrated with a waterfall.",
     category: "architecture",
     visualComplexity: "high",
-    image: { url: "https://picsum.photos/seed/lvl_031/600/600", hint: "pennsylvania usa" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Fallingwater_in_July_2017.jpg/600px-Fallingwater_in_July_2017.jpg", hint: "pennsylvania usa" }
   },
   {
     id: "lvl_032",
@@ -341,7 +341,7 @@ export const levels: Level[] = [
     hint: "Look for the structure of connected spheres.",
     category: "architecture",
     visualComplexity: "medium",
-    image: { url: "https://picsum.photos/seed/lvl_032/600/600", hint: "brussels belgium" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Atomium_-_Brussels_%28309503348%29.jpg/600px-Atomium_-_Brussels_%28309503348%29.jpg", hint: "brussels belgium" }
   },
   {
     id: "lvl_033",
@@ -351,7 +351,7 @@ export const levels: Level[] = [
     hint: "The two bell towers and rose window are famous.",
     category: "architecture",
     visualComplexity: "high",
-    image: { url: "https://picsum.photos/seed/lvl_033/600/600", hint: "paris france" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Notre-Dame_de_Paris_au_printemps_2019.jpg/600px-Notre-Dame_de_Paris_au_printemps_2019.jpg", hint: "paris france" }
   },
   {
     id: "lvl_034",
@@ -361,7 +361,7 @@ export const levels: Level[] = [
     hint: "The tower is famously tilted.",
     category: "architecture",
     visualComplexity: "low",
-    image: { url: "https://picsum.photos/seed/lvl_034/600/600", hint: "pisa italy" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/The_Leaning_Tower_of_Pisa_SB.jpg/600px-The_Leaning_Tower_of_Pisa_SB.jpg", hint: "pisa italy" }
   },
   {
     id: "lvl_035",
@@ -371,7 +371,7 @@ export const levels: Level[] = [
     hint: "Look for the three towers with a ship-like structure on top.",
     category: "architecture",
     visualComplexity: "medium",
-    image: { url: "https://picsum.photos/seed/lvl_035/600/600", hint: "singapore city" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Marina_Bay_Sands_in_the_evening_-_20101120.jpg/600px-Marina_Bay_Sands_in_the_evening_-_20101120.jpg", hint: "singapore city" }
   },
   {
     id: "lvl_036",
@@ -381,7 +381,7 @@ export const levels: Level[] = [
     hint: "Look for the twin towers connected by a bridge.",
     category: "architecture",
     visualComplexity: "medium",
-    image: { url: "https://picsum.photos/seed/lvl_036/600/600", hint: "kuala-lumpur malaysia" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Petronas_Towers_in_the_evening.jpg/600px-Petronas_Towers_in_the_evening.jpg", hint: "kuala-lumpur malaysia" }
   },
   {
     id: "lvl_037",
@@ -391,7 +391,7 @@ export const levels: Level[] = [
     hint: "A classic art deco skyscraper with a tall antenna.",
     category: "architecture",
     visualComplexity: "medium",
-    image: { url: "https://picsum.photos/seed/lvl_037/600/600", hint: "new-york city" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Empire_State_Building_from_the_Top_of_the_Rock.jpg/600px-Empire_State_Building_from_the_Top_of_the_Rock.jpg", hint: "new-york city" }
   },
   {
     id: "lvl_038",
@@ -401,7 +401,7 @@ export const levels: Level[] = [
     hint: "A very tall, thin tower with a large observation pod.",
     category: "architecture",
     visualComplexity: "low",
-    image: { url: "https://picsum.photos/seed/lvl_038/600/600", hint: "toronto canada" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Toronto_-_ON_-_CN_Tower_as_seen_from_the_ferry.jpg/600px-Toronto_-_ON_-_CN_Tower_as_seen_from_the_ferry.jpg", hint: "toronto canada" }
   },
   {
     id: "lvl_039",
@@ -411,7 +411,7 @@ export const levels: Level[] = [
     hint: "A castle-like abbey on a small island.",
     category: "architecture",
     visualComplexity: "high",
-    image: { url: "https://picsum.photos/seed/lvl_039/600/600", hint: "normandy france" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Mont-Saint-Michel_by_night.jpg/600px-Mont-Saint-Michel_by_night.jpg", hint: "normandy france" }
   },
   {
     id: "lvl_040",
@@ -421,7 +421,7 @@ export const levels: Level[] = [
     hint: "A futuristic tower with a saucer-shaped top.",
     category: "architecture",
     visualComplexity: "low",
-    image: { url: "https://picsum.photos/seed/lvl_040/600/600", hint: "seattle usa" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Seattle_-_Space_Needle_and_surroundings_from_Kerry_Park.jpg/600px-Seattle_-_Space_Needle_and_surroundings_from_Kerry_Park.jpg", hint: "seattle usa" }
   },
   {
     id: "lvl_041",
@@ -431,7 +431,7 @@ export const levels: Level[] = [
     hint: "A skyscraper that looks like a stack of pagodas.",
     category: "architecture",
     visualComplexity: "medium",
-    image: { url: "https://picsum.photos/seed/lvl_041/600/600", hint: "taipei taiwan" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Taipei_101_and_Blue_Sky.jpg/600px-Taipei_101_and_Blue_Sky.jpg", hint: "taipei taiwan" }
   },
   {
     id: "lvl_042",
@@ -441,7 +441,7 @@ export const levels: Level[] = [
     hint: "A spooky-looking castle on a hill.",
     category: "architecture",
     visualComplexity: "high",
-    image: { url: "https://picsum.photos/seed/lvl_042/600/600", hint: "romania castle" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Castelul_Bran_2.jpg/600px-Castelul_Bran_2.jpg", hint: "romania castle" }
   },
   {
     id: "lvl_043",
@@ -451,7 +451,7 @@ export const levels: Level[] = [
     hint: "The large step-pyramid is the central feature.",
     category: "architecture",
     visualComplexity: "medium",
-    image: { url: "https://picsum.photos/seed/lvl_043/600/600", hint: "mexico maya" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Chichen_Itza_3.jpg/600px-Chichen_Itza_3.jpg", hint: "mexico maya" }
   },
   {
     id: "lvl_044",
@@ -461,7 +461,7 @@ export const levels: Level[] = [
     hint: "Large stone heads on a grassy hill.",
     category: "nature",
     visualComplexity: "medium",
-    image: { url: "https://picsum.photos/seed/lvl_044/600/600", hint: "easter-island chile" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Moai_Rano_raraku.jpg/600px-Moai_Rano_raraku.jpg", hint: "easter-island chile" }
   },
   {
     id: "lvl_045",
@@ -471,7 +471,7 @@ export const levels: Level[] = [
     hint: "Look for ornate archways and detailed tile patterns.",
     category: "interior",
     visualComplexity: "high",
-    image: { url: "https://picsum.photos/seed/lvl_045/600/600", hint: "granada spain" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Patio_de_los_Leones%2C_Alhambra.jpg/600px-Patio_de_los_Leones%2C_Alhambra.jpg", hint: "granada spain" }
   },
   {
     id: "lvl_046",
@@ -481,7 +481,7 @@ export const levels: Level[] = [
     hint: "A large, grand palace with a famous balcony.",
     category: "architecture",
     visualComplexity: "high",
-    image: { url: "https://picsum.photos/seed/lvl_046/600/600", hint: "london uk" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Buckingham_Palace_from_The_Queen_Victoria_Memorial_-_DSC00412_-_EDIT.JPG/600px-Buckingham_Palace_from_The_Queen_Victoria_Memorial_-_DSC00412_-_EDIT.JPG", hint: "london uk" }
   },
   {
     id: "lvl_047",
@@ -491,7 +491,7 @@ export const levels: Level[] = [
     hint: "Look for traditional Chinese palace architecture and red walls.",
     category: "architecture",
     visualComplexity: "high",
-    image: { url: "https://picsum.photos/seed/lvl_047/600/600", hint: "beijing china" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Forbidden_City_Beijing_Shenwumen_Gate.jpg/600px-Forbidden_City_Beijing_Shenwumen_Gate.jpg", hint: "beijing china" }
   },
   {
     id: "lvl_048",
@@ -501,7 +501,7 @@ export const levels: Level[] = [
     hint: "A large classical gate topped with a horse chariot statue.",
     category: "architecture",
     visualComplexity: "medium",
-    image: { url: "https://picsum.photos/seed/lvl_048/600/600", hint: "berlin germany" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Brandenburger_Tor_abends.jpg/600px-Brandenburger_Tor_abends.jpg", hint: "berlin germany" }
   },
   {
     id: "lvl_049",
@@ -511,7 +511,7 @@ export const levels: Level[] = [
     hint: "A massive dome and a large, colonnaded square.",
     category: "architecture",
     visualComplexity: "high",
-    image: { url: "https://picsum.photos/seed/lvl_049/600/600", hint: "vatican city" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/St_Peter%27s_Basilica_and_St_Peter%27s_Square%2C_Vatican_City_-_April_2007.jpg/600px-St_Peter%27s_Basilica_and_St_Peter%27s_Square%2C_Vatican_City_-_April_2007.jpg", hint: "vatican city" }
   },
   {
     id: "lvl_050",
@@ -521,7 +521,7 @@ export const levels: Level[] = [
     hint: "Large white letters on a hillside.",
     category: "nature",
     visualComplexity: "low",
-    image: { url: "https://picsum.photos/seed/lvl_050/600/600", hint: "los-angeles usa" }
+    image: { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Hollywood_Sign_%28Zuschnitt%29.jpg/600px-Hollywood_Sign_%28Zuschnitt%29.jpg", hint: "los-angeles usa" }
   }
 ];
 

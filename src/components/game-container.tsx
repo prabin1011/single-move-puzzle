@@ -32,6 +32,7 @@ import {
   Info,
   Play,
   Loader2,
+  PartyPopper,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -65,7 +66,7 @@ export default function GameContainer() {
   const [retryCount, setRetryCount] = useState(0);
 
   const [gameState, setGameState] = useState<
-    "READY" | "PREVIEW" | "PLAYING" | "SOLVED" | "FAILED" | "GAME_OVER"
+    "READY" | "PREVIEW" | "PLAYING" | "SOLVED" | "FAILED" | "GAME_OVER" | "ALL_LEVELS_COMPLETE"
   >("READY");
   const [showFacts, setShowFacts] = useState(false);
   
@@ -108,7 +109,7 @@ export default function GameContainer() {
 
   const currentLevelData = useMemo(() => {
     if (isComponentLoading || levels.length === 0) return null;
-    return levels[levelIndex % levels.length];
+    return levels[levelIndex];
   }, [levelIndex, levels, isComponentLoading]);
 
   // Generate the puzzle for the current level
@@ -142,7 +143,14 @@ export default function GameContainer() {
 
 
   const handleSuccess = async () => {
-    setGameState("SOLVED");
+    // Check if this was the last level
+    if (levelIndex === levels.length - 1) {
+      setGameState("ALL_LEVELS_COMPLETE");
+      localStorage.removeItem('currentLevelIndex');
+      localStorage.removeItem('highestLevel');
+    } else {
+      setGameState("SOLVED");
+    }
     setTimeout(() => setShowFacts(true), 500);
   };
 
@@ -165,8 +173,6 @@ export default function GameContainer() {
   };
 
   const restartGame = () => {
-    // This function will now rely on the "New Game" button from the home page
-    // to properly shuffle and set up the new game state.
     router.push('/');
   }
 
@@ -298,6 +304,19 @@ export default function GameContainer() {
               </CardDescription>
             </>
         )}
+        {gameState === "ALL_LEVELS_COMPLETE" && (
+          <>
+            <div className="flex justify-center text-yellow-400">
+              <PartyPopper className="h-16 w-16" />
+            </div>
+            <CardTitle className="text-3xl font-bold pt-4">
+              Congratulations!
+            </CardTitle>
+            <CardDescription className="text-muted-foreground">
+              You have completed all {levels.length} levels!
+            </CardDescription>
+          </>
+        )}
       </CardHeader>
 
       <CardContent className="flex flex-col items-center gap-6 px-4 sm:px-6">
@@ -370,6 +389,13 @@ export default function GameContainer() {
                 <p>You successfully completed {levelIndex} {levelIndex === 1 ? 'level' : 'levels'}.</p>
             </div>
         )}
+        
+        {(gameState === "ALL_LEVELS_COMPLETE") && (
+          <div className="text-center">
+            <p>You're a true world explorer!</p>
+            <p>Thanks for playing.</p>
+          </div>
+        )}
 
       </CardContent>
 
@@ -399,9 +425,9 @@ export default function GameContainer() {
             </div>
         )}
 
-        {gameState === "GAME_OVER" && (
+        {(gameState === "GAME_OVER" || gameState === "ALL_LEVELS_COMPLETE") && (
             <Button onClick={restartGame} size="lg" className="w-full">
-                New Game
+                Play Again
             </Button>
         )}
 
@@ -427,5 +453,3 @@ export default function GameContainer() {
     </Card>
   );
 }
-
-    

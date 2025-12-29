@@ -6,6 +6,10 @@ export interface Level {
   facts: string[];
   hint: string;
   difficulty: 'easy' | 'medium' | 'hard' | 'expert' | 'master' | 'insane';
+  image: {
+    url: string;
+    hint: string;
+  };
 }
 
 // Grid size is now determined by the game container based on level index, not by this data.
@@ -21,7 +25,11 @@ export const levels: Level[] = [
         "It is the most-visited paid monument in the world."
     ],
     hint: "Focus on the structure's base.",
-    difficulty: "easy"
+    difficulty: "easy",
+    image: {
+        url: "https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?q=80&w=600&h=600&fit=crop",
+        hint: "paris france"
+    }
   },
   {
       id: "lvl_002",
@@ -33,7 +41,11 @@ export const levels: Level[] = [
           "It's estimated that over 400,000 people and 1 million animals died within its walls."
       ],
       hint: "Look at the arches.",
-      difficulty: "easy"
+      difficulty: "easy",
+      image: {
+        url: "https://images.unsplash.com/photo-1552832230-c01979b880ca?q=80&w=600&h=600&fit=crop",
+        hint: "rome italy"
+      }
   },
   // 4x4 Grid
   {
@@ -46,7 +58,11 @@ export const levels: Level[] = [
       "The seven spikes on the crown represent the seven oceans and seven continents of the world."
     ],
     hint: "Focus on the tablet.",
-    difficulty: "medium"
+    difficulty: "medium",
+    image: {
+        url: "https://images.unsplash.com/photo-1503575689137-5dc338426774?q=80&w=600&h=600&fit=crop",
+        hint: "new-york usa"
+    }
   },
   {
     id: "lvl_004",
@@ -58,7 +74,11 @@ export const levels: Level[] = [
       "Over 1,000 elephants were used to transport building materials during its construction."
     ],
     hint: "Look at the central dome.",
-    difficulty: "medium"
+    difficulty: "medium",
+    image: {
+        url: "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?q=80&w=600&h=600&fit=crop",
+        hint: "agra india"
+    }
   },
   // 5x5 Grid
   {
@@ -71,7 +91,11 @@ export const levels: Level[] = [
         "It's constructed of dry-stone walls, where builders cut stones to fit so tightly together that no mortar was needed."
     ],
     hint: "Focus on the main structures.",
-    difficulty: "hard"
+    difficulty: "hard",
+    image: {
+        url: "https://images.unsplash.com/photo-1526392060635-9d6019884377?q=80&w=600&h=600&fit=crop",
+        hint: "peru inca"
+    }
   },
   {
     id: "lvl_006",
@@ -83,7 +107,11 @@ export const levels: Level[] = [
         "While it's the longest man-made structure, it is not, as is commonly believed, visible from the moon with the naked eye."
     ],
     hint: "Look at the path of the wall.",
-    difficulty: "hard"
+    difficulty: "hard",
+    image: {
+        url: "https://images.unsplash.com/photo-1508804185872-d7bad5d59b35?q=80&w=600&h=600&fit=crop",
+        hint: "china wall"
+    }
   },
   // 6x6 Grid
   {
@@ -96,7 +124,11 @@ export const levels: Level[] = [
         "Only about 15% of the city has been uncovered by archaeologists; the other 85% remains underground and untouched."
     ],
     hint: "Focus on the main Treasury building.",
-    difficulty: "expert"
+    difficulty: "expert",
+    image: {
+        url: "https://images.unsplash.com/photo-1559928230-b7de0badc5b2?q=80&w=600&h=600&fit=crop",
+        hint: "jordan petra"
+    }
   },
   {
     id: "lvl_008",
@@ -108,7 +140,11 @@ export const levels: Level[] = [
         "The outer layers are composed of 6 million soapstone tiles, chosen for their durability and ease of use."
     ],
     hint: "Look at the statue's arms.",
-    difficulty: "expert"
+    difficulty: "expert",
+    image: {
+        url: "https://images.unsplash.com/photo-1593457316828-77d0c3741b1d?q=80&w=600&h=600&fit=crop",
+        hint: "brazil rio"
+    }
   },
   {
     id: "lvl_009",
@@ -120,7 +156,11 @@ export const levels: Level[] = [
         "The construction of the Great Pyramid is estimated to have involved 100,000 workers and 2.3 million stone blocks."
     ],
     hint: "Focus on the alignment of the pyramids.",
-    difficulty: "master"
+    difficulty: "master",
+    image: {
+        url: "https://images.unsplash.com/photo-1572094389608-5173cb4321ac?q=80&w=600&h=600&fit=crop",
+        hint: "egypt pyramids"
+    }
   },
   {
     id: "lvl_010",
@@ -132,7 +172,11 @@ export const levels: Level[] = [
         "It has its own seawater cooling system, using water taken directly from the harbor."
     ],
     hint: "Look at the 'sails' of the roof.",
-    difficulty: "insane"
+    difficulty: "insane",
+    image: {
+        url: "https://images.unsplash.com/photo-1527631746610-bca00a040d60?q=80&w=600&h=600&fit=crop",
+        hint: "sydney australia"
+    }
   }
 ];
 

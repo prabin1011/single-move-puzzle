@@ -18,16 +18,22 @@ import {
   CheckCircle,
   XCircle,
   ArrowRight,
-  RefreshCw,
-  Loader2,
   HeartCrack,
+  Info,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { useLandmarkImages } from "@/hooks/useLandmarkImages";
-import { Skeleton } from "./ui/skeleton";
+import { useGameTimer } from "@/hooks/use-game-timer";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 
 const MAX_MISTAKES = 1; // Allows 1 mistake, game over on the 2nd.
+const PREVIEW_TIME = 5; // 5 seconds to memorize
 
 function shuffle<T>(array: T[]): T[] {
   let currentIndex = array.length,
@@ -46,11 +52,9 @@ export default function GameContainer() {
   const [levels] = useState(() => shuffle(initialLevels));
   const [levelIndex, setLevelIndex] = useState(0);
   const [highestLevel, setHighestLevel] = useState(0);
-
   const [mistakeCount, setMistakeCount] = useState(0);
 
   const [currentLevel, setCurrentLevel] = useState<Level>(levels[levelIndex]);
-  const [currentFacts, setCurrentFacts] = useState(currentLevel.facts);
 
   // Load progress on mount
   useEffect(() => {
@@ -63,7 +67,6 @@ export default function GameContainer() {
     setLevelIndex(initialIndex);
     setHighestLevel(initialHighest);
     setCurrentLevel(levels[initialIndex]);
-    setCurrentFacts(levels[initialIndex].facts);
     setMistakeCount(0);
   }, [levels]);
 
@@ -85,7 +88,7 @@ export default function GameContainer() {
   }, [levelIndex]);
 
   const [currentPuzzle, setCurrentPuzzle] = useState(() =>
-    generatePuzzle("", currentGridSize)
+    generatePuzzle(currentLevel.image.url, currentGridSize)
   );
   const [retryCount, setRetryCount] = useState(0);
 
@@ -93,28 +96,32 @@ export default function GameContainer() {
     "PREVIEW" | "PLAYING" | "SOLVED" | "FAILED" | "GAME_OVER"
   >("PREVIEW");
   const [showFacts, setShowFacts] = useState(false);
-
-  const {
-    currentImage,
-    nextImage,
-    loading: imageLoading,
-    error: imageError,
-    hasImages,
-  } = useLandmarkImages(currentLevel.place);
+  
+  const isTimerRunning = gameState === "PREVIEW";
+  const { time, reset: resetTimer } = useGameTimer(isTimerRunning);
 
   useEffect(() => {
-    if (!currentImage) return;
-    setCurrentPuzzle(generatePuzzle(currentImage, currentGridSize));
+    if (isTimerRunning) {
+        resetTimer();
+    }
+  }, [isTimerRunning, resetTimer]);
+  
+  useEffect(() => {
+    if (gameState === 'PREVIEW' && time >= PREVIEW_TIME) {
+      setGameState('PLAYING');
+    }
+  }, [time, gameState]);
+
+
+  useEffect(() => {
+    setCurrentPuzzle(generatePuzzle(currentLevel.image.url, currentGridSize));
     setRetryCount(0);
-  }, [currentImage, currentLevel, currentGridSize]);
+  }, [currentLevel, currentGridSize]);
 
   const { scrambledBoard, solvedBoard, swapped, imageUrl } = useMemo(() => {
     return currentPuzzle;
   }, [currentPuzzle]);
 
-  const startGame = () => {
-    setGameState("PLAYING");
-  };
 
   const handleSuccess = async () => {
     setGameState("SOLVED");
@@ -134,53 +141,72 @@ export default function GameContainer() {
 
   const resetForRetry = () => {
     setRetryCount((prev) => prev + 1);
-    if (currentImage) {
-      setCurrentPuzzle(generatePuzzle(currentImage, currentGridSize));
-    }
+    setCurrentPuzzle(generatePuzzle(currentLevel.image.url, currentGridSize));
     setGameState("PLAYING");
   };
 
   const restartGame = () => {
     setLevelIndex(0);
     setCurrentLevel(levels[0]);
-    setCurrentFacts(levels[0].facts);
     setMistakeCount(0);
     setGameState("PREVIEW");
     setShowFacts(false);
     setRetryCount(0);
+    resetTimer();
   }
 
   const nextLevel = () => {
     const newIndex = (levelIndex + 1);
     if (newIndex >= levels.length) {
-      // For now, loop back to the start if all levels are completed.
       setLevelIndex(0);
       setCurrentLevel(levels[0]);
-      setCurrentFacts(levels[0].facts);
     } else {
       setLevelIndex(newIndex);
       setCurrentLevel(levels[newIndex]);
-      setCurrentFacts(levels[newIndex].facts);
     }
 
     setGameState("PREVIEW");
     setShowFacts(false);
     setRetryCount(0);
     setMistakeCount(0);
-  };
-
-  const handleNewImage = () => {
-    nextImage();
+    resetTimer();
   };
 
   const puzzleKey = `${currentLevel.id}-${imageUrl}-${retryCount}`;
-  const showImageSkeleton = imageLoading || !currentImage;
 
   return (
     <Card className="w-full max-w-sm bg-background border-border shadow-2xl transition-all duration-500">
       <CardHeader className="text-center min-h-[160px] flex flex-col justify-center">
         {gameState === "PREVIEW" && (
           <>
+             <div className="absolute top-4 right-4">
+                <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
+                  <p className="text-lg font-bold text-secondary-foreground">
+                    {PREVIEW_TIME - time}
+                  </p>
+                  <svg className="absolute inset-0 h-full w-full" viewBox="0 0 36 36">
+                    <circle
+                        className="stroke-current text-primary/20"
+                        strokeWidth="4"
+                        fill="none"
+                        cx="18"
+                        cy="18"
+                        r="16"
+                    />
+                    <circle
+                        className="stroke-current text-primary"
+                        strokeWidth="4"
+                        strokeDasharray={`${((PREVIEW_TIME - time) / PREVIEW_TIME) * 100}, 100`}
+                        strokeLinecap="round"
+                        transform="rotate(-90 18 18)"
+                        fill="none"
+                        cx="18"
+                        cy="18"
+                        r="16"
+                    />
+                  </svg>
+                </div>
+            </div>
             <CardTitle className="text-3xl font-bold">
               {currentLevel.place}
             </CardTitle>
@@ -188,7 +214,7 @@ export default function GameContainer() {
               Level {levelIndex + 1} &bull; {currentGridSize}x{currentGridSize} Grid
             </CardDescription>
             <CardDescription className="text-muted-foreground pt-2">
-              Memorize the image, then find the single swap.
+              Memorize the image before the timer runs out.
             </CardDescription>
           </>
         )}
@@ -200,6 +226,20 @@ export default function GameContainer() {
             <CardDescription className="text-muted-foreground">
               You have {MAX_MISTAKES - mistakeCount + 1} chance(s) remaining.
             </CardDescription>
+            {levelIndex >= 2 && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" size="sm" className="mx-auto mt-2">
+                      <Info className="mr-2 h-4 w-4" /> Hint
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{currentLevel.hint}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </>
         )}
         {gameState === "SOLVED" && (
@@ -246,31 +286,24 @@ export default function GameContainer() {
       <CardContent className="flex flex-col items-center gap-6 px-4 sm:px-6">
         {gameState === "PREVIEW" && (
           <div className="relative h-[300px] w-[300px] rounded-lg overflow-hidden shadow-lg border-2 border-border flex items-center justify-center">
-            {showImageSkeleton ? (
-              <Skeleton className="h-full w-full" />
-            ) : (
-              currentImage && (
-                <Image
-                  key={currentImage}
-                  src={currentImage}
-                  alt={currentLevel.place}
-                  width={300}
-                  height={300}
-                  priority
-                  className="object-cover"
-                />
-              )
-            )}
+            <Image
+              key={imageUrl}
+              src={imageUrl}
+              alt={currentLevel.place}
+              width={300}
+              height={300}
+              priority
+              className="object-cover"
+            />
           </div>
         )}
 
-        {(gameState === "PLAYING" || gameState === "FAILED") && currentImage && (
+        {(gameState === "PLAYING" || gameState === "FAILED") && (
           <PuzzleBoard
             key={puzzleKey}
             imageUrl={imageUrl}
             grid={currentGridSize}
             boardState={scrambledBoard}
-            targetState={solvedBoard}
             swappedIndices={swapped}
             onSuccess={handleSuccess}
             onFail={handleFail}
@@ -278,11 +311,11 @@ export default function GameContainer() {
           />
         )}
 
-        {gameState === "SOLVED" && currentImage && (
+        {gameState === "SOLVED" && (
           <div className="flex flex-col items-center w-full">
             <div className="relative h-[300px] w-[300px] rounded-lg overflow-hidden shadow-lg mx-auto mb-6 border-2 border-green-400/50">
               <Image
-                src={currentImage}
+                src={imageUrl}
                 alt={currentLevel.place}
                 width={300}
                 height={300}
@@ -297,7 +330,7 @@ export default function GameContainer() {
               )}
             >
               <ul className="space-y-3 text-left text-base">
-                {currentFacts.map((fact, index) => (
+                {currentLevel.facts.map((fact, index) => (
                   <li
                     key={index}
                     className="flex items-start gap-3 p-3 bg-secondary rounded-md"
@@ -322,26 +355,14 @@ export default function GameContainer() {
 
       <CardFooter className="flex flex-col items-center justify-center p-6 space-y-4 min-h-[110px]">
         {gameState === "PREVIEW" && (
-          <div className="w-full space-y-2">
-            <Button
-              onClick={startGame}
-              size="lg"
-              className="w-full"
-              disabled={!hasImages || imageLoading}
-            >
-              {imageLoading ? <Loader2 className="animate-spin" /> : "Start Puzzle"}
-            </Button>
-            <Button
-              onClick={handleNewImage}
-              size="lg"
-              variant="secondary"
-              className="w-full"
-              disabled={!hasImages || imageLoading}
-            >
-              <RefreshCw />
-              New Image
-            </Button>
-          </div>
+          <Button
+            onClick={() => setGameState("PLAYING")}
+            size="lg"
+            className="w-full"
+            variant="secondary"
+          >
+            Skip Preview
+          </Button>
         )}
 
         {gameState === "FAILED" && (

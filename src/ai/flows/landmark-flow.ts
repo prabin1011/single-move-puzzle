@@ -27,7 +27,18 @@ const prompt = ai.definePrompt({
   name: 'landmarkPrompt',
   input: { schema: LandmarkEnhancerInputSchema },
   output: { schema: LandmarkEnhancerOutputSchema },
-  prompt: `You are a world travel expert. Given the landmark "{{landmarkName}}", your task is to generate exactly 3 new, short, and interesting facts about it. The facts should be verifiable and different from common knowledge.`,
+  prompt: `
+You are a world travel and history expert.
+
+Given the landmark "{{landmarkName}}", generate EXACTLY 3 short but rich facts.
+Each fact should:
+- be specific and non-obvious,
+- be accurate and verifiable,
+- be interesting enough that an entire chapter of a book could be written from it.
+
+Avoid generic trivia like "it is very famous" or "many tourists visit it".
+Return them as a JSON array of strings.
+`,
 });
 
 export const landmarkEnhancerFlow = ai.defineFlow(

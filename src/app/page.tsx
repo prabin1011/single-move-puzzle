@@ -22,6 +22,19 @@ function preloadAllImages() {
   }
 }
 
+function shuffle<T>(array: T[]): T[] {
+  let currentIndex = array.length,
+    randomIndex;
+  const arr = [...array];
+
+  while (currentIndex > 0) {
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+    [arr[currentIndex], arr[randomIndex]] = [arr[randomIndex], arr[currentIndex]];
+  }
+  return arr;
+}
+
 
 export default function Home() {
   const router = useRouter();
@@ -53,7 +66,9 @@ export default function Home() {
   const handleNewGame = () => {
     localStorage.removeItem('currentLevelIndex');
     localStorage.removeItem('highestLevel');
-    localStorage.removeItem('shuffledLevels');
+    // Create and save a new shuffled list for the new game
+    const newShuffledLevels = shuffle(levels);
+    localStorage.setItem('shuffledLevels', JSON.stringify(newShuffledLevels));
     router.push('/play');
   };
   

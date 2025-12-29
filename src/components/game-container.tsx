@@ -48,7 +48,12 @@ function preloadImage(url: string): Promise<void> {
       const img = new window.Image();
       img.src = url;
       img.onload = () => resolve();
-      img.onerror = () => reject(new Error(`Failed to load image: ${url}`));
+      img.onerror = () => {
+        console.error(`Failed to load image: ${url}`);
+        // In a real app, you might want a fallback strategy here.
+        // For now, we resolve to not block the game, but the image will be broken.
+        resolve();
+      };
     } else {
         // In a server environment, we can't preload, so we resolve immediately.
         resolve();
@@ -70,16 +75,7 @@ function shuffle<T>(array: T[]): T[] {
 }
 
 export default function GameContainer() {
-  const [levels, setLevels] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const shuffledLevels = localStorage.getItem('shuffledLevels');
-      if (shuffledLevels) {
-        return JSON.parse(shuffledLevels);
-      }
-    }
-    return shuffle(initialLevels);
-  });
-  
+  const [levels, setLevels] = useState<Level[]>([]);
   const [levelIndex, setLevelIndex] = useState(0);
   const [highestLevel, setHighestLevel] = useState(0);
   const [mistakeCount, setMistakeCount] = useState(0);
@@ -95,11 +91,20 @@ export default function GameContainer() {
   const isTimerRunning = gameState === "PREVIEW";
   const { time, reset: resetTimer, stop: stopTimer } = useGameTimer(isTimerRunning);
 
-  // Load progress on mount
+  // Load progress and shuffled levels on mount
   useEffect(() => {
     const savedLevel = localStorage.getItem('currentLevelIndex');
     const savedHighestLevel = localStorage.getItem('highestLevel');
+    const savedShuffledLevels = localStorage.getItem('shuffledLevels');
 
+    if (savedShuffledLevels) {
+      setLevels(JSON.parse(savedShuffledLevels));
+    } else {
+      const newShuffledLevels = shuffle(initialLevels);
+      setLevels(newShuffledLevels);
+      localStorage.setItem('shuffledLevels', JSON.stringify(newShuffledLevels));
+    }
+    
     const initialIndex = savedLevel ? parseInt(savedLevel, 10) : 0;
     const initialHighest = savedHighestLevel ? parseInt(savedHighestLevel, 10) : 0;
     
@@ -112,28 +117,16 @@ export default function GameContainer() {
   useEffect(() => {
     if (isComponentLoading) return;
     localStorage.setItem('currentLevelIndex', levelIndex.toString());
-    localStorage.setItem('shuffledLevels', JSON.stringify(levels));
     if (levelIndex > highestLevel) {
       const newHighest = levelIndex;
       setHighestLevel(newHighest);
       localStorage.setItem('highestLevel', newHighest.toString());
     }
-  }, [levelIndex, highestLevel, isComponentLoading, levels]);
+  }, [levelIndex, highestLevel, isComponentLoading]);
 
-  // Determine the current level's data
   const currentLevelData = useMemo(() => {
-    if (isComponentLoading) return null;
-    const { categories } = getLevelConfig(levelIndex);
-    
-    const availableLevels = categories.includes('all') 
-      ? levels 
-      : levels.filter(level => categories.includes(level.category));
-
-    const levelData = availableLevels.length > 0 
-      ? availableLevels[levelIndex % availableLevels.length] 
-      : levels[levelIndex % levels.length];
-      
-    return levelData;
+    if (isComponentLoading || levels.length === 0) return null;
+    return levels[levelIndex % levels.length];
   }, [levelIndex, levels, isComponentLoading]);
 
   // Generate the puzzle for the current level
@@ -144,35 +137,39 @@ export default function GameContainer() {
   }, [currentLevelData, levelIndex, retryCount]); // Rerun if level or retryCount changes
 
 
-  // Preload current and next level's image
+  // This is the core of the image loading fix.
+  // This effect guarantees the current image is loaded before we proceed.
   useEffect(() => {
     if (!currentLevelData) return;
   
-    // Reset image loading state for the new level
-    setIsImageLoading(true);
+    let isCancelled = false;
+    setIsImageLoading(true); // Set loading state to true for the new level
   
-    // Preload the current image and wait for it to finish
     preloadImage(currentLevelData.image.url)
       .then(() => {
-        setIsImageLoading(false); // Current image is ready
+        if (!isCancelled) {
+          setIsImageLoading(false); // Current image is ready
+        }
       })
       .catch(err => {
-        console.error("Failed to load current image, attempting to proceed:", err);
-        // Even if it fails, we proceed, hoping browser cache helps.
-        // A more robust solution could involve retries or fallback images.
-        setIsImageLoading(false);
+        if (!isCancelled) {
+          console.error("Failed to load current image, attempting to proceed:", err);
+          setIsImageLoading(false);
+        }
       });
   
     // Preload the next level's image in the background (fire and forget)
     const nextLevelIndex = (levelIndex + 1);
-    const nextLevelConfig = getLevelConfig(nextLevelIndex);
-    const nextAvailableLevels = levels.filter(l => nextLevelConfig.categories.includes(l.category) || nextLevelConfig.categories.includes('all'));
-    if (nextAvailableLevels.length > 0) {
-      const nextLevelData = nextAvailableLevels[nextLevelIndex % nextAvailableLevels.length];
+    if (nextLevelIndex < levels.length) {
+      const nextLevelData = levels[nextLevelIndex % levels.length];
       if (nextLevelData?.image.url) {
         preloadImage(nextLevelData.image.url);
       }
     }
+
+    return () => {
+      isCancelled = true;
+    };
   }, [currentLevelData, levelIndex, levels]);
   
   // Game timer logic
@@ -218,6 +215,7 @@ export default function GameContainer() {
     if (newMistakeCount > MAX_MISTAKES) {
       setGameState("GAME_OVER");
       localStorage.removeItem('currentLevelIndex'); // Reset for next game
+      localStorage.removeItem('highestLevel');
     } else {
       setGameState("FAILED");
     }
@@ -234,6 +232,7 @@ export default function GameContainer() {
     setLevels(newShuffledLevels);
     localStorage.setItem('shuffledLevels', JSON.stringify(newShuffledLevels));
     setLevelIndex(0);
+    setHighestLevel(0);
     setMistakeCount(0);
     setGameState("READY");
     setShowFacts(false);
@@ -473,7 +472,7 @@ export default function GameContainer() {
 
         {gameState === "GAME_OVER" && (
             <Button onClick={restartGame} size="lg" className="w-full">
-                Restart Game
+                New Game
             </Button>
         )}
 

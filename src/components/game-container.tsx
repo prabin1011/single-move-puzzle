@@ -80,9 +80,7 @@ export default function GameContainer() {
   const { grid: currentGridSize, categories } = useMemo(() => getLevelConfig(levelIndex), [levelIndex]);
 
   const availableLevels = useMemo(() => {
-    // For the first few levels, allow all categories.
     if (categories.includes('all')) return levels;
-    // Otherwise, filter by the allowed categories for the current difficulty tier.
     const pastCategories = ['all'];
     const seenIds = new Set<string>();
     
@@ -97,12 +95,11 @@ export default function GameContainer() {
   }, [levels, categories]);
   
   const currentLevel = useMemo(() => {
-    if (!availableLevels.length) return levels[levelIndex % levels.length]; // Fallback to looping all levels
-    // Use modulo to loop through available levels for the current difficulty tier
+    if (isLoading) return null;
+    if (!availableLevels.length) return levels[levelIndex % levels.length];
     const levelFromTier = availableLevels[levelIndex % availableLevels.length];
     return levelFromTier;
-  }, [availableLevels, levelIndex, levels]);
-
+  }, [availableLevels, levelIndex, levels, isLoading]);
 
   const [currentPuzzle, setCurrentPuzzle] = useState(() => {
     if (!currentLevel) return null;
@@ -114,8 +111,9 @@ export default function GameContainer() {
     if (isLoading) return;
     localStorage.setItem('currentLevelIndex', levelIndex.toString());
     if (levelIndex > highestLevel) {
-      setHighestLevel(levelIndex);
-      localStorage.setItem('highestLevel', levelIndex.toString());
+      const newHighest = levelIndex;
+      setHighestLevel(newHighest);
+      localStorage.setItem('highestLevel', newHighest.toString());
     }
   }, [levelIndex, highestLevel, isLoading]);
   
@@ -132,10 +130,11 @@ export default function GameContainer() {
     }
   }, [levelIndex, levels]);
   
+  // This effect now correctly handles puzzle generation when the level changes.
   useEffect(() => {
     if (currentLevel) {
       setCurrentPuzzle(generatePuzzle(currentLevel.image.url, currentGridSize));
-      setRetryCount(0);
+      setRetryCount(0); // Reset retries for the new level
     }
   }, [currentLevel, currentGridSize]);
 
@@ -188,6 +187,7 @@ export default function GameContainer() {
 
   const resetForRetry = () => {
     setRetryCount((prev) => prev + 1);
+    // Re-generate puzzle with a new swap for the same level
     setCurrentPuzzle(generatePuzzle(currentLevel.image.url, currentGridSize));
     setGameState("PLAYING");
   };
@@ -406,7 +406,7 @@ export default function GameContainer() {
         {(gameState === "GAME_OVER") && (
             <div className="text-center">
                 <p>You reached Level {levelIndex + 1}.</p>
-                <p>Your highest level is {highestLevel + 1}.</p>
+                <p>Your highest level is {highestLevel > 0 ? highestLevel + 1 : 1}.</p>
             </div>
         )}
 
@@ -464,5 +464,3 @@ export default function GameContainer() {
     </Card>
   );
 }
-
-    

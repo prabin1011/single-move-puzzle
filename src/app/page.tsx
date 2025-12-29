@@ -14,6 +14,7 @@ import { Loader2 } from 'lucide-react';
 export default function Home() {
   const router = useRouter();
   const [highestLevel, setHighestLevel] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
 
@@ -22,6 +23,7 @@ export default function Home() {
     if (savedLevel) {
       setHighestLevel(parseInt(savedLevel, 10));
     }
+    setIsLoading(false);
   }, []);
 
   useEffect(() => {
@@ -33,8 +35,11 @@ export default function Home() {
 
   const handleNewGame = () => {
     localStorage.removeItem('currentLevelIndex');
+    localStorage.removeItem('highestLevel');
     router.push('/play');
   };
+  
+  const showContinue = !isLoading && highestLevel > 0;
 
   if (isUserLoading || !user) {
     return (
@@ -67,7 +72,7 @@ export default function Home() {
             <Button size="lg" className="w-full" onClick={handleNewGame} disabled={isUserLoading}>
               New Game
             </Button>
-            {highestLevel > 0 && (
+            {showContinue && (
               <Link href="/play" className="w-full">
                 <Button size="lg" variant="secondary" className="w-full" disabled={isUserLoading}>
                   Continue (Level {highestLevel + 1})

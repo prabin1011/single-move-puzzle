@@ -1,10 +1,10 @@
+
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import { Toaster } from "@/components/ui/toaster"
-import { FirebaseClientProvider } from '@/firebase';
+import ClientLayout from './client-layout';
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Single Move Puzzle',
@@ -19,10 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark" style={{ colorScheme: 'dark' }}>
       <body className={`${inter.className} antialiased`}>
-        <FirebaseClientProvider>
-          {children}
-        </FirebaseClientProvider>
-        <Toaster />
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   );

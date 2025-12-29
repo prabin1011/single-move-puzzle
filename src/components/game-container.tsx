@@ -40,8 +40,10 @@ const PREVIEW_TIME = 5; // 5 seconds to memorize
 
 // Preload the next image
 function preloadImage(url: string) {
-  const img = new window.Image();
-  img.src = url;
+  if (typeof window !== 'undefined') {
+    const img = new window.Image();
+    img.src = url;
+  }
 }
 
 function shuffle<T>(array: T[]): T[] {
@@ -63,14 +65,6 @@ export default function GameContainer() {
   const [highestLevel, setHighestLevel] = useState(0);
   const [mistakeCount, setMistakeCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-
-  const [currentLevel, setCurrentLevel] = useState<Level | null>(null);
-  const [currentPuzzle, setCurrentPuzzle] = useState<{
-      scrambledBoard: number[];
-      swapped: number[];
-      imageUrl: string;
-  } | null>(null);
-
   const [retryCount, setRetryCount] = useState(0);
 
   const [gameState, setGameState] = useState<
@@ -105,11 +99,10 @@ export default function GameContainer() {
     }
   }, [levelIndex, highestLevel, isLoading]);
 
-  // Set current level and puzzle when levelIndex or levels change
-  useEffect(() => {
-    if (isLoading) return;
-
-    const { grid: currentGridSize, categories } = getLevelConfig(levelIndex);
+  // Determine the current level's data
+  const currentLevelData = useMemo(() => {
+    if (isLoading) return null;
+    const { categories } = getLevelConfig(levelIndex);
     
     const availableLevels = categories.includes('all') 
       ? levels 
@@ -119,13 +112,20 @@ export default function GameContainer() {
       ? availableLevels[levelIndex % availableLevels.length] 
       : levels[levelIndex % levels.length];
       
-    setCurrentLevel(levelData);
-    setCurrentPuzzle(generatePuzzle(levelData.image.url, currentGridSize));
-    setRetryCount(0);
+    return levelData;
   }, [levelIndex, levels, isLoading]);
+
+  // Generate the puzzle for the current level
+  const currentPuzzle = useMemo(() => {
+    if (!currentLevelData) return null;
+    const { grid: currentGridSize } = getLevelConfig(levelIndex);
+    return generatePuzzle(currentLevelData.image.url, currentGridSize);
+  }, [currentLevelData, levelIndex, retryCount]); // Rerun if level or retryCount changes
+
 
   // Preload the next level's image
   useEffect(() => {
+    if (!currentLevelData) return;
     const nextLevelIndex = (levelIndex + 1);
     const nextLevelConfig = getLevelConfig(nextLevelIndex);
     const nextAvailableLevels = levels.filter(l => nextLevelConfig.categories.includes(l.category) || nextLevelConfig.categories.includes('all'));
@@ -135,7 +135,7 @@ export default function GameContainer() {
             preloadImage(nextLevel.image.url);
         }
     }
-  }, [levelIndex, levels]);
+  }, [levelIndex, levels, currentLevelData]);
   
   // Game timer logic
   useEffect(() => {
@@ -146,7 +146,7 @@ export default function GameContainer() {
   }, [time, gameState, stopTimer]);
 
 
-  if (isLoading || !currentLevel || !currentPuzzle) {
+  if (isLoading || !currentLevelData || !currentPuzzle) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center">
         <Loader2 className="h-12 w-12 animate-spin" />
@@ -176,8 +176,7 @@ export default function GameContainer() {
   };
 
   const resetForRetry = () => {
-    setRetryCount((prev) => prev + 1);
-    setCurrentPuzzle(generatePuzzle(currentLevel.image.url, currentGridSize));
+    setRetryCount((prev) => prev + 1); // This will trigger puzzle regeneration via useMemo
     setGameState("PREVIEW"); // Go back to preview for another look
     resetTimer();
   };
@@ -205,7 +204,7 @@ export default function GameContainer() {
     resetTimer();
   }
 
-  const puzzleKey = `${currentLevel.id}-${imageUrl}-${retryCount}`;
+  const puzzleKey = `${currentLevelData.id}-${imageUrl}-${retryCount}`;
 
   return (
     <Card className="w-full max-w-sm bg-background border-border shadow-2xl transition-all duration-500">
@@ -213,7 +212,7 @@ export default function GameContainer() {
         {gameState === "READY" && (
             <>
                 <CardTitle className="text-3xl font-bold">
-                {currentLevel.place}
+                {currentLevelData.place}
                 </CardTitle>
                 <CardDescription className="text-muted-foreground">
                 Level {levelIndex + 1} &bull; {currentGridSize}x{currentGridSize} Grid
@@ -281,7 +280,7 @@ export default function GameContainer() {
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{currentLevel.hint}</p>
+                    <p>{currentLevelData.hint}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -294,10 +293,10 @@ export default function GameContainer() {
               <CheckCircle className="h-16 w-16" />
             </div>
             <CardTitle className="text-3xl font-bold pt-4">
-              {currentLevel.place}
+              {currentLevelData.place}
             </CardTitle>
             <CardDescription className="text-lg text-muted-foreground">
-              {currentLevel.country}
+              {currentLevelData.country}
             </CardDescription>
           </>
         )}
@@ -335,7 +334,7 @@ export default function GameContainer() {
             <Image
               key={imageUrl}
               src={imageUrl}
-              alt={currentLevel.place}
+              alt={currentLevelData.place}
               width={300}
               height={300}
               priority
@@ -365,7 +364,7 @@ export default function GameContainer() {
             <div className="relative h-[300px] w-[300px] rounded-lg overflow-hidden shadow-lg mx-auto mb-6 border-2 border-green-400/50">
               <Image
                 src={imageUrl}
-                alt={currentLevel.place}
+                alt={currentLevelData.place}
                 width={300}
                 height={300}
                 className="object-cover"
@@ -379,7 +378,7 @@ export default function GameContainer() {
               )}
             >
               <ul className="space-y-3 text-left text-base">
-                {currentLevel.facts.map((fact, index) => (
+                {currentLevelData.facts.map((fact, index) => (
                   <li
                     key={index}
                     className="flex items-start gap-3 p-3 bg-secondary rounded-md"
@@ -454,3 +453,5 @@ export default function GameContainer() {
     </Card>
   );
 }
+
+    

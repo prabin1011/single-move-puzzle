@@ -146,13 +146,13 @@ export default function GameContainer() {
 
   // Preload current and next level's image
   useEffect(() => {
-    if (!currentLevelData || !currentPuzzle) return;
+    if (!currentLevelData) return;
   
     // Reset image loading state for the new level
     setIsImageLoading(true);
   
     // Preload the current image and wait for it to finish
-    preloadImage(currentPuzzle.imageUrl)
+    preloadImage(currentLevelData.image.url)
       .then(() => {
         setIsImageLoading(false); // Current image is ready
       })
@@ -173,7 +173,7 @@ export default function GameContainer() {
         preloadImage(nextLevelData.image.url);
       }
     }
-  }, [currentLevelData, currentPuzzle, levelIndex, levels]);
+  }, [currentLevelData, levelIndex, levels]);
   
   // Game timer logic
   useEffect(() => {
@@ -202,7 +202,8 @@ export default function GameContainer() {
     );
   }
 
-  const { scrambledBoard, swapped, imageUrl } = currentPuzzle;
+  const { scrambledBoard, swapped } = currentPuzzle;
+  const imageUrl = currentLevelData.image.url; // Get imageUrl from stable source
   const { grid: currentGridSize } = getLevelConfig(levelIndex);
 
 
@@ -254,7 +255,7 @@ export default function GameContainer() {
     resetTimer();
   }
 
-  const puzzleKey = `${currentLevelData.id}-${imageUrl}-${retryCount}`;
+  const puzzleKey = `${currentLevelData.id}-${retryCount}`;
 
   return (
     <Card className="w-full max-w-sm bg-background border-border shadow-2xl transition-all duration-500">

@@ -36,30 +36,11 @@ import {
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useGameTimer } from "@/hooks/use-game-timer";
+import { useRouter } from "next/navigation";
 
 
 const MAX_MISTAKES = 1; // Allows 1 mistake, game over on the 2nd.
 const PREVIEW_TIME = 5; // 5 seconds to memorize
-
-// Preload the next image and return a promise that resolves when it's loaded
-function preloadImage(url: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (typeof window !== 'undefined') {
-      const img = new window.Image();
-      img.src = url;
-      img.onload = () => resolve();
-      img.onerror = () => {
-        console.error(`Failed to load image: ${url}`);
-        // Resolve anyway to not block the game, though the image might be broken.
-        // The new loading state should prevent a broken image from being shown.
-        resolve();
-      };
-    } else {
-        // In a server environment, we can't preload, so we resolve immediately.
-        resolve();
-    }
-  });
-}
 
 function shuffle<T>(array: T[]): T[] {
   let currentIndex = array.length,
@@ -75,12 +56,12 @@ function shuffle<T>(array: T[]): T[] {
 }
 
 export default function GameContainer() {
+  const router = useRouter();
   const [levels, setLevels] = useState<Level[]>([]);
   const [levelIndex, setLevelIndex] = useState(0);
   const [highestLevel, setHighestLevel] = useState(0);
   const [mistakeCount, setMistakeCount] = useState(0);
   const [isComponentLoading, setIsComponentLoading] = useState(true);
-  const [isImageLoading, setIsImageLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
 
   const [gameState, setGameState] = useState<
@@ -136,42 +117,6 @@ export default function GameContainer() {
     const { grid: currentGridSize } = getLevelConfig(levelIndex);
     return generatePuzzle(currentLevelData.image.url, currentGridSize);
   }, [currentLevelData, levelIndex, retryCount]); // Rerun if level or retryCount changes
-
-
-  // This is the core of the image loading fix.
-  // This effect guarantees the current image is loaded before we proceed.
-  useEffect(() => {
-    if (!currentLevelData) return;
-  
-    let isCancelled = false;
-    setIsImageLoading(true); // Set loading state to true for the new level
-  
-    preloadImage(currentLevelData.image.url)
-      .then(() => {
-        if (!isCancelled) {
-          setIsImageLoading(false); // Current image is ready
-        }
-      })
-      .catch(err => {
-        if (!isCancelled) {
-          console.error("Failed to load current image, attempting to proceed:", err);
-          setIsImageLoading(false);
-        }
-      });
-  
-    // Preload the next level's image in the background (fire and forget)
-    const nextLevelIndex = (levelIndex + 1);
-    if (nextLevelIndex < levels.length) {
-      const nextLevelData = levels[nextLevelIndex % levels.length];
-      if (nextLevelData?.image.url) {
-        preloadImage(nextLevelData.image.url);
-      }
-    }
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [currentLevelData, levelIndex, levels]);
   
   // Game timer logic
   useEffect(() => {
@@ -187,15 +132,6 @@ export default function GameContainer() {
       <div className="flex min-h-screen flex-col items-center justify-center">
         <Loader2 className="h-12 w-12 animate-spin" />
         <p className="mt-4 text-muted-foreground">Loading Game...</p>
-      </div>
-    );
-  }
-
-  if (isImageLoading) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center">
-        <Loader2 className="h-12 w-12 animate-spin" />
-        <p className="mt-4 text-muted-foreground">Loading Image...</p>
       </div>
     );
   }

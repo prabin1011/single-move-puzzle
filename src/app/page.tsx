@@ -11,6 +11,7 @@ import { useAuth, useUser } from '@/firebase';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { Loader2 } from 'lucide-react';
 import { levels } from '@/lib/levels';
+import type { Level } from '@/lib/levels';
 
 // Preload all images from the levels file in the background
 function preloadAllImages() {
@@ -27,11 +28,17 @@ function shuffle<T>(array: T[]): T[] {
     randomIndex;
   const arr = [...array];
 
+  // While there remain elements to shuffle.
   while (currentIndex > 0) {
+    // Pick a remaining element.
     randomIndex = Math.floor(Math.random() * currentIndex);
     currentIndex--;
-    [arr[currentIndex], arr[randomIndex]] = [arr[randomIndex], arr[currentIndex]];
+
+    // And swap it with the current element.
+    [arr[currentIndex], arr[randomIndex]] = [
+      arr[randomIndex], arr[currentIndex]];
   }
+
   return arr;
 }
 
@@ -118,5 +125,3 @@ export default function Home() {
     </main>
   );
 }
-
-    

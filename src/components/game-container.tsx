@@ -50,8 +50,8 @@ function preloadImage(url: string): Promise<void> {
       img.onload = () => resolve();
       img.onerror = () => {
         console.error(`Failed to load image: ${url}`);
-        // In a real app, you might want a fallback strategy here.
-        // For now, we resolve to not block the game, but the image will be broken.
+        // Resolve anyway to not block the game, though the image might be broken.
+        // The new loading state should prevent a broken image from being shown.
         resolve();
       };
     } else {
@@ -100,6 +100,7 @@ export default function GameContainer() {
     if (savedShuffledLevels) {
       setLevels(JSON.parse(savedShuffledLevels));
     } else {
+      // Fallback if the user lands here directly without starting a new game
       const newShuffledLevels = shuffle(initialLevels);
       setLevels(newShuffledLevels);
       localStorage.setItem('shuffledLevels', JSON.stringify(newShuffledLevels));
@@ -228,16 +229,9 @@ export default function GameContainer() {
   };
 
   const restartGame = () => {
-    const newShuffledLevels = shuffle(initialLevels);
-    setLevels(newShuffledLevels);
-    localStorage.setItem('shuffledLevels', JSON.stringify(newShuffledLevels));
-    setLevelIndex(0);
-    setHighestLevel(0);
-    setMistakeCount(0);
-    setGameState("READY");
-    setShowFacts(false);
-    setRetryCount(0);
-    resetTimer();
+    // This function will now rely on the "New Game" button from the home page
+    // to properly shuffle and set up the new game state.
+    router.push('/');
   }
 
   const nextLevel = () => {
@@ -498,5 +492,3 @@ export default function GameContainer() {
     </Card>
   );
 }
-
-    

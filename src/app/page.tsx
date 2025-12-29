@@ -53,6 +53,7 @@ export default function Home() {
   const handleNewGame = () => {
     localStorage.removeItem('currentLevelIndex');
     localStorage.removeItem('highestLevel');
+    localStorage.removeItem('shuffledLevels');
     router.push('/play');
   };
   
@@ -102,3 +103,5 @@ export default function Home() {
     </main>
   );
 }
+
+    

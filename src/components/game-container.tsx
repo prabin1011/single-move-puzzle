@@ -12,6 +12,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import Image from "next/image";
 import { levels as initialLevels, generatePuzzle, type Level } from "@/lib/levels";
 import { getLevelConfig } from "@/lib/game-config";
@@ -27,23 +36,24 @@ import {
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useGameTimer } from "@/hooks/use-game-timer";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 
 const MAX_MISTAKES = 1; // Allows 1 mistake, game over on the 2nd.
 const PREVIEW_TIME = 5; // 5 seconds to memorize
 
-// Preload the next image
-function preloadImage(url: string) {
-  if (typeof window !== 'undefined') {
-    const img = new window.Image();
-    img.src = url;
-  }
+// Preload the next image and return a promise that resolves when it's loaded
+function preloadImage(url: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (typeof window !== 'undefined') {
+      const img = new window.Image();
+      img.src = url;
+      img.onload = () => resolve();
+      img.onerror = () => reject(new Error(`Failed to load image: ${url}`));
+    } else {
+        // In a server environment, we can't preload, so we resolve immediately.
+        resolve();
+    }
+  });
 }
 
 function shuffle<T>(array: T[]): T[] {
@@ -60,11 +70,21 @@ function shuffle<T>(array: T[]): T[] {
 }
 
 export default function GameContainer() {
-  const [levels] = useState(() => shuffle(initialLevels));
+  const [levels, setLevels] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const shuffledLevels = localStorage.getItem('shuffledLevels');
+      if (shuffledLevels) {
+        return JSON.parse(shuffledLevels);
+      }
+    }
+    return shuffle(initialLevels);
+  });
+  
   const [levelIndex, setLevelIndex] = useState(0);
   const [highestLevel, setHighestLevel] = useState(0);
   const [mistakeCount, setMistakeCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isComponentLoading, setIsComponentLoading] = useState(true);
+  const [isImageLoading, setIsImageLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
 
   const [gameState, setGameState] = useState<
@@ -85,23 +105,24 @@ export default function GameContainer() {
     
     setLevelIndex(initialIndex);
     setHighestLevel(initialHighest);
-    setIsLoading(false);
+    setIsComponentLoading(false);
   }, []);
   
   // Save progress whenever level changes
   useEffect(() => {
-    if (isLoading) return;
+    if (isComponentLoading) return;
     localStorage.setItem('currentLevelIndex', levelIndex.toString());
+    localStorage.setItem('shuffledLevels', JSON.stringify(levels));
     if (levelIndex > highestLevel) {
       const newHighest = levelIndex;
       setHighestLevel(newHighest);
       localStorage.setItem('highestLevel', newHighest.toString());
     }
-  }, [levelIndex, highestLevel, isLoading]);
+  }, [levelIndex, highestLevel, isComponentLoading, levels]);
 
   // Determine the current level's data
   const currentLevelData = useMemo(() => {
-    if (isLoading) return null;
+    if (isComponentLoading) return null;
     const { categories } = getLevelConfig(levelIndex);
     
     const availableLevels = categories.includes('all') 
@@ -113,7 +134,7 @@ export default function GameContainer() {
       : levels[levelIndex % levels.length];
       
     return levelData;
-  }, [levelIndex, levels, isLoading]);
+  }, [levelIndex, levels, isComponentLoading]);
 
   // Generate the puzzle for the current level
   const currentPuzzle = useMemo(() => {
@@ -123,19 +144,36 @@ export default function GameContainer() {
   }, [currentLevelData, levelIndex, retryCount]); // Rerun if level or retryCount changes
 
 
-  // Preload the next level's image
+  // Preload current and next level's image
   useEffect(() => {
-    if (!currentLevelData) return;
+    if (!currentLevelData || !currentPuzzle) return;
+  
+    // Reset image loading state for the new level
+    setIsImageLoading(true);
+  
+    // Preload the current image and wait for it to finish
+    preloadImage(currentPuzzle.imageUrl)
+      .then(() => {
+        setIsImageLoading(false); // Current image is ready
+      })
+      .catch(err => {
+        console.error("Failed to load current image, attempting to proceed:", err);
+        // Even if it fails, we proceed, hoping browser cache helps.
+        // A more robust solution could involve retries or fallback images.
+        setIsImageLoading(false);
+      });
+  
+    // Preload the next level's image in the background (fire and forget)
     const nextLevelIndex = (levelIndex + 1);
     const nextLevelConfig = getLevelConfig(nextLevelIndex);
     const nextAvailableLevels = levels.filter(l => nextLevelConfig.categories.includes(l.category) || nextLevelConfig.categories.includes('all'));
     if (nextAvailableLevels.length > 0) {
-        const nextLevel = nextAvailableLevels[nextLevelIndex % nextAvailableLevels.length];
-        if (nextLevel?.image.url) {
-            preloadImage(nextLevel.image.url);
-        }
+      const nextLevelData = nextAvailableLevels[nextLevelIndex % nextAvailableLevels.length];
+      if (nextLevelData?.image.url) {
+        preloadImage(nextLevelData.image.url);
+      }
     }
-  }, [levelIndex, levels, currentLevelData]);
+  }, [currentLevelData, currentPuzzle, levelIndex, levels]);
   
   // Game timer logic
   useEffect(() => {
@@ -146,11 +184,20 @@ export default function GameContainer() {
   }, [time, gameState, stopTimer]);
 
 
-  if (isLoading || !currentLevelData || !currentPuzzle) {
+  if (isComponentLoading || !currentLevelData || !currentPuzzle) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center">
         <Loader2 className="h-12 w-12 animate-spin" />
-        <p className="mt-4 text-muted-foreground">Loading Puzzle...</p>
+        <p className="mt-4 text-muted-foreground">Loading Game...</p>
+      </div>
+    );
+  }
+
+  if (isImageLoading) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center">
+        <Loader2 className="h-12 w-12 animate-spin" />
+        <p className="mt-4 text-muted-foreground">Loading Image...</p>
       </div>
     );
   }
@@ -182,6 +229,9 @@ export default function GameContainer() {
   };
 
   const restartGame = () => {
+    const newShuffledLevels = shuffle(initialLevels);
+    setLevels(newShuffledLevels);
+    localStorage.setItem('shuffledLevels', JSON.stringify(newShuffledLevels));
     setLevelIndex(0);
     setMistakeCount(0);
     setGameState("READY");
@@ -272,18 +322,22 @@ export default function GameContainer() {
               You have {MAX_MISTAKES - mistakeCount + 1} chance(s) remaining.
             </CardDescription>
             {levelIndex >= 2 && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="outline" size="sm" className="mx-auto mt-2">
-                      <Info className="mr-2 h-4 w-4" /> Hint
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{currentLevelData.hint}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="mx-auto mt-2">
+                    <Info className="mr-2 h-4 w-4" /> Hint
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Hint for {currentLevelData.place}</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {currentLevelData.hint}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogAction>Got it!</AlertDialogAction>
+                </AlertDialogContent>
+              </AlertDialog>
             )}
           </>
         )}
@@ -300,19 +354,7 @@ export default function GameContainer() {
             </CardDescription>
           </>
         )}
-        {gameState === "FAILED" && (
-          <>
-            <div className="flex justify-center text-red-500">
-              <XCircle className="h-16 w-16" />
-            </div>
-            <CardTitle className="text-3xl font-bold pt-4">
-              Not Quite
-            </CardTitle>
-            <CardDescription className="text-muted-foreground">
-              That wasn&apos;t the correct swap. You have {MAX_MISTAKES - mistakeCount + 1} chance remaining.
-            </CardDescription>
-          </>
-        )}
+        
         {gameState === "GAME_OVER" && (
             <>
               <div className="flex justify-center text-red-500">
@@ -418,11 +460,14 @@ export default function GameContainer() {
             Skip Preview
           </Button>
         )}
-
+        
         {gameState === "FAILED" && (
-          <Button onClick={resetForRetry} size="lg" className="w-full">
-            Try Again
-          </Button>
+           <div className="flex flex-col w-full space-y-2">
+            <Button onClick={resetForRetry} size="lg" className="w-full">
+                Try Again
+            </Button>
+            <p className="text-sm text-center text-muted-foreground">or</p>
+            </div>
         )}
 
         {gameState === "GAME_OVER" && (
@@ -442,7 +487,7 @@ export default function GameContainer() {
             <Link href="/" passHref legacyBehavior>
               <Button
                 variant="link"
-                className="absolute top-0 left-0 text-muted-foreground"
+                className=" text-muted-foreground"
               >
                 Back to Home
               </Button>

@@ -38,6 +38,12 @@ import {
 const MAX_MISTAKES = 1; // Allows 1 mistake, game over on the 2nd.
 const PREVIEW_TIME = 5; // 5 seconds to memorize
 
+// Preload the next image
+function preloadImage(url: string) {
+  const img = new window.Image();
+  img.src = url;
+}
+
 function shuffle<T>(array: T[]): T[] {
   let currentIndex = array.length,
     randomIndex;
@@ -74,11 +80,16 @@ export default function GameContainer() {
   const { grid: currentGridSize, categories } = useMemo(() => getLevelConfig(levelIndex), [levelIndex]);
 
   const availableLevels = useMemo(() => {
+    // For the first few levels, allow all categories.
     if (categories.includes('all')) return levels;
-    return levels.filter(level => categories.includes(level.category));
+    // Otherwise, filter by the allowed categories for the current difficulty tier.
+    // Also ensures we don't repeat levels from lower tiers.
+    const pastCategories = ['all'];
+    return levels.filter(level => categories.includes(level.category) && !pastCategories.includes(level.category));
   }, [levels, categories]);
   
   const currentLevel = useMemo(() => {
+    if (!availableLevels.length) return null;
     // Use modulo to loop through available levels for the current difficulty tier
     const levelFromTier = availableLevels[levelIndex % availableLevels.length];
     return levelFromTier;
@@ -99,6 +110,17 @@ export default function GameContainer() {
       localStorage.setItem('highestLevel', levelIndex.toString());
     }
   }, [levelIndex, highestLevel, isLoading]);
+  
+  // Preload the next level's image
+  useEffect(() => {
+    const nextLevelIndex = (levelIndex + 1);
+    if (nextLevelIndex < levels.length) {
+      const nextLevel = levels[nextLevelIndex];
+      if (nextLevel?.image.url) {
+        preloadImage(nextLevel.image.url);
+      }
+    }
+  }, [levelIndex, levels]);
   
   useEffect(() => {
     if (currentLevel) {

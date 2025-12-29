@@ -7,7 +7,6 @@ interface PuzzleBoardProps {
   imageUrl: string;
   grid: number;
   boardState: number[];
-  targetState: number[];
   swappedIndices: number[];
   onSuccess: () => void;
   onFail: () => void;
@@ -18,7 +17,6 @@ export default function PuzzleBoard({
   imageUrl,
   grid,
   boardState,
-  targetState,
   swappedIndices,
   onSuccess,
   onFail,
@@ -38,11 +36,10 @@ export default function PuzzleBoard({
     setSelectedIndices([...selectedIndices, boardIndex]);
   };
 
-  const checkSolution = useCallback((currentBoard: number[]) => {
-      // This is the correct logic. We just need to see if the player
-      // swapped the two originally swapped tiles.
+  const checkSolution = useCallback(() => {
       const [first, second] = selectedIndices;
-      const isCorrectSwap = (swappedIndices.includes(first) && swappedIndices.includes(second));
+      const isCorrectSwap = 
+        (swappedIndices.includes(first) && swappedIndices.includes(second));
 
       if (isCorrectSwap) {
         onSuccess();
@@ -50,33 +47,26 @@ export default function PuzzleBoard({
         setShowSolution(true);
         setTimeout(() => {
           onFail();
-          // Don't reset solution state here, it's handled by parent state
         }, 1500); 
       }
   }, [selectedIndices, swappedIndices, onSuccess, onFail]);
 
-  const performSwap = useCallback(() => {
-    if (selectedIndices.length !== 2) return;
-
-    const newBoard = [...board];
-    const [firstIndex, secondIndex] = selectedIndices;
-
-    [newBoard[firstIndex], newBoard[secondIndex]] = [newBoard[secondIndex], newBoard[firstIndex]];
-    
-    setBoard(newBoard);
-    
-    setTimeout(() => checkSolution(newBoard), 300);
-
-  }, [board, selectedIndices, checkSolution]);
-
+  // Effect to handle the swap and check logic
   useEffect(() => {
     if (selectedIndices.length === 2) {
-      const timer = setTimeout(performSwap, 300);
+      // Perform the swap visually first
+      const newBoard = [...board];
+      const [firstIndex, secondIndex] = selectedIndices;
+      [newBoard[firstIndex], newBoard[secondIndex]] = [newBoard[secondIndex], newBoard[firstIndex]];
+      setBoard(newBoard);
+
+      // Then check if it was the correct one after a short delay
+      const timer = setTimeout(checkSolution, 500);
       return () => clearTimeout(timer);
     }
-  }, [selectedIndices, performSwap]);
+  }, [selectedIndices, board, checkSolution]);
   
-  // Reset component state when the underlying puzzle changes
+  // Reset component state when the underlying puzzle changes via key prop
   useEffect(() => {
     setBoard(boardState);
     setSelectedIndices([]);
@@ -105,10 +95,10 @@ export default function PuzzleBoard({
               key={boardIndex}
               onClick={() => handleTileClick(boardIndex)}
               className={cn(
-                'relative overflow-hidden rounded-md transition-all duration-300',
+                'relative overflow-hidden rounded-sm transition-all duration-300',
                 !isReadOnly && !showSolution && 'cursor-pointer',
-                isSelected && 'ring-4 ring-primary ring-inset',
-                shouldHighlight && 'ring-4 ring-red-500 ring-inset animate-pulse'
+                isSelected && 'ring-4 ring-yellow-400 ring-inset z-10',
+                shouldHighlight && 'ring-4 ring-red-500 ring-inset animate-pulse z-10'
               )}
               style={{
                 width: `${TILE_SIZE}px`,

@@ -20,6 +20,7 @@ import {
   ArrowRight,
   HeartCrack,
   Info,
+  Play,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -55,6 +56,9 @@ export default function GameContainer() {
   const [mistakeCount, setMistakeCount] = useState(0);
 
   const [currentLevel, setCurrentLevel] = useState<Level>(levels[levelIndex]);
+  const [currentPuzzle, setCurrentPuzzle] = useState(() =>
+    generatePuzzle(currentLevel.image.url, currentGridSize)
+  );
 
   // Load progress on mount
   useEffect(() => {
@@ -63,13 +67,19 @@ export default function GameContainer() {
 
     const initialIndex = savedLevel ? parseInt(savedLevel, 10) : 0;
     const initialHighest = savedHighestLevel ? parseInt(savedHighestLevel, 10) : 0;
-
+    
     setLevelIndex(initialIndex);
     setHighestLevel(initialHighest);
-    setCurrentLevel(levels[initialIndex]);
-    setMistakeCount(0);
-  }, [levels]);
+  }, []);
 
+  // Update level based on index
+  useEffect(() => {
+    const newLevel = levels[levelIndex];
+    if (newLevel) {
+      setCurrentLevel(newLevel);
+    }
+  }, [levelIndex, levels]);
+  
   // Save progress whenever level changes
   useEffect(() => {
     localStorage.setItem('currentLevelIndex', levelIndex.toString());
@@ -87,30 +97,22 @@ export default function GameContainer() {
     return 6; // Levels 8+
   }, [levelIndex]);
 
-  const [currentPuzzle, setCurrentPuzzle] = useState(() =>
-    generatePuzzle(currentLevel.image.url, currentGridSize)
-  );
   const [retryCount, setRetryCount] = useState(0);
 
   const [gameState, setGameState] = useState<
-    "PREVIEW" | "PLAYING" | "SOLVED" | "FAILED" | "GAME_OVER"
-  >("PREVIEW");
+    "READY" | "PREVIEW" | "PLAYING" | "SOLVED" | "FAILED" | "GAME_OVER"
+  >("READY");
   const [showFacts, setShowFacts] = useState(false);
   
   const isTimerRunning = gameState === "PREVIEW";
-  const { time, reset: resetTimer } = useGameTimer(isTimerRunning);
+  const { time, reset: resetTimer, stop: stopTimer } = useGameTimer(isTimerRunning);
 
   useEffect(() => {
-    if (isTimerRunning) {
-        resetTimer();
-    }
-  }, [isTimerRunning, resetTimer]);
-  
-  useEffect(() => {
     if (gameState === 'PREVIEW' && time >= PREVIEW_TIME) {
+      stopTimer();
       setGameState('PLAYING');
     }
-  }, [time, gameState]);
+  }, [time, gameState, stopTimer]);
 
 
   useEffect(() => {
@@ -118,7 +120,7 @@ export default function GameContainer() {
     setRetryCount(0);
   }, [currentLevel, currentGridSize]);
 
-  const { scrambledBoard, solvedBoard, swapped, imageUrl } = useMemo(() => {
+  const { scrambledBoard, swapped, imageUrl } = useMemo(() => {
     return currentPuzzle;
   }, [currentPuzzle]);
 
@@ -147,9 +149,8 @@ export default function GameContainer() {
 
   const restartGame = () => {
     setLevelIndex(0);
-    setCurrentLevel(levels[0]);
     setMistakeCount(0);
-    setGameState("PREVIEW");
+    setGameState("READY");
     setShowFacts(false);
     setRetryCount(0);
     resetTimer();
@@ -157,26 +158,38 @@ export default function GameContainer() {
 
   const nextLevel = () => {
     const newIndex = (levelIndex + 1);
-    if (newIndex >= levels.length) {
-      setLevelIndex(0);
-      setCurrentLevel(levels[0]);
-    } else {
-      setLevelIndex(newIndex);
-      setCurrentLevel(levels[newIndex]);
-    }
-
-    setGameState("PREVIEW");
+    // Wrap around if we run out of levels
+    setLevelIndex(newIndex >= levels.length ? 0 : newIndex);
+    
+    setGameState("READY");
     setShowFacts(false);
     setRetryCount(0);
     setMistakeCount(0);
-    resetTimer();
   };
+  
+  const handleStart = () => {
+    setGameState("PREVIEW");
+    resetTimer();
+  }
 
   const puzzleKey = `${currentLevel.id}-${imageUrl}-${retryCount}`;
 
   return (
     <Card className="w-full max-w-sm bg-background border-border shadow-2xl transition-all duration-500">
       <CardHeader className="text-center min-h-[160px] flex flex-col justify-center">
+        {gameState === "READY" && (
+            <>
+                <CardTitle className="text-3xl font-bold">
+                {currentLevel.place}
+                </CardTitle>
+                <CardDescription className="text-muted-foreground">
+                Level {levelIndex + 1} &bull; {currentGridSize}x{currentGridSize} Grid
+                </CardDescription>
+                <CardDescription className="text-muted-foreground pt-2">
+                 Click Start to memorize the image.
+                </CardDescription>
+            </>
+        )}
         {gameState === "PREVIEW" && (
           <>
              <div className="absolute top-4 right-4">
@@ -208,13 +221,13 @@ export default function GameContainer() {
                 </div>
             </div>
             <CardTitle className="text-3xl font-bold">
-              {currentLevel.place}
+              Memorize!
             </CardTitle>
             <CardDescription className="text-muted-foreground">
               Level {levelIndex + 1} &bull; {currentGridSize}x{currentGridSize} Grid
             </CardDescription>
             <CardDescription className="text-muted-foreground pt-2">
-              Memorize the image before the timer runs out.
+              The timer has started. Memorize the image.
             </CardDescription>
           </>
         )}
@@ -277,14 +290,14 @@ export default function GameContainer() {
                 Game Over
               </CardTitle>
               <CardDescription className="text-muted-foreground">
-                You've run out of chances. Better luck next time!
+                You reached level {levelIndex + 1}. Better luck next time!
               </CardDescription>
             </>
         )}
       </CardHeader>
 
       <CardContent className="flex flex-col items-center gap-6 px-4 sm:px-6">
-        {gameState === "PREVIEW" && (
+        {(gameState === "READY" || gameState === "PREVIEW") && (
           <div className="relative h-[300px] w-[300px] rounded-lg overflow-hidden shadow-lg border-2 border-border flex items-center justify-center">
             <Image
               key={imageUrl}
@@ -293,7 +306,10 @@ export default function GameContainer() {
               width={300}
               height={300}
               priority
-              className="object-cover"
+              className={cn(
+                  "object-cover transition-all duration-500",
+                  gameState === "READY" && "blur-md scale-110",
+              )}
             />
           </div>
         )}
@@ -354,6 +370,12 @@ export default function GameContainer() {
       </CardContent>
 
       <CardFooter className="flex flex-col items-center justify-center p-6 space-y-4 min-h-[110px]">
+        {gameState === "READY" && (
+            <Button onClick={handleStart} size="lg" className="w-full">
+                <Play className="mr-2" /> Start Puzzle
+            </Button>
+        )}
+        
         {gameState === "PREVIEW" && (
           <Button
             onClick={() => setGameState("PLAYING")}

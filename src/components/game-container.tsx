@@ -21,6 +21,7 @@ import {
   HeartCrack,
   Info,
   Play,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -54,11 +55,7 @@ export default function GameContainer() {
   const [levelIndex, setLevelIndex] = useState(0);
   const [highestLevel, setHighestLevel] = useState(0);
   const [mistakeCount, setMistakeCount] = useState(0);
-
-  const [currentLevel, setCurrentLevel] = useState<Level>(levels[levelIndex]);
-  const [currentPuzzle, setCurrentPuzzle] = useState(() =>
-    generatePuzzle(currentLevel.image.url, currentGridSize)
-  );
+  const [isLoading, setIsLoading] = useState(true);
 
   // Load progress on mount
   useEffect(() => {
@@ -70,25 +67,10 @@ export default function GameContainer() {
     
     setLevelIndex(initialIndex);
     setHighestLevel(initialHighest);
+    setIsLoading(false);
   }, []);
 
-  // Update level based on index
-  useEffect(() => {
-    const newLevel = levels[levelIndex];
-    if (newLevel) {
-      setCurrentLevel(newLevel);
-    }
-  }, [levelIndex, levels]);
-  
-  // Save progress whenever level changes
-  useEffect(() => {
-    localStorage.setItem('currentLevelIndex', levelIndex.toString());
-    if (levelIndex > highestLevel) {
-      setHighestLevel(levelIndex);
-      localStorage.setItem('highestLevel', levelIndex.toString());
-    }
-  }, [levelIndex, highestLevel]);
-
+  const currentLevel = useMemo(() => levels[levelIndex], [levels, levelIndex]);
 
   const currentGridSize = useMemo(() => {
     if (levelIndex < 2) return 3; // Levels 1-2
@@ -96,6 +78,29 @@ export default function GameContainer() {
     if (levelIndex < 7) return 5; // Levels 5-7
     return 6; // Levels 8+
   }, [levelIndex]);
+
+  const [currentPuzzle, setCurrentPuzzle] = useState(() => {
+    if (!currentLevel) return null;
+    return generatePuzzle(currentLevel.image.url, currentGridSize);
+  });
+  
+  // Save progress whenever level changes
+  useEffect(() => {
+    if (isLoading) return;
+    localStorage.setItem('currentLevelIndex', levelIndex.toString());
+    if (levelIndex > highestLevel) {
+      setHighestLevel(levelIndex);
+      localStorage.setItem('highestLevel', levelIndex.toString());
+    }
+  }, [levelIndex, highestLevel, isLoading]);
+  
+  useEffect(() => {
+    if (currentLevel) {
+      setCurrentPuzzle(generatePuzzle(currentLevel.image.url, currentGridSize));
+      setRetryCount(0);
+    }
+  }, [currentLevel, currentGridSize]);
+
 
   const [retryCount, setRetryCount] = useState(0);
 
@@ -115,14 +120,16 @@ export default function GameContainer() {
   }, [time, gameState, stopTimer]);
 
 
-  useEffect(() => {
-    setCurrentPuzzle(generatePuzzle(currentLevel.image.url, currentGridSize));
-    setRetryCount(0);
-  }, [currentLevel, currentGridSize]);
+  if (isLoading || !currentLevel || !currentPuzzle) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center">
+        <Loader2 className="h-12 w-12 animate-spin" />
+        <p className="mt-4 text-muted-foreground">Loading Puzzle...</p>
+      </div>
+    );
+  }
 
-  const { scrambledBoard, swapped, imageUrl } = useMemo(() => {
-    return currentPuzzle;
-  }, [currentPuzzle]);
+  const { scrambledBoard, swapped, imageUrl } = currentPuzzle;
 
 
   const handleSuccess = async () => {

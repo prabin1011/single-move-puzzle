@@ -83,17 +83,25 @@ export default function GameContainer() {
     // For the first few levels, allow all categories.
     if (categories.includes('all')) return levels;
     // Otherwise, filter by the allowed categories for the current difficulty tier.
-    // Also ensures we don't repeat levels from lower tiers.
     const pastCategories = ['all'];
-    return levels.filter(level => categories.includes(level.category) && !pastCategories.includes(level.category));
+    const seenIds = new Set<string>();
+    
+    return levels.filter(level => {
+        const isCorrectCategory = categories.includes(level.category) && !pastCategories.includes(level.category);
+        if (isCorrectCategory && !seenIds.has(level.id)) {
+            seenIds.add(level.id);
+            return true;
+        }
+        return false;
+    });
   }, [levels, categories]);
   
   const currentLevel = useMemo(() => {
-    if (!availableLevels.length) return null;
+    if (!availableLevels.length) return levels[levelIndex % levels.length]; // Fallback to looping all levels
     // Use modulo to loop through available levels for the current difficulty tier
     const levelFromTier = availableLevels[levelIndex % availableLevels.length];
     return levelFromTier;
-  }, [availableLevels, levelIndex]);
+  }, [availableLevels, levelIndex, levels]);
 
 
   const [currentPuzzle, setCurrentPuzzle] = useState(() => {
@@ -114,11 +122,13 @@ export default function GameContainer() {
   // Preload the next level's image
   useEffect(() => {
     const nextLevelIndex = (levelIndex + 1);
-    if (nextLevelIndex < levels.length) {
-      const nextLevel = levels[nextLevelIndex];
-      if (nextLevel?.image.url) {
-        preloadImage(nextLevel.image.url);
-      }
+    const nextLevelConfig = getLevelConfig(nextLevelIndex);
+    const nextAvailableLevels = levels.filter(l => nextLevelConfig.categories.includes(l.category) || nextLevelConfig.categories.includes('all'));
+    if (nextAvailableLevels.length > 0) {
+        const nextLevel = nextAvailableLevels[nextLevelIndex % nextAvailableLevels.length];
+        if (nextLevel?.image.url) {
+            preloadImage(nextLevel.image.url);
+        }
     }
   }, [levelIndex, levels]);
   
@@ -194,11 +204,10 @@ export default function GameContainer() {
   const nextLevel = () => {
     const newIndex = (levelIndex + 1);
     setLevelIndex(newIndex);
-    
     setGameState("READY");
     setShowFacts(false);
     setRetryCount(0);
-    setMistakeCount(0);
+    setMistakeCount(0); // Reset mistakes for the new level
   };
   
   const handleStart = () => {
@@ -210,7 +219,7 @@ export default function GameContainer() {
 
   return (
     <Card className="w-full max-w-sm bg-background border-border shadow-2xl transition-all duration-500">
-      <CardHeader className="text-center min-h-[160px] flex flex-col justify-center">
+      <CardHeader className="text-center min-h-[160px] flex flex-col justify-center relative">
         {gameState === "READY" && (
             <>
                 <CardTitle className="text-3xl font-bold">
@@ -311,7 +320,7 @@ export default function GameContainer() {
               Not Quite
             </CardTitle>
             <CardDescription className="text-muted-foreground">
-              That wasn&apos;t the correct swap. Give it another try!
+              That wasn&apos;t the correct swap. You have {MAX_MISTAKES - mistakeCount + 1} chance remaining.
             </CardDescription>
           </>
         )}
@@ -455,3 +464,5 @@ export default function GameContainer() {
     </Card>
   );
 }
+
+    

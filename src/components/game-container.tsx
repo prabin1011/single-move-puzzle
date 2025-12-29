@@ -22,7 +22,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import Image from "next/image";
-import { levels as initialLevels, generatePuzzle, type Level } from "@/lib/levels";
+import { levels as initialLevels, generatePuzzle, getImageUrl, type Level } from "@/lib/levels";
 import { getLevelConfig } from "@/lib/game-config";
 import {
   CheckCircle,
@@ -111,14 +111,15 @@ export default function GameContainer() {
     if (isComponentLoading || levels.length === 0 || levelIndex >= levels.length) return null;
     return levels[levelIndex];
   }, [levelIndex, levels, isComponentLoading]);
-
+  
   // Generate the puzzle for the current level
   const currentPuzzle = useMemo(() => {
     if (!currentLevelData) return null;
     const { grid: currentGridSize } = getLevelConfig(levelIndex);
-    return generatePuzzle(currentLevelData.image.url, currentGridSize);
+    // Pass the imageId to generatePuzzle
+    return generatePuzzle(currentLevelData.imageId, currentGridSize);
   }, [currentLevelData, levelIndex, retryCount]); // Rerun if level or retryCount changes
-  
+
   // Game timer logic
   useEffect(() => {
     if (gameState === 'PREVIEW' && time >= PREVIEW_TIME) {
@@ -137,8 +138,8 @@ export default function GameContainer() {
     );
   }
 
-  const { scrambledBoard, swapped } = currentPuzzle;
-  const imageUrl = currentLevelData.image.url; // Get imageUrl from stable source
+  const { scrambledBoard, swapped, imageUrl } = currentPuzzle;
+  const { url: currentImageUrl, hint: currentImageHint } = getImageUrl(currentLevelData.imageId);
   const { grid: currentGridSize } = getLevelConfig(levelIndex);
 
 
@@ -323,13 +324,13 @@ export default function GameContainer() {
         {(gameState === "READY" || gameState === "PREVIEW") && (
           <div className="relative h-[300px] w-[300px] rounded-lg overflow-hidden shadow-lg border-2 border-border flex items-center justify-center">
             <Image
-              key={imageUrl}
-              src={imageUrl}
+              key={currentImageUrl}
+              src={currentImageUrl}
               alt={currentLevelData.place}
               width={300}
               height={300}
               priority
-              data-ai-hint={currentLevelData.image.hint}
+              data-ai-hint={currentImageHint}
               className={cn(
                   "object-cover transition-all duration-500",
                   gameState === "READY" && "blur-md scale-110",
@@ -341,7 +342,7 @@ export default function GameContainer() {
         {(gameState === "PLAYING" || gameState === "FAILED") && (
           <PuzzleBoard
             key={puzzleKey}
-            imageUrl={imageUrl}
+            imageUrl={currentImageUrl}
             grid={currentGridSize}
             boardState={scrambledBoard}
             swappedIndices={swapped}
@@ -355,11 +356,11 @@ export default function GameContainer() {
           <div className="flex flex-col items-center w-full">
             <div className="relative h-[300px] w-[300px] rounded-lg overflow-hidden shadow-lg mx-auto mb-6 border-2 border-green-400/50">
               <Image
-                src={imageUrl}
+                src={currentImageUrl}
                 alt={currentLevelData.place}
                 width={300}
                 height={300}
-                data-ai-hint={currentLevelData.image.hint}
+                data-ai-hint={currentImageHint}
                 className="object-cover"
                 priority
               />

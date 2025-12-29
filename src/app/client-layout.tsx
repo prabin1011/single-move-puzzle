@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/toaster"
 import { FirebaseClientProvider } from '@/firebase';
 import { useEffect } from 'react';
 import { levels } from '@/lib/levels';
+import { getImageUrl } from '@/lib/levels';
+
 
 // This is our "silent agent" for image pre-caching.
 const ImageCacheAgent = () => {
@@ -14,13 +16,14 @@ const ImageCacheAgent = () => {
         try {
           const cacheName = 'image-cache-v1';
           const cache = await caches.open(cacheName);
-          const imageUrls = levels.map(level => level.image.url);
+          // Get all image URLs from our new centralized source
+          const imageUrls = levels.map(level => getImageUrl(level.imageId).url);
           
           // A loop with `cache.add` is more resilient than `cache.addAll`.
           for (const url of imageUrls) {
             // `add` fetches and caches. If the request is already in the cache, it's a no-op.
             try {
-              await cache.add(url);
+              await cache.add(new Request(url, { mode: 'no-cors' }));
             } catch (error) {
               console.error(`Image caching agent failed for URL: ${url}`, error);
             }

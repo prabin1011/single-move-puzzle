@@ -542,7 +542,7 @@ export const generatePuzzle = (imageUrl: string, grid: number) => {
   
   const swappedIndices = generateRandomSwap(grid);
   const [index1, index2] = swappedIndices;
-  [scrambledBoard[index1], scrambledBoard[index2]] = [scrambledBoard[index2], scrambledBoard[first]];
+  [scrambledBoard[index1], scrambledBoard[index2]] = [scrambledBoard[index2], scrambledBoard[index1]];
 
   return {
     solvedBoard,

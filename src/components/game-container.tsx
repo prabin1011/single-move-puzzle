@@ -366,8 +366,8 @@ export default function GameContainer() {
         
         {(gameState === "GAME_OVER") && (
             <div className="text-center">
-                <p>You reached Level {levelIndex + 1}.</p>
-                <p>Your highest level is {highestLevel > 0 ? highestLevel + 1 : 1}.</p>
+                <p>You made too many mistakes.</p>
+                <p>You successfully completed {levelIndex} {levelIndex === 1 ? 'level' : 'levels'}.</p>
             </div>
         )}
 
@@ -392,11 +392,10 @@ export default function GameContainer() {
         )}
         
         {gameState === "FAILED" && (
-           <div className="flex flex-col w-full space-y-2">
+           <div className="flex w-full space-x-2">
             <Button onClick={resetForRetry} size="lg" className="w-full">
                 Try Again
             </Button>
-            <p className="text-sm text-center text-muted-foreground">or</p>
             </div>
         )}
 
@@ -428,3 +427,5 @@ export default function GameContainer() {
     </Card>
   );
 }
+
+    

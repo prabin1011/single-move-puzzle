@@ -19,10 +19,14 @@ const ImageCacheAgent = () => {
           // A loop with `cache.add` is more resilient than `cache.addAll`.
           for (const url of imageUrls) {
             // `add` fetches and caches. If the request is already in the cache, it's a no-op.
-            await cache.add(url);
+            try {
+              await cache.add(url);
+            } catch (error) {
+              console.error(`Image caching agent failed for URL: ${url}`, error);
+            }
           }
         } catch (error) {
-          console.error('Image caching agent failed:', error);
+          console.error('Image caching agent failed to open cache:', error);
         }
       }
     };
@@ -49,3 +53,5 @@ export default function ClientLayout({
     </>
   );
 }
+
+    

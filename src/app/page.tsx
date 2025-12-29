@@ -13,16 +13,6 @@ import { Loader2 } from 'lucide-react';
 import { levels } from '@/lib/levels';
 import type { Level } from '@/lib/levels';
 
-// Preload all images from the levels file in the background
-function preloadAllImages() {
-  if (typeof window !== 'undefined') {
-    levels.forEach(level => {
-      const img = new window.Image();
-      img.src = level.image.url;
-    });
-  }
-}
-
 function shuffle<T>(array: T[]): T[] {
   let currentIndex = array.length,
     randomIndex;
@@ -50,11 +40,6 @@ export default function Home() {
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
 
-  // Run the global image preloader once when the component mounts
-  useEffect(() => {
-    preloadAllImages();
-  }, []);
-
   useEffect(() => {
     const savedLevel = localStorage.getItem('highestLevel');
     if (savedLevel) {
@@ -81,7 +66,7 @@ export default function Home() {
   
   const showContinue = !isLoading && highestLevel > 0;
 
-  if (isUserLoading || !user) {
+  if (isUserLoading || !auth) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -109,12 +94,12 @@ export default function Home() {
             <p className="flex items-start gap-3"><span className="mt-1 text-primary">✓</span><span>Learn a few fun facts.</span></p>
           </div>
           <div className="flex flex-col space-y-3 px-6">
-            <Button size="lg" className="w-full" onClick={handleNewGame} disabled={isUserLoading}>
+            <Button size="lg" className="w-full" onClick={handleNewGame}>
               New Game
             </Button>
             {showContinue && (
               <Link href="/play" className="w-full">
-                <Button size="lg" variant="secondary" className="w-full" disabled={isUserLoading}>
+                <Button size="lg" variant="secondary" className="w-full">
                   Continue (Level {highestLevel + 1})
                 </Button>
               </Link>
@@ -125,3 +110,5 @@ export default function Home() {
     </main>
   );
 }
+
+    

@@ -10,6 +10,18 @@ import { useRouter } from 'next/navigation';
 import { useAuth, useUser } from '@/firebase';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { Loader2 } from 'lucide-react';
+import { levels } from '@/lib/levels';
+
+// Preload all images from the levels file in the background
+function preloadAllImages() {
+  if (typeof window !== 'undefined') {
+    levels.forEach(level => {
+      const img = new window.Image();
+      img.src = level.image.url;
+    });
+  }
+}
+
 
 export default function Home() {
   const router = useRouter();
@@ -17,6 +29,11 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
+
+  // Run the global image preloader once when the component mounts
+  useEffect(() => {
+    preloadAllImages();
+  }, []);
 
   useEffect(() => {
     const savedLevel = localStorage.getItem('highestLevel');

@@ -1,21 +1,16 @@
 
 'use server';
 
-import { landmarkEnhancerFlow } from "@/ai/flows/landmark-flow";
+// This file is kept for potential future server actions,
+// but the AI fact generation has been removed for performance
+// and reliability as requested. Facts are now curated in levels.ts.
 
-// This function is now primarily for fetching AI-generated facts.
 export async function getLandmarkData(
   state: { facts: string[] } | null,
   formData: { landmarkName: string }
 ) {
-  try {
-    const result = await landmarkEnhancerFlow(formData);
-    return {
-      facts: result.facts
-    };
-  } catch (error) {
-    console.error('Error fetching landmark data:', error);
-    // Return a default state or handle the error as appropriate
-    return { facts: ["Could not load new facts at this time."] };
-  }
+  // This function is no longer needed for facts but is kept to avoid breaking imports.
+  // It returns a placeholder to avoid errors.
+  console.log(`Action called for ${formData.landmarkName}, but facts are now static.`);
+  return { facts: ["New facts are now loaded with each level."] };
 }

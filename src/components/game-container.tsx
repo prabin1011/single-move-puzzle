@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useEffect, useActionState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import PuzzleBoard from "./puzzle-board";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,12 +20,14 @@ import {
   ArrowRight,
   RefreshCw,
   Loader2,
+  HeartCrack,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { getLandmarkData } from "@/lib/actions";
 import { useLandmarkImages } from "@/hooks/useLandmarkImages";
 import { Skeleton } from "./ui/skeleton";
+
+const MAX_MISTAKES = 1; // Allows 1 mistake, game over on the 2nd.
 
 function shuffle<T>(array: T[]): T[] {
   let currentIndex = array.length,
@@ -43,29 +45,55 @@ function shuffle<T>(array: T[]): T[] {
 export default function GameContainer() {
   const [levels] = useState(() => shuffle(initialLevels));
   const [levelIndex, setLevelIndex] = useState(0);
-  const [currentLevel, setCurrentLevel] = useState<Level>(levels[0]);
+  const [highestLevel, setHighestLevel] = useState(0);
 
-  // Dynamic grid size for increasing difficulty
+  const [mistakeCount, setMistakeCount] = useState(0);
+
+  const [currentLevel, setCurrentLevel] = useState<Level>(levels[levelIndex]);
+  const [currentFacts, setCurrentFacts] = useState(currentLevel.facts);
+
+  // Load progress on mount
+  useEffect(() => {
+    const savedLevel = localStorage.getItem('currentLevelIndex');
+    const savedHighestLevel = localStorage.getItem('highestLevel');
+
+    const initialIndex = savedLevel ? parseInt(savedLevel, 10) : 0;
+    const initialHighest = savedHighestLevel ? parseInt(savedHighestLevel, 10) : 0;
+
+    setLevelIndex(initialIndex);
+    setHighestLevel(initialHighest);
+    setCurrentLevel(levels[initialIndex]);
+    setCurrentFacts(levels[initialIndex].facts);
+    setMistakeCount(0);
+  }, [levels]);
+
+  // Save progress whenever level changes
+  useEffect(() => {
+    localStorage.setItem('currentLevelIndex', levelIndex.toString());
+    if (levelIndex > highestLevel) {
+      setHighestLevel(levelIndex);
+      localStorage.setItem('highestLevel', levelIndex.toString());
+    }
+  }, [levelIndex, highestLevel]);
+
+
   const currentGridSize = useMemo(() => {
-    // Starts at 3x3, increases to 4x4 at level 3, 5x5 at level 6, etc.
-    // Capped at 5x5 for now to keep it playable.
-    return Math.min(3 + Math.floor(levelIndex / 3), 5);
+    if (levelIndex < 2) return 3; // Levels 1-2
+    if (levelIndex < 4) return 4; // Levels 3-4
+    if (levelIndex < 7) return 5; // Levels 5-7
+    return 6; // Levels 8+
   }, [levelIndex]);
 
   const [currentPuzzle, setCurrentPuzzle] = useState(() =>
-    generatePuzzle(currentLevel, "", currentGridSize) // image will be injected later
+    generatePuzzle("", currentGridSize)
   );
   const [retryCount, setRetryCount] = useState(0);
 
   const [gameState, setGameState] = useState<
-    "PREVIEW" | "PLAYING" | "SOLVED" | "FAILED"
+    "PREVIEW" | "PLAYING" | "SOLVED" | "FAILED" | "GAME_OVER"
   >("PREVIEW");
   const [showFacts, setShowFacts] = useState(false);
 
-  const [state, getNewFacts, isPending] = useActionState(getLandmarkData, null);
-  const [currentFacts, setCurrentFacts] = useState(currentLevel.facts);
-
-  // 🔥 IMAGE ENGINE
   const {
     currentImage,
     nextImage,
@@ -74,17 +102,9 @@ export default function GameContainer() {
     hasImages,
   } = useLandmarkImages(currentLevel.place);
 
-  // When AI returns new facts
-  useEffect(() => {
-    if (state?.facts) {
-      setCurrentFacts(state.facts);
-    }
-  }, [state]);
-
-  // Whenever the image or grid size changes, regenerate the puzzle
   useEffect(() => {
     if (!currentImage) return;
-    setCurrentPuzzle(generatePuzzle(currentLevel, currentImage, currentGridSize));
+    setCurrentPuzzle(generatePuzzle(currentImage, currentGridSize));
     setRetryCount(0);
   }, [currentImage, currentLevel, currentGridSize]);
 
@@ -98,55 +118,67 @@ export default function GameContainer() {
 
   const handleSuccess = async () => {
     setGameState("SOLVED");
-    getNewFacts({ landmarkName: currentLevel.place });
     setTimeout(() => setShowFacts(true), 500);
   };
 
   const handleFail = () => {
-    setGameState("FAILED");
+    const newMistakeCount = mistakeCount + 1;
+    setMistakeCount(newMistakeCount);
+    if (newMistakeCount > MAX_MISTAKES) {
+      setGameState("GAME_OVER");
+      localStorage.removeItem('currentLevelIndex'); // Reset for next game
+    } else {
+      setGameState("FAILED");
+    }
   };
 
   const resetForRetry = () => {
     setRetryCount((prev) => prev + 1);
     if (currentImage) {
-      setCurrentPuzzle(generatePuzzle(currentLevel, currentImage, currentGridSize));
+      setCurrentPuzzle(generatePuzzle(currentImage, currentGridSize));
     }
     setGameState("PLAYING");
   };
 
-  const nextLevel = () => {
-    const newIndex = (levelIndex + 1); // Don't loop back for now
-    if (newIndex >= levels.length) {
-        // For now, let's just reset. Later we can add a "You won!" screen.
-        setLevelIndex(0);
-        setCurrentLevel(levels[0]);
-        setCurrentFacts(levels[0].facts);
-    } else {
-        const newLevel = levels[newIndex];
-        setLevelIndex(newIndex);
-        setCurrentLevel(newLevel);
-        setCurrentFacts(newLevel.facts);
-    }
+  const restartGame = () => {
+    setLevelIndex(0);
+    setCurrentLevel(levels[0]);
+    setCurrentFacts(levels[0].facts);
+    setMistakeCount(0);
+    setGameState("PREVIEW");
+    setShowFacts(false);
+    setRetryCount(0);
+  }
 
+  const nextLevel = () => {
+    const newIndex = (levelIndex + 1);
+    if (newIndex >= levels.length) {
+      // For now, loop back to the start if all levels are completed.
+      setLevelIndex(0);
+      setCurrentLevel(levels[0]);
+      setCurrentFacts(levels[0].facts);
+    } else {
+      setLevelIndex(newIndex);
+      setCurrentLevel(levels[newIndex]);
+      setCurrentFacts(levels[newIndex].facts);
+    }
 
     setGameState("PREVIEW");
     setShowFacts(false);
     setRetryCount(0);
+    setMistakeCount(0);
   };
 
   const handleNewImage = () => {
-    // Just move to the next image from the engine
     nextImage();
   };
 
-  // Key to force re-render puzzle board when the underlying puzzle changes
   const puzzleKey = `${currentLevel.id}-${imageUrl}-${retryCount}`;
-
   const showImageSkeleton = imageLoading || !currentImage;
 
   return (
     <Card className="w-full max-w-sm bg-background border-border shadow-2xl transition-all duration-500">
-      <CardHeader className="text-center min-h-[140px] flex justify-center">
+      <CardHeader className="text-center min-h-[160px] flex flex-col justify-center">
         {gameState === "PREVIEW" && (
           <>
             <CardTitle className="text-3xl font-bold">
@@ -154,6 +186,9 @@ export default function GameContainer() {
             </CardTitle>
             <CardDescription className="text-muted-foreground">
               Level {levelIndex + 1} &bull; {currentGridSize}x{currentGridSize} Grid
+            </CardDescription>
+            <CardDescription className="text-muted-foreground pt-2">
+              Memorize the image, then find the single swap.
             </CardDescription>
           </>
         )}
@@ -163,7 +198,7 @@ export default function GameContainer() {
               Find the two swapped pieces.
             </CardTitle>
             <CardDescription className="text-muted-foreground">
-              Select two tiles to swap them back into place.
+              You have {MAX_MISTAKES - mistakeCount + 1} chance(s) remaining.
             </CardDescription>
           </>
         )}
@@ -193,10 +228,22 @@ export default function GameContainer() {
             </CardDescription>
           </>
         )}
+        {gameState === "GAME_OVER" && (
+            <>
+              <div className="flex justify-center text-red-500">
+                <HeartCrack className="h-16 w-16" />
+              </div>
+              <CardTitle className="text-3xl font-bold pt-4">
+                Game Over
+              </CardTitle>
+              <CardDescription className="text-muted-foreground">
+                You've run out of chances. Better luck next time!
+              </CardDescription>
+            </>
+        )}
       </CardHeader>
 
       <CardContent className="flex flex-col items-center gap-6 px-4 sm:px-6">
-        {/* PREVIEW STATE */}
         {gameState === "PREVIEW" && (
           <div className="relative h-[300px] w-[300px] rounded-lg overflow-hidden shadow-lg border-2 border-border flex items-center justify-center">
             {showImageSkeleton ? (
@@ -217,7 +264,6 @@ export default function GameContainer() {
           </div>
         )}
 
-        {/* PLAYING / FAILED STATE */}
         {(gameState === "PLAYING" || gameState === "FAILED") && currentImage && (
           <PuzzleBoard
             key={puzzleKey}
@@ -232,7 +278,6 @@ export default function GameContainer() {
           />
         )}
 
-        {/* SOLVED STATE */}
         {gameState === "SOLVED" && currentImage && (
           <div className="flex flex-col items-center w-full">
             <div className="relative h-[300px] w-[300px] rounded-lg overflow-hidden shadow-lg mx-auto mb-6 border-2 border-green-400/50">
@@ -251,7 +296,7 @@ export default function GameContainer() {
                 showFacts ? "opacity-100" : "opacity-0"
               )}
             >
-              <ul className="space-y-3 text-left text-lg">
+              <ul className="space-y-3 text-left text-base">
                 {currentFacts.map((fact, index) => (
                   <li
                     key={index}
@@ -262,24 +307,20 @@ export default function GameContainer() {
                   </li>
                 ))}
               </ul>
-              <Button
-                onClick={() =>
-                  getNewFacts({ landmarkName: currentLevel.place })
-                }
-                className="w-full mt-4"
-                variant="secondary"
-                size="sm"
-                disabled={isPending}
-              >
-                {isPending ? <Loader2 className="animate-spin" /> : <RefreshCw />}
-                Get New Facts
-              </Button>
             </div>
           </div>
         )}
+        
+        {(gameState === "GAME_OVER") && (
+            <div className="text-center">
+                <p>You reached Level {levelIndex + 1}.</p>
+                <p>Your highest level is {highestLevel + 1}.</p>
+            </div>
+        )}
+
       </CardContent>
 
-      <CardFooter className="flex flex-col items-center justify-center p-6 space-y-4">
+      <CardFooter className="flex flex-col items-center justify-center p-6 space-y-4 min-h-[110px]">
         {gameState === "PREVIEW" && (
           <div className="w-full space-y-2">
             <Button
@@ -309,6 +350,12 @@ export default function GameContainer() {
           </Button>
         )}
 
+        {gameState === "GAME_OVER" && (
+            <Button onClick={restartGame} size="lg" className="w-full">
+                Restart Game
+            </Button>
+        )}
+
         {gameState === "SOLVED" && (
           <Button onClick={nextLevel} size="lg" className="w-full">
             Next Puzzle <ArrowRight className="ml-2" />
@@ -316,7 +363,7 @@ export default function GameContainer() {
         )}
 
         <div className="relative w-full text-center h-6">
-          {gameState !== "PREVIEW" && (
+          {(gameState === "PLAYING" || gameState === "FAILED" || gameState === "GAME_OVER") && (
             <Link href="/" passHref legacyBehavior>
               <Button
                 variant="link"

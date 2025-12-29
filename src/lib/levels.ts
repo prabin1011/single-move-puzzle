@@ -3,23 +3,22 @@ export interface Level {
   id: string;
   place: string;
   country: string;
-  // grid is now a suggestion, the game container will override it
-  grid: number;
   facts: string[];
   hint: string;
-  difficulty: 'easy' | 'medium' | 'hard' | 'expert' | 'master';
+  difficulty: 'easy' | 'medium' | 'hard' | 'expert' | 'master' | 'insane';
 }
 
+// Grid size is now determined by the game container based on level index, not by this data.
 export const levels: Level[] = [
+  // 3x3 Grid
   {
     id: "lvl_001",
     place: "Eiffel Tower",
     country: "France",
-    grid: 3,
     facts: [
-        "Was the world's tallest man-made structure for 41 years.",
-        "Repainted every 7 years, requiring 60 tons of paint.",
-        "Has over 1,665 steps to the top."
+        "It was the main exhibit of the 1889 Exposition Universelle (World's Fair).",
+        "The tower's iron structure weighs 7,300 tons.",
+        "It is the most-visited paid monument in the world."
     ],
     hint: "Focus on the structure's base.",
     difficulty: "easy"
@@ -28,24 +27,23 @@ export const levels: Level[] = [
       id: "lvl_002",
       place: "Colosseum",
       country: "Italy",
-      grid: 3,
       facts: [
-          "Could hold an estimated 50,000 to 80,000 spectators.",
-          "Used for gladiatorial contests and public spectacles.",
-          "Much of it was damaged by earthquakes and stone-robbers."
+          "It's the largest ancient amphitheater ever built, and is still the largest standing amphitheater in the world today.",
+          "The hypogeum, an underground network of tunnels, was added later to house gladiators and animals.",
+          "It's estimated that over 400,000 people and 1 million animals died within its walls."
       ],
       hint: "Look at the arches.",
       difficulty: "easy"
   },
+  // 4x4 Grid
   {
     id: "lvl_003",
     place: "Statue of Liberty",
     country: "USA",
-    grid: 3,
     facts: [
-      "It was a gift to the United States from the people of France in 1886.",
-      "The crown's seven rays represent the seven continents.",
-      "The outer skin is made of copper and is only 3/32 of an inch thick."
+      "The statue's copper skin turned its characteristic green color due to oxidation over about 30 years.",
+      "It functioned as a lighthouse from 1886 to 1901, visible from up to 24 miles away.",
+      "The seven spikes on the crown represent the seven oceans and seven continents of the world."
     ],
     hint: "Focus on the tablet.",
     difficulty: "medium"
@@ -54,24 +52,23 @@ export const levels: Level[] = [
     id: "lvl_004",
     place: "Taj Mahal",
     country: "India",
-    grid: 4,
     facts: [
-      "It's a mausoleum built by emperor Shah Jahan for his wife Mumtaz Mahal.",
-      "It took over 20,000 artisans 22 years to build.",
-      "The building appears to change color depending on the time of day."
+      "It is a perfectly symmetrical building; an identical mosque and guesthouse flank the main mausoleum.",
+      "The four minarets are slightly tilted outwards to protect the main tomb from damage if they were to collapse.",
+      "Over 1,000 elephants were used to transport building materials during its construction."
     ],
     hint: "Look at the central dome.",
     difficulty: "medium"
   },
+  // 5x5 Grid
   {
     id: "lvl_005",
     place: "Machu Picchu",
     country: "Peru",
-    grid: 4,
     facts: [
-        "It was an Inca citadel built in the 15th century.",
-        "It is often called the 'Lost City of the Incas'.",
-        "The site is comprised of over 150 buildings."
+        "It was built around 1450, at the height of the Inca Empire.",
+        "The site was abandoned just over 100 years later, at the time of the Spanish conquest.",
+        "It's constructed of dry-stone walls, where builders cut stones to fit so tightly together that no mortar was needed."
     ],
     hint: "Focus on the main structures.",
     difficulty: "hard"
@@ -80,24 +77,23 @@ export const levels: Level[] = [
     id: "lvl_006",
     place: "Great Wall of China",
     country: "China",
-    grid: 4,
     facts: [
-        "It is not a single continuous wall, but a system of fortifications.",
-        "It is the longest man-made structure in the world.",
-        "It is not visible from the moon with the naked eye."
+        "It is not a single continuous wall but a system of walls, watchtowers, fortresses, and other defenses.",
+        "Sticky rice flour was used in the binding material for the bricks, a testament to early bio-engineering.",
+        "While it's the longest man-made structure, it is not, as is commonly believed, visible from the moon with the naked eye."
     ],
     hint: "Look at the path of the wall.",
     difficulty: "hard"
   },
+  // 6x6 Grid
   {
     id: "lvl_007",
     place: "Petra",
     country: "Jordan",
-    grid: 5,
     facts: [
-        "It is famous for its rock-cut architecture.",
-        "It is also known as the 'Rose City' due to the color of the stone.",
-        "Featured in 'Indiana Jones and the Last Crusade'."
+        "It's known as the 'Rose City' due to the color of the stone from which it is carved.",
+        "At its peak, the city was a bustling trade hub, controlling a major crossroads between Arabia, Egypt, and Syria-Phoenicia.",
+        "Only about 15% of the city has been uncovered by archaeologists; the other 85% remains underground and untouched."
     ],
     hint: "Focus on the main Treasury building.",
     difficulty: "expert"
@@ -106,11 +102,10 @@ export const levels: Level[] = [
     id: "lvl_008",
     place: "Christ the Redeemer",
     country: "Brazil",
-    grid: 5,
     facts: [
-        "It is an Art Deco statue of Jesus Christ in Rio de Janeiro.",
-        "It is 30 meters tall, not including its 8-meter pedestal.",
-        "It is made of reinforced concrete and soapstone."
+        "The statue is considered the largest Art Deco-style sculpture in the world.",
+        "It has been struck by lightning multiple times, with a 2014 strike damaging the statue's thumb.",
+        "The outer layers are composed of 6 million soapstone tiles, chosen for their durability and ease of use."
     ],
     hint: "Look at the statue's arms.",
     difficulty: "expert"
@@ -119,11 +114,10 @@ export const levels: Level[] = [
     id: "lvl_009",
     place: "Pyramids of Giza",
     country: "Egypt",
-    grid: 5,
     facts: [
-        "The Great Pyramid was the tallest man-made structure for over 3,800 years.",
-        "They were built as tombs for the pharaohs.",
-        "They are the oldest of the Seven Wonders of the Ancient World."
+        "The Great Pyramid of Giza was the tallest man-made structure in the world for more than 3,800 years.",
+        "The three pyramids are precisely aligned with the stars of Orion's Belt.",
+        "The construction of the Great Pyramid is estimated to have involved 100,000 workers and 2.3 million stone blocks."
     ],
     hint: "Focus on the alignment of the pyramids.",
     difficulty: "master"
@@ -132,14 +126,13 @@ export const levels: Level[] = [
     id: "lvl_010",
     place: "Sydney Opera House",
     country: "Australia",
-    grid: 5,
     facts: [
-        "Its roof is made of more than 1 million tiles.",
-        "It hosts over 1,500 performances each year.",
-        "It was designed by Danish architect Jørn Utzon."
+        "The design was chosen from an international competition with 233 entries from 32 countries.",
+        "The roof is covered with 1,056,006 tiles in two colors: glossy white and matte cream.",
+        "It has its own seawater cooling system, using water taken directly from the harbor."
     ],
     hint: "Look at the 'sails' of the roof.",
-    difficulty: "master"
+    difficulty: "insane"
   }
 ];
 
@@ -154,7 +147,7 @@ export const generateRandomSwap = (gridSize: number): [number, number] => {
 }
 
 // Helper function to generate the initial board state for a level
-export const generatePuzzle = (level: Level, imageUrl: string, grid: number) => {
+export const generatePuzzle = (imageUrl: string, grid: number) => {
   const solvedBoard = Array.from({ length: grid * grid }, (_, i) => i);
   const scrambledBoard = [...solvedBoard];
   

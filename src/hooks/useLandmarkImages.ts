@@ -1,3 +1,4 @@
+
 // src/hooks/useLandmarkImages.ts
 "use client";
 
@@ -13,6 +14,8 @@ export function useLandmarkImages(place: string) {
     let cancelled = false;
 
     async function load() {
+      if (!place) return;
+
       setLoading(true);
       setError(null);
       setImages([]);
@@ -22,27 +25,28 @@ export function useLandmarkImages(place: string) {
         const res = await fetch(
           `/api/landmark-images?title=${encodeURIComponent(place)}&limit=15`
         );
+        if (!res.ok) {
+          throw new Error(`Failed to fetch: ${res.statusText}`);
+        }
         const data = await res.json();
 
         if (!cancelled) {
           if (Array.isArray(data.images) && data.images.length > 0) {
             setImages(data.images);
           } else {
-            setError("No images found.");
+            setError("No images found for this landmark.");
           }
         }
-      } catch (e) {
+      } catch (e: any) {
         if (!cancelled) {
-          setError("Failed to load images.");
+          setError(e.message || "Failed to load images.");
         }
       } finally {
         if (!cancelled) setLoading(false);
       }
     }
 
-    if (place) {
-      load();
-    }
+    load();
 
     return () => {
       cancelled = true;

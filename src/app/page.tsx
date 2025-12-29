@@ -1,9 +1,29 @@
+
+'use client';
+
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AppLogo } from '@/components/icons';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+  const router = useRouter();
+  const [highestLevel, setHighestLevel] = useState(0);
+
+  useEffect(() => {
+    const savedLevel = localStorage.getItem('highestLevel');
+    if (savedLevel) {
+      setHighestLevel(parseInt(savedLevel, 10));
+    }
+  }, []);
+
+  const handleNewGame = () => {
+    localStorage.removeItem('currentLevelIndex');
+    router.push('/play');
+  };
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-background">
       <Card className="w-full max-w-md text-center border-border shadow-2xl">
@@ -22,11 +42,18 @@ export default function Home() {
             <p className="flex items-start gap-3"><span className="mt-1 text-primary">✓</span><span>Discover famous landmarks.</span></p>
             <p className="flex items-start gap-3"><span className="mt-1 text-primary">✓</span><span>Learn a few fun facts.</span></p>
           </div>
-          <Link href="/play" className="w-full">
-            <Button size="lg" className="w-3/4">
-              Start Game
+          <div className="flex flex-col space-y-3 px-6">
+            <Button size="lg" className="w-full" onClick={handleNewGame}>
+              New Game
             </Button>
-          </Link>
+            {highestLevel > 0 && (
+              <Link href="/play" className="w-full">
+                <Button size="lg" variant="secondary" className="w-full">
+                  Continue (Level {highestLevel + 1})
+                </Button>
+              </Link>
+            )}
+          </div>
         </CardContent>
       </Card>
     </main>

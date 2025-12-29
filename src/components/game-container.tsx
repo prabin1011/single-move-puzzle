@@ -108,7 +108,7 @@ export default function GameContainer() {
   }, [levelIndex, highestLevel, isComponentLoading]);
 
   const currentLevelData = useMemo(() => {
-    if (isComponentLoading || levels.length === 0) return null;
+    if (isComponentLoading || levels.length === 0 || levelIndex >= levels.length) return null;
     return levels[levelIndex];
   }, [levelIndex, levels, isComponentLoading]);
 
@@ -329,6 +329,7 @@ export default function GameContainer() {
               width={300}
               height={300}
               priority
+              data-ai-hint={currentLevelData.image.hint}
               className={cn(
                   "object-cover transition-all duration-500",
                   gameState === "READY" && "blur-md scale-110",
@@ -358,6 +359,7 @@ export default function GameContainer() {
                 alt={currentLevelData.place}
                 width={300}
                 height={300}
+                data-ai-hint={currentLevelData.image.hint}
                 className="object-cover"
                 priority
               />

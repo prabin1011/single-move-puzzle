@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import Image from "next/image";
 import { levels as initialLevels, generatePuzzle, type Level } from "@/lib/levels";
+import { getLevelConfig } from "@/lib/game-config";
 import {
   CheckCircle,
   XCircle,
@@ -70,14 +71,19 @@ export default function GameContainer() {
     setIsLoading(false);
   }, []);
 
-  const currentLevel = useMemo(() => levels[levelIndex], [levels, levelIndex]);
+  const { grid: currentGridSize, categories } = useMemo(() => getLevelConfig(levelIndex), [levelIndex]);
 
-  const currentGridSize = useMemo(() => {
-    if (levelIndex < 2) return 3; // Levels 1-2
-    if (levelIndex < 4) return 4; // Levels 3-4
-    if (levelIndex < 7) return 5; // Levels 5-7
-    return 6; // Levels 8+
-  }, [levelIndex]);
+  const availableLevels = useMemo(() => {
+    if (categories.includes('all')) return levels;
+    return levels.filter(level => categories.includes(level.category));
+  }, [levels, categories]);
+  
+  const currentLevel = useMemo(() => {
+    // Use modulo to loop through available levels for the current difficulty tier
+    const levelFromTier = availableLevels[levelIndex % availableLevels.length];
+    return levelFromTier;
+  }, [availableLevels, levelIndex]);
+
 
   const [currentPuzzle, setCurrentPuzzle] = useState(() => {
     if (!currentLevel) return null;
@@ -165,8 +171,7 @@ export default function GameContainer() {
 
   const nextLevel = () => {
     const newIndex = (levelIndex + 1);
-    // Wrap around if we run out of levels
-    setLevelIndex(newIndex >= levels.length ? 0 : newIndex);
+    setLevelIndex(newIndex);
     
     setGameState("READY");
     setShowFacts(false);

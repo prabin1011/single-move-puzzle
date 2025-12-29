@@ -6,15 +6,15 @@ export interface Level {
   facts: string[];
   hint: string;
   difficulty: 'easy' | 'medium' | 'hard' | 'expert' | 'master' | 'insane';
+  category: 'architecture' | 'nature' | 'sky' | 'city' | 'interior' | 'abstract';
   image: {
     url: string;
     hint: string;
   };
 }
 
-// Grid size is now determined by the game container based on level index, not by this data.
+// The 'grid' property is removed from here. It will now be determined by the game-config.
 export const levels: Level[] = [
-  // 3x3 Grid
   {
     id: "lvl_001",
     place: "Eiffel Tower",
@@ -26,6 +26,7 @@ export const levels: Level[] = [
     ],
     hint: "Focus on the structure's base.",
     difficulty: "easy",
+    category: "architecture",
     image: {
         url: "https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?q=80&w=600&h=600&fit=crop",
         hint: "paris france"
@@ -42,12 +43,12 @@ export const levels: Level[] = [
       ],
       hint: "Look at the arches.",
       difficulty: "easy",
+      category: "architecture",
       image: {
         url: "https://images.unsplash.com/photo-1552832230-c01979b880ca?q=80&w=600&h=600&fit=crop",
         hint: "rome italy"
       }
   },
-  // 4x4 Grid
   {
     id: "lvl_003",
     place: "Statue of Liberty",
@@ -59,6 +60,7 @@ export const levels: Level[] = [
     ],
     hint: "Focus on the tablet.",
     difficulty: "medium",
+    category: "architecture",
     image: {
         url: "https://images.unsplash.com/photo-1503575689137-5dc338426774?q=80&w=600&h=600&fit=crop",
         hint: "new-york usa"
@@ -75,12 +77,12 @@ export const levels: Level[] = [
     ],
     hint: "Look at the central dome.",
     difficulty: "medium",
+    category: "architecture",
     image: {
         url: "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?q=80&w=600&h=600&fit=crop",
         hint: "agra india"
     }
   },
-  // 5x5 Grid
   {
     id: "lvl_005",
     place: "Machu Picchu",
@@ -92,6 +94,7 @@ export const levels: Level[] = [
     ],
     hint: "Focus on the main structures.",
     difficulty: "hard",
+    category: "nature",
     image: {
         url: "https://images.unsplash.com/photo-1526392060635-9d6019884377?q=80&w=600&h=600&fit=crop",
         hint: "peru inca"
@@ -108,12 +111,12 @@ export const levels: Level[] = [
     ],
     hint: "Look at the path of the wall.",
     difficulty: "hard",
+    category: "nature",
     image: {
         url: "https://images.unsplash.com/photo-1508804185872-d7bad5d59b35?q=80&w=600&h=600&fit=crop",
         hint: "china wall"
     }
   },
-  // 6x6 Grid
   {
     id: "lvl_007",
     place: "Petra",
@@ -125,6 +128,7 @@ export const levels: Level[] = [
     ],
     hint: "Focus on the main Treasury building.",
     difficulty: "expert",
+    category: "architecture",
     image: {
         url: "https://images.unsplash.com/photo-1559928230-b7de0badc5b2?q=80&w=600&h=600&fit=crop",
         hint: "jordan petra"
@@ -141,6 +145,7 @@ export const levels: Level[] = [
     ],
     hint: "Look at the statue's arms.",
     difficulty: "expert",
+    category: "architecture",
     image: {
         url: "https://images.unsplash.com/photo-1593457316828-77d0c3741b1d?q=80&w=600&h=600&fit=crop",
         hint: "brazil rio"
@@ -157,6 +162,7 @@ export const levels: Level[] = [
     ],
     hint: "Focus on the alignment of the pyramids.",
     difficulty: "master",
+    category: "nature",
     image: {
         url: "https://images.unsplash.com/photo-1572094389608-5173cb4321ac?q=80&w=600&h=600&fit=crop",
         hint: "egypt pyramids"
@@ -168,11 +174,12 @@ export const levels: Level[] = [
     country: "Australia",
     facts: [
         "The design was chosen from an international competition with 233 entries from 32 countries.",
-        "The roof is covered with 1,056,006 tiles in two colors: glossy white and matte cream.",
+        "The roof is covered with 1,056,000 tiles in two colors: glossy white and matte cream.",
         "It has its own seawater cooling system, using water taken directly from the harbor."
     ],
     hint: "Look at the 'sails' of the roof.",
     difficulty: "insane",
+    category: "architecture",
     image: {
         url: "https://images.unsplash.com/photo-1527631746610-bca00a040d60?q=80&w=600&h=600&fit=crop",
         hint: "sydney australia"

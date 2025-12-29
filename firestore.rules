@@ -1,7 +1,76 @@
+/**
+ * Core Philosophy: This ruleset establishes a hybrid security model. User profile data is strictly private and owner-controlled, while leaderboard data is publicly readable to foster competition but write-restricted to the user who earned the score.
+ *
+ * Data Structure: The data is organized into two distinct, top-level collections: /users for private profiles and /leaderboardEntries for public scores. This flat structure prevents complex rule inheritance and simplifies queries.
+ *
+ * Key Security Decisions:
+ * - User privacy is paramount; listing users in the /users collection is explicitly disallowed to prevent data scraping.
+ * - Leaderboard entries are public to read, allowing any client (authenticated or not) to build and display leaderboards.
+ * - Writes to the leaderboard are strictly controlled, ensuring users can only submit or manage their own scores.
+ * - The default security posture is to deny access unless explicitly granted.
+ *
+ * Denormalization for Authorization: To ensure fast and secure writes to the leaderboard, each /leaderboardEntries document contains a `userId` field. This denormalization allows rules to validate ownership directly from the document itself, avoiding slow and costly `get()` calls to other collections.
+ *
+ * Structural Segregation: User-private data (/users) and public-readable data (/leaderboardEntries) are stored in separate collections. This is a secure and performant pattern that prevents accidental data leakage and simplifies rules for list operations.
+ */
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Helper Functions
+    // ===================================
+
+    /**
+     * Checks if a user is authenticated via any method (including anonymous).
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Checks if the currently authenticated user's UID matches the provided userId.
+     * This is the fundamental check for document ownership.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * Checks if the document exists AND the current user is the owner.
+     * CRITICAL for safe update/delete operations to prevent acting on non-existent data.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Manages access to user profile documents. Ensures users can only access their own profile.
+     * @path /users/{userId}
+     * @allow (create): A new, authenticated user creating their own profile document at `/users/USER_UID`.
+     * @deny (get): An authenticated user trying to read another user's profile at `/users/OTHER_USER_UID`.
+     * @principle Restricts access to a user's own data tree and prevents user enumeration.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isOwner(userId) && resource != null && request.resource.data.id == resource.data.id;
+      allow delete: if isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Secures leaderboard entries. Allows public reads for all users but restricts writes to the score owner.
+     * @path /leaderboardEntries/{leaderboardEntryId}
+     * @allow (list): Any client (authenticated or not) listing all leaderboard entries to build a leaderboard view.
+     * @deny (create): An authenticated user trying to create a leaderboard entry for another user (`request.resource.data.userId != request.auth.uid`).
+     * @principle Enforces a "Public Read, Owner-Only Write" pattern, critical for public-facing data with user-specific contributions.
+     */
+    match /leaderboardEntries/{leaderboardEntryId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isExistingOwner(resource.data.userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isExistingOwner(resource.data.userId);
+    }
   }
 }

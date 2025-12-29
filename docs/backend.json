@@ -1,6 +1,122 @@
 {
-  "entities": {},
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user within the Single Move Master application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user.",
+          "format": "uuid"
+        },
+        "anonymousId": {
+          "type": "string",
+          "description": "Identifier for anonymous users. If the user is not anonymous, this field is null.",
+          "format": "uuid"
+        },
+        "username": {
+          "type": "string",
+          "description": "The user's chosen username.  May be null for anonymous users.",
+          "format": "string"
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address. May be null for anonymous users.",
+          "format": "email"
+        },
+        "creationDate": {
+          "type": "string",
+          "description": "The date and time when the user account was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "creationDate"
+      ]
+    },
+    "LeaderboardEntry": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "LeaderboardEntry",
+      "type": "object",
+      "description": "Represents a user's entry in the leaderboard for a particular puzzle.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the leaderboard entry.",
+          "format": "uuid"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User. (Relationship: User 1:N LeaderboardEntry)"
+        },
+        "puzzleId": {
+          "type": "string",
+          "description": "Identifier of the puzzle for which the score is recorded."
+        },
+        "score": {
+          "type": "number",
+          "description": "The user's score for the puzzle.  The meaning of score will vary by puzzle.",
+          "format": "number"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "The date and time when the score was achieved.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "puzzleId",
+        "score",
+        "timestamp"
+      ]
+    }
+  },
   "auth": {
-    "providers": []
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profiles. The 'userId' parameter corresponds to the unique user identifier.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/leaderboardEntries/{leaderboardEntryId}",
+        "definition": {
+          "entityName": "LeaderboardEntry",
+          "schema": {
+            "$ref": "#/backend/entities/LeaderboardEntry"
+          },
+          "description": "Stores leaderboard entries, associating each entry with a specific user and puzzle. The 'leaderboardEntryId' parameter corresponds to the unique leaderboard entry identifier.",
+          "params": [
+            {
+              "name": "leaderboardEntryId",
+              "description": "The unique identifier for the leaderboard entry."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "This Firestore structure prioritizes authorization independence and efficient data access for the Single Move Master application. It supports user authentication (anonymous and password), leaderboard functionality, and potential future expansion.\n\n1.  **Users Collection:** Stores user profiles, including authentication information (id, anonymousId, email), creation date, and chosen username. This collection allows for easy user management and profile retrieval.\n\n2.  **Leaderboard Entries Collection:** Stores leaderboard entries, associating each entry with a specific user and puzzle. This structure enables efficient leaderboard queries and score tracking. The `userId` field establishes the relationship between leaderboard entries and users. To ensure Authorization Independence, the `puzzleId` is stored with the leaderboard entry to avoid needing to perform `get()` operations on other documents.\n\n**Authorization Independence & Security Rules:**\n\n*   The structure is designed to avoid hierarchical authorization dependencies (`get()` calls in security rules). User-owned data is stored in a path-based structure (`/users/{userId}`).  Leaderboard entries are associated with users via the `userId` field, but no `get()` operations are needed to validate the relationship because `puzzleId` is included in the document. The data model avoids using `get()` operations, thus enabling atomic batch writes.\n\n**QAPs (Rules are not Filters):**\n\n*   The segregation of data into separate collections based on access control requirements ensures that rules are not used as filters.  Listing operations on `/leaderboardEntries` can be secured based on the properties of the `LeaderboardEntry` itself, without needing to filter based on user roles or other external factors.\n\n**Debugging & Maintainability:**\n\n*   The use of descriptive field names and a consistent naming convention improves the clarity of the data structure.  Explicit state modeling (e.g., using a dedicated `status` field if needed in the future) makes debugging easier.\n\nThe structure allows for efficient queries and scalable storage, providing a solid foundation for the Single Move Master application."
   }
 }

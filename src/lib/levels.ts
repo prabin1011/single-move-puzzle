@@ -9,9 +9,8 @@ export interface Level {
   hint: string;
   category: 'architecture' | 'nature' | 'sky' | 'city' | 'interior' | 'abstract';
   visualComplexity: 'low' | 'medium' | 'high';
-  imageId: string; // This now links to the placeholder-images.json
+  imageId: string; // This now links to the placeholder-images.ts
 }
-
 
 // The 'image' property is removed from here. It will now be looked up via imageId.
 export const levels: Level[] = [
@@ -725,13 +724,15 @@ export const levels: Level[] = [
 ];
 
 // This function now correctly finds the image URL from our static list.
-export function getImageUrl(imageId: string): { url: string, hint: string } {
-    const imageData = PlaceHolderImages.find(p => p.id === imageId);
-    if (!imageData) {
-        // Fallback to a default image if something goes wrong
-        return { url: "https://picsum.photos/seed/error/600/600", hint: "error" };
-    }
-    return { url: imageData.imageUrl, hint: imageData.imageHint };
+export function getImageUrl(imageId: string): { url: string; hint: string } {
+  const imageData = PlaceHolderImages.find((p) => p.id === imageId);
+  if (!imageData) {
+    // Surface error clearly during dev:
+    console.error(`No placeholder image found for imageId: ${imageId}`);
+    // Use a known fallback, but this shouldn't be hit if IDs match.
+    return { url: 'https://picsum.photos/seed/error/600/600', hint: 'error' };
+  }
+  return { url: imageData.imageUrl, hint: imageData.imageHint };
 }
 
 

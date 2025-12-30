@@ -112,13 +112,14 @@ export default function GameContainer() {
     return levels[levelIndex];
   }, [levelIndex, levels, isComponentLoading]);
   
+  const { grid: currentGridSize } = getLevelConfig(levelIndex);
+
   // Generate the puzzle for the current level
   const currentPuzzle = useMemo(() => {
     if (!currentLevelData) return null;
-    const { grid: currentGridSize } = getLevelConfig(levelIndex);
     // Pass the imageId to generatePuzzle
     return generatePuzzle(currentLevelData.imageId, currentGridSize);
-  }, [currentLevelData, levelIndex, retryCount]); // Rerun if level or retryCount changes
+  }, [currentLevelData, currentGridSize, retryCount]); // Rerun if level or retryCount changes
 
   // Game timer logic
   useEffect(() => {
@@ -140,7 +141,6 @@ export default function GameContainer() {
 
   const { scrambledBoard, swapped, imageUrl } = currentPuzzle;
   const { url: currentImageUrl, hint: currentImageHint } = getImageUrl(currentLevelData.imageId);
-  const { grid: currentGridSize } = getLevelConfig(levelIndex);
 
 
   const handleSuccess = async () => {
@@ -342,7 +342,7 @@ export default function GameContainer() {
         {(gameState === "PLAYING" || gameState === "FAILED") && (
           <PuzzleBoard
             key={puzzleKey}
-            imageUrl={currentImageUrl}
+            imageUrl={imageUrl}
             grid={currentGridSize}
             boardState={scrambledBoard}
             swappedIndices={swapped}

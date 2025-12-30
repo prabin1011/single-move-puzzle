@@ -8,252 +8,252 @@ export interface PlaceholderImage {
 export const PlaceHolderImages: PlaceholderImage[] = [
   {
     id: 'eiffel-tower',
-    imageUrl: '/images/eiffel-tower.jpg',
+    imageUrl: '/images/Eiffel Tower.jpg',
     imageHint: 'paris france'
   },
   {
     id: 'colosseum',
-    imageUrl: '/images/colosseum.jpg',
+    imageUrl: '/images/Colosseum.jpg',
     imageHint: 'rome italy'
   },
   {
     id: 'mount-fuji',
-    imageUrl: '/images/mount-fuji.jpg',
+    imageUrl: '/images/Mount Fuji.jpg',
     imageHint: 'japan fuji'
   },
   {
     id: 'santorini',
-    imageUrl: '/images/santorini.jpg',
+    imageUrl: '/images/Santorini.jpg',
     imageHint: 'greece santorini'
   },
   {
     id: 'northern-lights',
-    imageUrl: '/images/northern-lights.jpg',
+    imageUrl: '/images/Northern Lights.jpg',
     imageHint: 'aurora sky'
   },
   {
     id: 'statue-of-liberty',
-    imageUrl: '/images/statue-of-liberty.jpg',
+    imageUrl: '/images/Statue of Liberty.jpg',
     imageHint: 'new-york usa'
   },
   {
     id: 'taj-mahal',
-    imageUrl: '/images/taj-mahal.jpg',
+    imageUrl: '/images/Taj Mahal.jpg',
     imageHint: 'agra india'
   },
   {
     id: 'machu-picchu',
-    imageUrl: '/images/machu-picchu.jpg',
+    imageUrl: '/images/Machu Picchu.jpg',
     imageHint: 'peru inca'
   },
   {
     id: 'great-wall-of-china',
-    imageUrl: '/images/great-wall-of-china.jpg',
+    imageUrl: '/images/Great Wall of China.jpg',
     imageHint: 'china wall'
   },
   {
     id: 'pyramids-of-giza',
-    imageUrl: '/images/pyramids-of-giza.jpg',
+    imageUrl: '/images/Pyramids of Giza.jpg',
     imageHint: 'egypt pyramids'
   },
   {
     id: 'christ-the-redeemer',
-    imageUrl: '/images/christ-the-redeemer.jpg',
+    imageUrl: '/images/Christ the Redeemer.jpg',
     imageHint: 'brazil rio'
   },
   {
     id: 'petra',
-    imageUrl: '/images/petra.jpg',
+    imageUrl: '/images/Petra.jpg',
     imageHint: 'jordan petra'
   },
   {
     id: 'grand-canyon',
-    imageUrl: '/images/grand-canyon.jpg',
+    imageUrl: '/images/Grand Canyon.jpg',
     imageHint: 'arizona usa'
   },
   {
     id: 'venice-canals',
-    imageUrl: '/images/venice-canals.jpg',
+    imageUrl: '/images/Venice Canals.jpg',
     imageHint: 'venice italy'
   },
   {
     id: 'sydney-opera-house',
-    imageUrl: '/images/sydney-opera-house.jpg',
+    imageUrl: '/images/Sydney Opera House.jpg',
     imageHint: 'sydney australia'
   },
   {
     id: 'burj-khalifa',
-    imageUrl: '/images/burj-khalifa.jpg',
+    imageUrl: '/images/Burj Khalifa.jpg',
     imageHint: 'dubai uae'
   },
   {
     id: 'louvre-museum',
-    imageUrl: '/images/louvre-museum.jpg',
+    imageUrl: '/images/The Louvre.jpg',
     imageHint: 'paris france'
   },
   {
     id: 'st-basils-cathedral',
-    imageUrl: '/images/st-basils-cathedral.jpg',
+    imageUrl: "/images/St. Basil's Cathedral.jpg",
     imageHint: 'moscow russia'
   },
   {
     id: 'neuschwanstein-castle',
-    imageUrl: '/images/neuschwanstein-castle.jpg',
+    imageUrl: '/images/Neuschwanstein Castle.jpg',
     imageHint: 'germany castle'
   },
   {
     id: 'angkor-wat',
-    imageUrl: '/images/angkor-wat.jpg',
+    imageUrl: '/images/Angkor Wat.jpg',
     imageHint: 'cambodia temple'
   },
   {
     id: 'london-eye',
-    imageUrl: '/images/london-eye.jpg',
+    imageUrl: '/images/London Eye.jpg',
     imageHint: 'london uk'
   },
   {
     id: 'hagia-sophia',
-    imageUrl: '/images/hagia-sophia.jpg',
+    imageUrl: '/images/Hagia Sophia.jpg',
     imageHint: 'istanbul turkey'
   },
   {
     id: 'acropolis',
-    imageUrl: '/images/acropolis.jpg',
+    imageUrl: '/images/Acropolis of Athens.jpg',
     imageHint: 'athens greece'
   },
   {
     id: 'golden-gate-bridge',
-    imageUrl: '/images/golden-gate-bridge.jpg',
+    imageUrl: '/images/Golden Gate Bridge.jpg',
     imageHint: 'san-francisco usa'
   },
   {
     id: 'sagrada-familia',
-    imageUrl: '/images/sagrada-familia.jpg',
+    imageUrl: '/images/Sagrada Familia.jpg',
     imageHint: 'barcelona spain'
   },
   {
     id: 'hallgrimskirkja',
-    imageUrl: '/images/hallgrimskirkja.jpg',
+    imageUrl: '/images/Hallgrimskirkja.jpg',
     imageHint: 'reykjavik iceland'
   },
   {
     id: 'fushimi-inari-shrine',
-    imageUrl: '/images/fushimi-inari-shrine.jpg',
+    imageUrl: '/images/Fushimi Inari Shrine.jpg',
     imageHint: 'kyoto japan'
   },
   {
     id: 'flatiron-building',
-    imageUrl: '/images/flatiron-building.jpg',
+    imageUrl: '/images/Flatiron Building.jpg',
     imageHint: 'new-york city'
   },
   {
     id: 'the-shard',
-    imageUrl: '/images/the-shard.jpg',
+    imageUrl: '/images/The Shard.jpg',
     imageHint: 'london uk'
   },
   {
     id: 'guggenheim-bilbao',
-    imageUrl: '/images/guggenheim-bilbao.jpg',
+    imageUrl: '/images/Guggenheim Museum Bilbao.jpg',
     imageHint: 'bilbao spain'
   },
   {
     id: 'fallingwater',
-    imageUrl: '/images/fallingwater.jpg',
+    imageUrl: '/images/Fallingwater.jpg',
     imageHint: 'pennsylvania usa'
   },
   {
     id: 'atomium',
-    imageUrl: '/images/atomium.jpg',
+    imageUrl: '/images/Atomium.jpg',
     imageHint: 'brussels belgium'
   },
   {
     id: 'notre-dame',
-    imageUrl: '/images/notre-dame.jpg',
+    imageUrl: '/images/Notre-Dame Cathedral.jpg',
     imageHint: 'paris france'
   },
   {
     id: 'leaning-tower-of-pisa',
-    imageUrl: '/images/leaning-tower-of-pisa.jpg',
+    imageUrl: '/images/Leaning Tower of Pisa.jpg',
     imageHint: 'pisa italy'
   },
   {
     id: 'marina-bay-sands',
-    imageUrl: '/images/marina-bay-sands.jpg',
+    imageUrl: '/images/Marina Bay Sands.jpg',
     imageHint: 'singapore city'
   },
   {
     id: 'petronas-towers',
-    imageUrl: '/images/petronas-towers.jpg',
+    imageUrl: '/images/Petronas Towers.jpg',
     imageHint: 'kuala-lumpur malaysia'
   },
   {
     id: 'empire-state-building',
-    imageUrl: '/images/empire-state-building.jpg',
+    imageUrl: '/images/Empire State Building.jpg',
     imageHint: 'new-york city'
   },
   {
     id: 'cn-tower',
-    imageUrl: '/images/cn-tower.jpg',
+    imageUrl: '/images/CN Tower.jpg',
     imageHint: 'toronto canada'
   },
   {
     id: 'mont-saint-michel',
-    imageUrl: '/images/mont-saint-michel.jpg',
+    imageUrl: '/images/Mont Saint-Michel.jpg',
     imageHint: 'normandy france'
   },
   {
     id: 'space-needle',
-    imageUrl: '/images/space-needle.jpg',
+    imageUrl: '/images/Space Needle.jpg',
     imageHint: 'seattle usa'
   },
   {
     id: 'taipei-101',
-    imageUrl: '/images/taipei-101.jpg',
+    imageUrl: '/images/Taipei 101.jpg',
     imageHint: 'taipei taiwan'
   },
   {
     id: 'bran-castle',
-    imageUrl: '/images/bran-castle.jpg',
+    imageUrl: '/images/Bran Castle.jpg',
     imageHint: 'romania castle'
   },
   {
     id: 'chichen-itza',
-    imageUrl: '/images/chichen-itza.jpg',
+    imageUrl: '/images/Chichen Itza.jpg',
     imageHint: 'mexico maya'
   },
   {
     id: 'moai-statues',
-    imageUrl: '/images/moai-statues.jpg',
+    imageUrl: '/images/Moai Statues.jpg',
     imageHint: 'easter-island chile'
   },
   {
     id: 'alhambra',
-    imageUrl: '/images/alhambra.jpg',
+    imageUrl: '/images/The Alhambra.jpg',
     imageHint: 'granada spain'
   },
   {
     id: 'buckingham-palace',
-    imageUrl: '/images/buckingham-palace.jpg',
+    imageUrl: '/images/Buckingham Palace.jpg',
     imageHint: 'london uk'
   },
   {
     id: 'forbidden-city',
-    imageUrl: '/images/forbidden-city.jpg',
+    imageUrl: '/images/Forbidden City.jpg',
     imageHint: 'beijing china'
   },
   {
     id: 'brandenburg-gate',
-    imageUrl: '/images/brandenburg-gate.jpg',
+    imageUrl: '/images/Brandenburg Gate.jpg',
     imageHint: 'berlin germany'
   },
   {
     id: 'st-peters-basilica',
-    imageUrl: '/images/st-peters-basilica.jpg',
+    imageUrl: "/images/St. Peter's Basilica.jpg",
     imageHint: 'vatican city'
   },
   {
     id: 'hollywood-sign',
-    imageUrl: '/images/hollywood-sign.jpg',
+    imageUrl: '/images/Hollywood Sign.jpg',
     imageHint: 'los-angeles usa'
   }
 ];

@@ -723,18 +723,33 @@ export const levels: Level[] = [
   },
 ];
 
-// This function now correctly finds the image URL from our static list.
-export function getImageUrl(imageId: string): { url: string; hint: string } {
-  const imageData = PlaceHolderImages.find((p) => p.id === imageId);
-  if (!imageData) {
-    // Surface error clearly during dev:
-    console.error(`No placeholder image found for imageId: ${imageId}`);
-    // Use a known fallback, but this shouldn't be hit if IDs match.
-    return { url: 'https://picsum.photos/seed/error/600/600', hint: 'error' };
-  }
-  return { url: imageData.imageUrl, hint: imageData.imageHint };
-}
 
+export function getImageUrl(imageId: string): { url: string; hint: string } {
+  const levelData = levels.find(l => l.imageId === imageId);
+  const imageData = PlaceHolderImages.find((p) => p.id === imageId);
+
+  if (!levelData || !imageData) {
+    console.error(`No placeholder image meta found for imageId: ${imageId}`);
+    // A known-good fallback image in your public folder
+    return { url: "/images/eiffel-tower.jpg", hint: "fallback" };
+  }
+  
+  // For the first level, always use the base image for a consistent start.
+  // For other levels, pick a random variation if available.
+  const levelIndex = levels.findIndex(l => l.imageId === imageId);
+  let variation = '';
+  if (levelIndex > 0) {
+    // Choose a random number between 1 and 4 for variations, or blank for the base image.
+    const rand = Math.floor(Math.random() * 5); // 0, 1, 2, 3, 4
+    if (rand > 0) {
+      variation = String(rand);
+    }
+  }
+  
+  const url = `/images/${levelData.place}${variation}.jpg`;
+
+  return { url, hint: imageData.imageHint };
+}
 
 export const generateRandomSwap = (gridSize: number): [number, number] => {
   const totalTiles = gridSize * gridSize;
@@ -746,7 +761,6 @@ export const generateRandomSwap = (gridSize: number): [number, number] => {
   return [index1, index2];
 };
 
-// Helper function to generate the initial board state for a level
 export const generatePuzzle = (imageId: string, grid: number) => {
   const { url: imageUrl } = getImageUrl(imageId);
   const solvedBoard = Array.from({ length: grid * grid }, (_, i) => i);
@@ -766,4 +780,3 @@ export const generatePuzzle = (imageId: string, grid: number) => {
     imageUrl: imageUrl,
   };
 };
-

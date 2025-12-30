@@ -1,17 +1,18 @@
+
 import { PlaceHolderImages } from './placeholder-images';
+import { generateHint } from './hint-engine';
 
 export interface Level {
   id: string;
   place: string;
   country: string;
   facts: string[];
-  hint: string;
   category: 'architecture' | 'nature' | 'sky' | 'city' | 'interior' | 'abstract';
   visualComplexity: 'low' | 'medium' | 'high';
   imageId: string; // This now links to the placeholder-images.ts
 }
 
-// The 'image' property is removed from here. It will now be looked up via imageId.
+// The 'image' and 'hint' properties are removed from here.
 export const levels: Level[] = [
   // 5 Easy Levels (3x3)
   {
@@ -23,7 +24,6 @@ export const levels: Level[] = [
       "The tower's iron structure weighs 7,300 tons.",
       'It is the most-visited paid monument in the world.',
     ],
-    hint: "Focus on the structure's base.",
     category: 'architecture',
     visualComplexity: 'medium',
     imageId: 'eiffel-tower'
@@ -37,7 +37,6 @@ export const levels: Level[] = [
       'The hypogeum, an underground network of tunnels, was added later to house gladiators and animals.',
       "It's estimated that over 400,000 people and 1 million animals died within its walls.",
     ],
-    hint: 'Look at the arches.',
     category: 'architecture',
     visualComplexity: 'high',
     imageId: 'colosseum'
@@ -51,7 +50,6 @@ export const levels: Level[] = [
       "It is one of Japan's 'Three Holy Mountains' along with Mount Tate and Mount Haku.",
       'On clear days, it can be seen from Tokyo, about 100 kilometers away.',
     ],
-    hint: 'Focus on the snow-capped peak.',
     category: 'nature',
     visualComplexity: 'low',
     imageId: 'mount-fuji'
@@ -65,7 +63,6 @@ export const levels: Level[] = [
       'The iconic white and blue buildings are built on the edge of a caldera.',
       'Many of the houses are carved into the cliffs.',
     ],
-    hint: 'Look for the blue domes.',
     category: 'city',
     visualComplexity: 'medium',
     imageId: 'santorini'
@@ -79,7 +76,6 @@ export const levels: Level[] = [
       'The colors can vary, with green being the most common, followed by pink.',
       "The best places to see them are in the 'auroral zone', which includes parts of Iceland, Norway, and Canada.",
     ],
-    hint: 'The sky is the main feature.',
     category: 'sky',
     visualComplexity: 'low',
     imageId: 'northern-lights'
@@ -95,7 +91,6 @@ export const levels: Level[] = [
       'It functioned as a lighthouse from 1886 to 1901.',
       'The seven spikes on the crown represent the seven oceans and continents.',
     ],
-    hint: 'Focus on the tablet.',
     category: 'architecture',
     visualComplexity: 'medium',
     imageId: 'statue-of-liberty'
@@ -109,7 +104,6 @@ export const levels: Level[] = [
       'The four minarets are slightly tilted outwards to protect the main tomb from collapse.',
       'Over 1,000 elephants were used to transport building materials.',
     ],
-    hint: 'Look at the central dome.',
     category: 'architecture',
     visualComplexity: 'medium',
     imageId: 'taj-mahal'
@@ -123,7 +117,6 @@ export const levels: Level[] = [
       'The site was abandoned just over 100 years later.',
       "It's constructed of dry-stone walls, where stones fit so tightly no mortar was needed.",
     ],
-    hint: 'Focus on the main structures.',
     category: 'nature',
     visualComplexity: 'high',
     imageId: 'machu-picchu'
@@ -137,7 +130,6 @@ export const levels: Level[] = [
       'Sticky rice flour was used in the binding material for the bricks.',
       'It is not, as is commonly believed, visible from the moon with the naked eye.',
     ],
-    hint: 'Look at the path of the wall.',
     category: 'nature',
     visualComplexity: 'high',
     imageId: 'great-wall-of-china'
@@ -151,7 +143,6 @@ export const levels: Level[] = [
       "The three pyramids are precisely aligned with the stars of Orion's Belt.",
       'Its construction is estimated to have involved 100,000 workers.',
     ],
-    hint: 'Focus on the alignment of the pyramids.',
     category: 'nature',
     visualComplexity: 'high',
     imageId: 'pyramids-of-giza'
@@ -165,7 +156,6 @@ export const levels: Level[] = [
       'It has been struck by lightning multiple times.',
       'The outer layers are composed of 6 million soapstone tiles.',
     ],
-    hint: "Look at the statue's arms.",
     category: 'architecture',
     visualComplexity: 'medium',
     imageId: 'christ-the-redeemer'
@@ -179,7 +169,6 @@ export const levels: Level[] = [
       'At its peak, it was a bustling trade hub.',
       'Only about 15% of the city has been uncovered by archaeologists.',
     ],
-    hint: 'Focus on the main Treasury building.',
     category: 'architecture',
     visualComplexity: 'high',
     imageId: 'petra'
@@ -193,7 +182,6 @@ export const levels: Level[] = [
       'It is one of the Seven Natural Wonders of the World.',
       'It was carved by the Colorado River over a period of 6 million years.',
     ],
-    hint: 'Look for the river at the bottom.',
     category: 'nature',
     visualComplexity: 'high',
     imageId: 'grand-canyon'
@@ -207,10 +195,9 @@ export const levels: Level[] = [
       'It has no roads, just canals, including the Grand Canal thoroughfare.',
       'There are over 400 bridges connecting the islands.',
     ],
-    hint: 'Focus on the gondolas.',
     category: 'city',
     visualComplexity: 'high',
-    imageId: 'venice-canals'
+imageId: 'venice-canals'
   },
   {
     id: 'lvl_015',
@@ -221,7 +208,6 @@ export const levels: Level[] = [
       'The roof is covered with over 1 million tiles.',
       'It has its own seawater cooling system, using water from the harbor.',
     ],
-    hint: "Look at the 'sails' of the roof.",
     category: 'architecture',
     visualComplexity: 'medium',
     imageId: 'sydney-opera-house'
@@ -237,7 +223,6 @@ export const levels: Level[] = [
       'The tip of the spire can be seen from up to 95 kilometers away.',
       'It holds records for the highest observation deck and elevator with the longest travel distance.',
     ],
-    hint: "The building's pointed spire is key.",
     category: 'architecture',
     visualComplexity: 'medium',
     imageId: 'burj-khalifa'
@@ -251,7 +236,6 @@ export const levels: Level[] = [
       'The glass pyramid entrance was a controversial addition in 1989.',
       'It is home to the Mona Lisa, which has its own mailbox for fan letters.',
     ],
-    hint: 'Focus on the glass pyramid.',
     category: 'architecture',
     visualComplexity: 'high',
     imageId: 'louvre-museum'
@@ -265,7 +249,6 @@ export const levels: Level[] = [
       "The building's design is shaped as the flame of a bonfire rising into the sky.",
       "No other building in Russia is like it; it's a unique piece of Russian architecture.",
     ],
-    hint: 'The colorful onion domes are iconic.',
     category: 'architecture',
     visualComplexity: 'high',
     imageId: 'st-basils-cathedral'
@@ -279,7 +262,6 @@ export const levels: Level[] = [
       "It was the inspiration for Disneyland's Sleeping Beauty Castle.",
       'Despite its medieval look, it was built in the 19th century and had modern technology for its time.',
     ],
-    hint: 'The castle is perched on a rugged hill.',
     category: 'architecture',
     visualComplexity: 'high',
     imageId: 'neuschwanstein-castle'
@@ -293,7 +275,6 @@ export const levels: Level[] = [
       'It was originally constructed as a Hindu temple dedicated to the god Vishnu for the Khmer Empire.',
       "It appears on Cambodia's national flag.",
     ],
-    hint: 'Focus on the five main towers.',
     category: 'architecture',
     visualComplexity: 'high',
     imageId: 'angkor-wat'
@@ -307,7 +288,6 @@ export const levels: Level[] = [
       'The 32 capsules are numbered 1 to 33, skipping number 13 for good luck.',
       "It was the world's tallest Ferris wheel when it opened in 2000.",
     ],
-    hint: 'The capsules are on the outside of the wheel.',
     category: 'architecture',
     visualComplexity: 'medium',
     imageId: 'london-eye'
@@ -321,7 +301,6 @@ export const levels: Level[] = [
       'Its massive dome was a revolutionary architectural feat for its time.',
       'It has served as an Eastern Orthodox cathedral, a Roman Catholic cathedral, a mosque, and a museum.',
     ],
-    hint: 'Look for the large central dome and minarets.',
     category: 'architecture',
     visualComplexity: 'high',
     imageId: 'hagia-sophia'
@@ -335,7 +314,6 @@ export const levels: Level[] = [
       "The word Acropolis is from the Greek words 'akron' (highest point) and 'polis' (city).",
       'Many of its original marble statues are now in the British Museum, a point of controversy.',
     ],
-    hint: 'The Parthenon temple is the most prominent feature.',
     category: 'architecture',
     visualComplexity: 'high',
     imageId: 'acropolis'
@@ -349,7 +327,6 @@ export const levels: Level[] = [
       'The bridge has been closed due to high winds only three times.',
       'The main cables are made of 27,572 individual wires bundled together.',
     ],
-    hint: 'The two large towers are key.',
     category: 'architecture',
     visualComplexity: 'medium',
     imageId: 'golden-gate-bridge'
@@ -363,7 +340,6 @@ export const levels: Level[] = [
       'The architect, Antoni Gaudí, is buried in the crypt.',
       'When completed, it will have 18 spires, representing the Twelve Apostles, the Virgin Mary, the four Evangelists, and Jesus Christ.',
     ],
-    hint: 'The cranes and unique spires are a giveaway.',
     category: 'architecture',
     visualComplexity: 'high',
     imageId: 'sagrada-familia'
@@ -377,7 +353,6 @@ export const levels: Level[] = [
       "Its design is inspired by the basalt lava flows found in Iceland's nature.",
       'It took 41 years to build, from 1945 to 1986.',
     ],
-    hint: "The building's shape resembles organ pipes.",
     category: 'architecture',
     visualComplexity: 'medium',
     imageId: 'hallgrimskirkja'
@@ -391,7 +366,6 @@ export const levels: Level[] = [
       'Each gate is donated by an individual or a company, with the name inscribed on the back.',
       'The shrine is dedicated to Inari, the Shinto god of rice.',
     ],
-    hint: 'Look for the endless path of red gates.',
     category: 'architecture',
     visualComplexity: 'high',
     imageId: 'fushimi-inari-shrine'
@@ -405,7 +379,6 @@ export const levels: Level[] = [
       'Its triangular shape was a response to the shape of the plot of land it was built on.',
       "The term '23 skidoo', meaning to leave quickly, is said to have originated here due to the winds created by the building's shape.",
     ],
-    hint: 'The building has a distinctive triangular shape.',
     category: 'architecture',
     visualComplexity: 'medium',
     imageId: 'flatiron-building'
@@ -419,7 +392,6 @@ export const levels: Level[] = [
       'The building is named for its resemblance to a shard of glass.',
       '95% of the construction materials are from recycled sources.',
     ],
-    hint: 'A tall, pointed glass skyscraper.',
     category: 'architecture',
     visualComplexity: 'low',
     imageId: 'the-shard'
@@ -433,7 +405,6 @@ export const levels: Level[] = [
       'The building is covered in titanium panels, which change color depending on the light.',
       "The museum's design was created with the help of computer-aided design (CAD) technology.",
     ],
-    hint: 'The building has a unique, curvy, metallic structure.',
     category: 'architecture',
     visualComplexity: 'high',
     imageId: 'guggenheim-bilbao'
@@ -449,7 +420,6 @@ export const levels: Level[] = [
       'The house is built partially over a waterfall on Bear Run.',
       'It was a weekend home for the Kaufmann family, owners of a Pittsburgh department store.',
     ],
-    hint: 'The house is integrated with a waterfall.',
     category: 'architecture',
     visualComplexity: 'high',
     imageId: 'fallingwater'
@@ -463,7 +433,6 @@ export const levels: Level[] = [
       'It represents an iron crystal magnified 165 billion times.',
       'The top sphere has a panoramic restaurant with views of Brussels.',
     ],
-    hint: 'Look for the structure of connected spheres.',
     category: 'architecture',
     visualComplexity: 'medium',
     imageId: 'atomium'
@@ -477,7 +446,6 @@ export const levels: Level[] = [
       'It is one of the finest examples of French Gothic architecture.',
       'A major fire in 2019 destroyed the spire and roof but the main structure was saved.',
     ],
-    hint: 'The two bell towers and rose window are famous.',
     category: 'architecture',
     visualComplexity: 'high',
     imageId: 'notre-dame'
@@ -491,7 +459,6 @@ export const levels: Level[] = [
       'The tilt was stabilized in the late 20th and early 21st centuries.',
       'Galileo Galilei is said to have dropped two cannonballs of different masses from the tower to demonstrate that their speed of descent was independent of their mass.',
     ],
-    hint: 'The tower is famously tilted.',
     category: 'architecture',
     visualComplexity: 'low',
     imageId: 'leaning-tower-of-pisa'
@@ -505,7 +472,6 @@ export const levels: Level[] = [
       "The infinity pool on the roof is the world's largest at that height.",
       'It is one of the most expensive standalone casino properties in the world.',
     ],
-    hint: 'Look for the three towers with a ship-like structure on top.',
     category: 'architecture',
     visualComplexity: 'medium',
     imageId: 'marina-bay-sands'
@@ -519,7 +485,6 @@ export const levels: Level[] = [
       'The two towers are connected by a double-decker skybridge on the 41st and 42nd floors.',
       'The design of the floor plates is based on an eight-pointed star, a symbol in Islamic culture.',
     ],
-    hint: 'Look for the twin towers connected by a bridge.',
     category: 'architecture',
     visualComplexity: 'medium',
     imageId: 'petronas-towers'
@@ -533,7 +498,6 @@ export const levels: Level[] = [
       'It has its own zip code: 10118.',
       'The building has been featured in over 250 TV shows and movies.',
     ],
-    hint: 'A classic art deco skyscraper with a tall antenna.',
     category: 'architecture',
     visualComplexity: 'medium',
     imageId: 'empire-state-building'
@@ -547,7 +511,6 @@ export const levels: Level[] = [
       "The EdgeWalk is the world's highest full circle hands-free walk.",
       "The main pod's design was inspired by a sunflower seed.",
     ],
-    hint: 'A very tall, thin tower with a large observation pod.',
     category: 'architecture',
     visualComplexity: 'low',
     imageId: 'cn-tower'
@@ -561,7 +524,6 @@ export const levels: Level[] = [
       'The abbey was used as a prison during the French Revolution.',
       'The tides in the area can vary by as much as 14 meters, creating a dramatic landscape.',
     ],
-    hint: 'A castle-like abbey on a small island.',
     category: 'architecture',
     visualComplexity: 'high',
     imageId: 'mont-saint-michel'
@@ -575,7 +537,6 @@ export const levels: Level[] = [
       'The observation deck is 520 ft (160 m) high.',
       'It is designed to withstand winds up to 200 mph (320 km/h) and earthquakes up to 9.1 magnitude.',
     ],
-    hint: 'A futuristic tower with a saucer-shaped top.',
     category: 'architecture',
     visualComplexity: 'low',
     imageId: 'space-needle'
@@ -589,7 +550,6 @@ export const levels: Level[] = [
       "It has one of the world's fastest elevators.",
       'A giant tuned mass damper is housed in the top of the tower to offset movements caused by strong winds.',
     ],
-    hint: 'A skyscraper that looks like a stack of pagodas.',
     category: 'architecture',
     visualComplexity: 'medium',
     imageId: 'taipei-101'
@@ -603,7 +563,6 @@ export const levels: Level[] = [
       'It is now a museum dedicated to displaying art and furniture collected by Queen Marie of Romania.',
       'The castle is situated on the border between Transylvania and Wallachia.',
     ],
-    hint: 'A spooky-looking castle on a hill.',
     category: 'architecture',
     visualComplexity: 'high',
     imageId: 'bran-castle'
@@ -617,7 +576,6 @@ export const levels: Level[] = [
       'The main pyramid, El Castillo, is a temple to the god Kukulkan.',
       'Twice a year, on the spring and autumn equinoxes, a shadow falls on the pyramid in the shape of a serpent.',
     ],
-    hint: 'The large step-pyramid is the central feature.',
     category: 'architecture',
     visualComplexity: 'medium',
     imageId: 'chichen-itza'
@@ -631,7 +589,6 @@ export const levels: Level[] = [
       'Most moai were carved from the volcanic tuff at Rano Raraku quarry.',
       'The statues are monolithic, meaning they were carved in one piece.',
     ],
-    hint: 'Large stone heads on a grassy hill.',
     category: 'nature',
     visualComplexity: 'medium',
     imageId: 'moai-statues'
@@ -645,7 +602,6 @@ export const levels: Level[] = [
       "The name Alhambra comes from an Arabic root which means 'red castle'.",
       'It is famous for its intricate Islamic tilework and calligraphy.',
     ],
-    hint: 'Look for ornate archways and detailed tile patterns.',
     category: 'interior',
     visualComplexity: 'high',
     imageId: 'alhambra'
@@ -659,7 +615,6 @@ export const levels: Level[] = [
       'The palace has 775 rooms.',
       'The famous Changing of the Guard ceremony takes place outside the palace.',
     ],
-    hint: 'A large, grand palace with a famous balcony.',
     category: 'architecture',
     visualComplexity: 'high',
     imageId: 'buckingham-palace'
@@ -673,7 +628,6 @@ export const levels: Level[] = [
       'It consists of over 980 buildings.',
       'The complex is surrounded by a 10-meter-high defensive wall and a 52-meter-wide moat.',
     ],
-    hint: 'Look for traditional Chinese palace architecture and red walls.',
     category: 'architecture',
     visualComplexity: 'high',
     imageId: 'forbidden-city'
@@ -687,7 +641,6 @@ export const levels: Level[] = [
       'It has often been a site for major historical events and is today considered a symbol of European unity.',
       'The Quadriga, a statue of a chariot drawn by four horses, sits atop the gate.',
     ],
-    hint: 'A large classical gate topped with a horse chariot statue.',
     category: 'architecture',
     visualComplexity: 'medium',
     imageId: 'brandenburg-gate'
@@ -701,7 +654,6 @@ export const levels: Level[] = [
       'Designed by architects including Michelangelo and Bernini.',
       "St. Peter's tomb is said to be directly below the high altar of the Basilica.",
     ],
-    hint: 'A massive dome and a large, colonnaded square.',
     category: 'architecture',
     visualComplexity: 'high',
     imageId: 'st-peters-basilica'
@@ -715,7 +667,6 @@ export const levels: Level[] = [
       'Each of the letters is 45 ft (13.7 m) tall.',
       'The sign has been rebuilt and restored several times over the years.',
     ],
-    hint: 'Large white letters on a hillside.',
     category: 'nature',
     visualComplexity: 'low',
     imageId: 'hollywood-sign'
@@ -723,27 +674,24 @@ export const levels: Level[] = [
 ];
 
 
-export function getImageUrl(imageId: string): { url: string; hint: string } {
-  const levelData = levels.find(l => l.imageId === imageId);
+export function getImageUrl(imageId: string, placeName: string): { url: string; hint: string } {
   const imageData = PlaceHolderImages.find((p) => p.id === imageId);
 
-  if (!levelData || !imageData) {
+  if (!imageData) {
     console.error(`No placeholder image meta found for imageId: ${imageId}`);
-    // A known-good fallback image in your public folder
-    return { url: "/images/eiffel-tower.jpg", hint: "fallback" };
+    return { url: `/images/eiffel-tower.jpg`, hint: "fallback" };
   }
   
-  // Logic for playthrough-based variations
   const round = typeof window !== 'undefined' ? parseInt(localStorage.getItem('gameRound') || '0', 10) : 0;
-  const variationNumber = (round % 4) + 1; // Cycles through 1, 2, 3, 4
+  const variationNumber = round % 4; // Cycles through 0, 1, 2, 3
 
   let url: string;
-  if (variationNumber === 1) {
-    // First playthrough uses the base image
-    url = `/images/${levelData.place}.jpg`;
+  if (variationNumber === 0) {
+    // First playthrough uses the base image, which has no number
+    url = `/images/${placeName}.jpg`;
   } else {
-    // Subsequent playthroughs use variations 2, 3, 4, then cycle
-    url = `/images/${levelData.place}${variationNumber}.jpg`;
+    // Subsequent playthroughs use variations 2, 3, 4. We add 1 to the variation number.
+    url = `/images/${placeName}${variationNumber + 1}.jpg`;
   }
   
   return { url, hint: imageData.imageHint };
@@ -759,8 +707,8 @@ export const generateRandomSwap = (gridSize: number): [number, number] => {
   return [index1, index2];
 };
 
-export const generatePuzzle = (imageId: string, grid: number) => {
-  const { url: imageUrl } = getImageUrl(imageId);
+export const generatePuzzle = (level: Level, grid: number) => {
+  const { url: imageUrl } = getImageUrl(level.imageId, level.place);
   const solvedBoard = Array.from({ length: grid * grid }, (_, i) => i);
   const scrambledBoard = [...solvedBoard];
 
@@ -771,10 +719,13 @@ export const generatePuzzle = (imageId: string, grid: number) => {
     scrambledBoard[index1],
   ];
 
+  const hint = generateHint(grid, swappedIndices);
+
   return {
     solvedBoard,
     scrambledBoard,
     swapped: swappedIndices,
     imageUrl: imageUrl,
+    hint: hint,
   };
 };

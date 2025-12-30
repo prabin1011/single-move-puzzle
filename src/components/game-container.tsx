@@ -120,8 +120,7 @@ export default function GameContainer() {
   // Generate the puzzle for the current level
   const currentPuzzle = useMemo(() => {
     if (!currentLevelData) return null;
-    // Pass the imageId to generatePuzzle
-    return generatePuzzle(currentLevelData.imageId, currentGridSize);
+    return generatePuzzle(currentLevelData, currentGridSize);
   }, [currentLevelData, currentGridSize, retryCount]); // Rerun if level or retryCount changes
 
   // Game timer logic
@@ -142,8 +141,8 @@ export default function GameContainer() {
     );
   }
 
-  const { scrambledBoard, swapped, imageUrl } = currentPuzzle;
-  const { url: currentImageUrl, hint: currentImageHint } = getImageUrl(currentLevelData.imageId);
+  const { scrambledBoard, swapped, imageUrl, hint } = currentPuzzle;
+  const { url: currentImageUrl, hint: currentImageHint } = getImageUrl(currentLevelData.imageId, currentLevelData.place);
 
 
   const handleSuccess = async () => {
@@ -272,7 +271,7 @@ export default function GameContainer() {
                   <AlertDialogHeader>
                     <AlertDialogTitle>Hint for {currentLevelData.place}</AlertDialogTitle>
                     <AlertDialogDescription>
-                      {currentLevelData.hint}
+                      {hint}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogAction>Got it!</AlertDialogAction>

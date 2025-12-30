@@ -38,6 +38,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useGameTimer } from "@/hooks/use-game-timer";
 import { useRouter } from "next/navigation";
+import { usePrefetchNextImages } from "@/hooks/use-prefetch-images";
 
 
 const MAX_MISTAKES = 1; // Allows 1 mistake, game over on the 2nd.
@@ -72,6 +73,8 @@ export default function GameContainer() {
   
   const isTimerRunning = gameState === "PREVIEW";
   const { time, reset: resetTimer, stop: stopTimer } = useGameTimer(isTimerRunning);
+
+  usePrefetchNextImages(levelIndex);
 
   // Load progress and shuffled levels on mount
   useEffect(() => {
@@ -330,6 +333,7 @@ export default function GameContainer() {
               width={300}
               height={300}
               priority
+              unoptimized
               data-ai-hint={currentImageHint}
               className={cn(
                   "object-cover transition-all duration-500",
@@ -362,6 +366,7 @@ export default function GameContainer() {
                 height={300}
                 data-ai-hint={currentImageHint}
                 className="object-cover"
+                unoptimized
                 priority
               />
             </div>

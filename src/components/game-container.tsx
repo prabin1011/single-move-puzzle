@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import Image from "next/image";
 import PuzzleBoard from "./puzzle-board";
 import { Button } from "@/components/ui/button";
 import {
@@ -325,12 +326,13 @@ export default function GameContainer() {
       <CardContent className="flex flex-col items-center gap-6 px-4 sm:px-6">
         {(gameState === "READY" || gameState === "PREVIEW") && (
           <div className="relative h-[300px] w-[300px] rounded-lg overflow-hidden shadow-lg border-2 border-border flex items-center justify-center">
-            <img
+            <Image
               key={currentImageUrl}
               src={currentImageUrl}
               alt={currentLevelData.place}
               width={300}
               height={300}
+              priority
               data-ai-hint={currentImageHint}
               className={cn(
                   "object-cover transition-all duration-500",
@@ -357,11 +359,12 @@ export default function GameContainer() {
         {gameState === "SOLVED" && (
           <div className="flex flex-col items-center w-full">
             <div className="relative h-[300px] w-[300px] rounded-lg overflow-hidden shadow-lg mx-auto mb-6 border-2 border-green-400/50">
-              <img
+              <Image
                 src={currentImageUrl}
                 alt={currentLevelData.place}
                 width={300}
                 height={300}
+                priority
                 data-ai-hint={currentImageHint}
                 className="object-cover h-[300px] w-[300px]"
               />

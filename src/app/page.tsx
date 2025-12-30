@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -56,8 +55,14 @@ export default function Home() {
   }, [isUserLoading, user, auth]);
 
   const handleNewGame = () => {
+    // Increment the game round for image variations
+    const currentRound = parseInt(localStorage.getItem('gameRound') || '0', 10);
+    localStorage.setItem('gameRound', (currentRound + 1).toString());
+
+    // Reset progress for the new game
     localStorage.removeItem('currentLevelIndex');
     localStorage.removeItem('highestLevel');
+
     // Create and save a new shuffled list for the new game
     const newShuffledLevels = shuffle(levels);
     localStorage.setItem('shuffledLevels', JSON.stringify(newShuffledLevels));
@@ -110,5 +115,3 @@ export default function Home() {
     </main>
   );
 }
-
-    

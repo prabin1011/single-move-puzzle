@@ -1,4 +1,3 @@
-
 import { PlaceHolderImages } from './placeholder-images';
 
 export interface Level {
@@ -734,20 +733,19 @@ export function getImageUrl(imageId: string): { url: string; hint: string } {
     return { url: "/images/eiffel-tower.jpg", hint: "fallback" };
   }
   
-  // For the first level, always use the base image for a consistent start.
-  // For other levels, pick a random variation if available.
-  const levelIndex = levels.findIndex(l => l.imageId === imageId);
-  let variation = '';
-  if (levelIndex > 0) {
-    // Choose a random number between 1 and 4 for variations, or blank for the base image.
-    const rand = Math.floor(Math.random() * 5); // 0, 1, 2, 3, 4
-    if (rand > 0) {
-      variation = String(rand);
-    }
+  // Logic for playthrough-based variations
+  const round = typeof window !== 'undefined' ? parseInt(localStorage.getItem('gameRound') || '0', 10) : 0;
+  const variationNumber = (round % 4) + 1; // Cycles through 1, 2, 3, 4
+
+  let url: string;
+  if (variationNumber === 1) {
+    // First playthrough uses the base image
+    url = `/images/${levelData.place}.jpg`;
+  } else {
+    // Subsequent playthroughs use variations 2, 3, 4, then cycle
+    url = `/images/${levelData.place}${variationNumber}.jpg`;
   }
   
-  const url = `/images/${levelData.place}${variation}.jpg`;
-
   return { url, hint: imageData.imageHint };
 }
 

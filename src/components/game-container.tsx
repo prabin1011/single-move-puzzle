@@ -21,7 +21,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import Image from "next/image";
 import { levels as initialLevels, generatePuzzle, getImageUrl, type Level } from "@/lib/levels";
 import { getLevelConfig } from "@/lib/game-config";
 import {
@@ -326,17 +325,16 @@ export default function GameContainer() {
       <CardContent className="flex flex-col items-center gap-6 px-4 sm:px-6">
         {(gameState === "READY" || gameState === "PREVIEW") && (
           <div className="relative h-[300px] w-[300px] rounded-lg overflow-hidden shadow-lg border-2 border-border flex items-center justify-center">
-            <Image
+            <img
               key={currentImageUrl}
               src={currentImageUrl}
               alt={currentLevelData.place}
               width={300}
               height={300}
-              priority
-              unoptimized
               data-ai-hint={currentImageHint}
               className={cn(
                   "object-cover transition-all duration-500",
+                  "h-[300px] w-[300px]",
                   gameState === "READY" && "blur-md scale-110",
               )}
             />
@@ -359,15 +357,13 @@ export default function GameContainer() {
         {gameState === "SOLVED" && (
           <div className="flex flex-col items-center w-full">
             <div className="relative h-[300px] w-[300px] rounded-lg overflow-hidden shadow-lg mx-auto mb-6 border-2 border-green-400/50">
-              <Image
+              <img
                 src={currentImageUrl}
                 alt={currentLevelData.place}
                 width={300}
                 height={300}
                 data-ai-hint={currentImageHint}
-                className="object-cover"
-                unoptimized
-                priority
+                className="object-cover h-[300px] w-[300px]"
               />
             </div>
             <div

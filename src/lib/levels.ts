@@ -6,6 +6,7 @@ export interface Level {
   id: string;
   place: string;
   country: string;
+  imageName: string; // The exact base name of the image file in /public/images
   facts: string[];
   category: 'architecture' | 'nature' | 'sky' | 'city' | 'interior' | 'abstract';
   visualComplexity: 'low' | 'medium' | 'high';
@@ -19,6 +20,7 @@ export const levels: Level[] = [
     id: 'lvl_001',
     place: 'Eiffel Tower',
     country: 'France',
+    imageName: 'Eiffel Tower',
     facts: [
       "It was the main exhibit of the 1889 Exposition Universelle (World's Fair).",
       "The tower's iron structure weighs 7,300 tons.",
@@ -32,6 +34,7 @@ export const levels: Level[] = [
     id: 'lvl_002',
     place: 'Colosseum',
     country: 'Italy',
+    imageName: 'Colosseum',
     facts: [
       "It's the largest ancient amphitheater ever built, and is still the largest standing amphitheater in the world today.",
       'The hypogeum, an underground network of tunnels, was added later to house gladiators and animals.',
@@ -45,6 +48,7 @@ export const levels: Level[] = [
     id: 'lvl_003',
     place: 'Mount Fuji',
     country: 'Japan',
+    imageName: 'Mount Fuji',
     facts: [
       'It is an active volcano that last erupted in 1707.',
       "It is one of Japan's 'Three Holy Mountains' along with Mount Tate and Mount Haku.",
@@ -58,6 +62,7 @@ export const levels: Level[] = [
     id: 'lvl_004',
     place: 'Santorini',
     country: 'Greece',
+    imageName: 'Santorini',
     facts: [
       'The island is the site of one of the largest volcanic eruptions in recorded history.',
       'The iconic white and blue buildings are built on the edge of a caldera.',
@@ -71,6 +76,7 @@ export const levels: Level[] = [
     id: 'lvl_005',
     place: 'Northern Lights',
     country: 'Various',
+    imageName: 'Northern Lights',
     facts: [
       "Also known as Aurora Borealis, they are caused by collisions between electrically charged particles from the sun that enter the Earth's atmosphere.",
       'The colors can vary, with green being the most common, followed by pink.',
@@ -86,6 +92,7 @@ export const levels: Level[] = [
     id: 'lvl_006',
     place: 'Statue of Liberty',
     country: 'USA',
+    imageName: 'Statue of Liberty',
     facts: [
       "The statue's copper skin turned its characteristic green color due to oxidation over about 30 years.",
       'It functioned as a lighthouse from 1886 to 1901.',
@@ -99,6 +106,7 @@ export const levels: Level[] = [
     id: 'lvl_007',
     place: 'Taj Mahal',
     country: 'India',
+    imageName: 'Taj Mahal',
     facts: [
       'It is a perfectly symmetrical building.',
       'The four minarets are slightly tilted outwards to protect the main tomb from collapse.',
@@ -112,6 +120,7 @@ export const levels: Level[] = [
     id: 'lvl_008',
     place: 'Machu Picchu',
     country: 'Peru',
+    imageName: 'Machu Picchu',
     facts: [
       'It was built around 1450, at the height of the Inca Empire.',
       'The site was abandoned just over 100 years later.',
@@ -125,6 +134,7 @@ export const levels: Level[] = [
     id: 'lvl_009',
     place: 'Great Wall of China',
     country: 'China',
+    imageName: 'Great Wall of China',
     facts: [
       'It is not a single continuous wall but a system of defenses.',
       'Sticky rice flour was used in the binding material for the bricks.',
@@ -138,6 +148,7 @@ export const levels: Level[] = [
     id: 'lvl_010',
     place: 'Pyramids of Giza',
     country: 'Egypt',
+    imageName: 'Pyramids of Giza',
     facts: [
       'The Great Pyramid was the tallest man-made structure for over 3,800 years.',
       "The three pyramids are precisely aligned with the stars of Orion's Belt.",
@@ -151,6 +162,7 @@ export const levels: Level[] = [
     id: 'lvl_011',
     place: 'Christ the Redeemer',
     country: 'Brazil',
+    imageName: 'Christ the Redeemer',
     facts: [
       'The statue is the largest Art Deco-style sculpture in the world.',
       'It has been struck by lightning multiple times.',
@@ -164,6 +176,7 @@ export const levels: Level[] = [
     id: 'lvl_012',
     place: 'Petra',
     country: 'Jordan',
+    imageName: 'Petra',
     facts: [
       "It's known as the 'Rose City' due to the color of the stone.",
       'At its peak, it was a bustling trade hub.',
@@ -177,6 +190,7 @@ export const levels: Level[] = [
     id: 'lvl_013',
     place: 'Grand Canyon',
     country: 'USA',
+    imageName: 'Grand Canyon',
     facts: [
       'The canyon is about 277 miles long, up to 18 miles wide and attains a depth of over a mile.',
       'It is one of the Seven Natural Wonders of the World.',
@@ -190,6 +204,7 @@ export const levels: Level[] = [
     id: 'lvl_014',
     place: 'Venice Canals',
     country: 'Italy',
+    imageName: 'Venice Canals',
     facts: [
       'The city is built on more than 100 small islands in a lagoon in the Adriatic Sea.',
       'It has no roads, just canals, including the Grand Canal thoroughfare.',
@@ -203,6 +218,7 @@ export const levels: Level[] = [
     id: 'lvl_015',
     place: 'Sydney Opera House',
     country: 'Australia',
+    imageName: 'Sydney Opera House',
     facts: [
       'The design was chosen from an international competition with 233 entries.',
       'The roof is covered with over 1 million tiles.',
@@ -218,6 +234,7 @@ export const levels: Level[] = [
     id: 'lvl_016',
     place: 'Burj Khalifa',
     country: 'UAE',
+    imageName: 'Burj Khalifa',
     facts: [
       'It is the tallest building in the world.',
       'The tip of the spire can be seen from up to 95 kilometers away.',
@@ -231,6 +248,7 @@ export const levels: Level[] = [
     id: 'lvl_017',
     place: 'The Louvre',
     country: 'France',
+    imageName: 'The Louvre',
     facts: [
       "It is the world's largest art museum.",
       'The glass pyramid entrance was a controversial addition in 1989.',
@@ -244,6 +262,7 @@ export const levels: Level[] = [
     id: 'lvl_018',
     place: "St. Basil's Cathedral",
     country: 'Russia',
+    imageName: "St. Basil's Cathedral",
     facts: [
       'It was built on the orders of Ivan the Terrible.',
       "The building's design is shaped as the flame of a bonfire rising into the sky.",
@@ -257,6 +276,7 @@ export const levels: Level[] = [
     id: 'lvl_019',
     place: 'Neuschwanstein Castle',
     country: 'Germany',
+    imageName: 'Neuschwanstein Castle',
     facts: [
       'The castle was intended as a home for King Ludwig II of Bavaria.',
       "It was the inspiration for Disneyland's Sleeping Beauty Castle.",
@@ -270,6 +290,7 @@ export const levels: Level[] = [
     id: 'lvl_020',
     place: 'Angkor Wat',
     country: 'Cambodia',
+    imageName: 'Angkor Wat',
     facts: [
       'It is the largest religious monument in the world by land area.',
       'It was originally constructed as a Hindu temple dedicated to the god Vishnu for the Khmer Empire.',
@@ -283,6 +304,7 @@ export const levels: Level[] = [
     id: 'lvl_021',
     place: 'London Eye',
     country: 'UK',
+    imageName: 'London Eye',
     facts: [
       'It is the most popular paid tourist attraction in the United Kingdom.',
       'The 32 capsules are numbered 1 to 33, skipping number 13 for good luck.',
@@ -296,6 +318,7 @@ export const levels: Level[] = [
     id: 'lvl_022',
     place: 'Hagia Sophia',
     country: 'Turkey',
+    imageName: 'Hagia Sophia',
     facts: [
       "It was the world's largest cathedral for nearly a thousand years.",
       'Its massive dome was a revolutionary architectural feat for its time.',
@@ -309,6 +332,7 @@ export const levels: Level[] = [
     id: 'lvl_023',
     place: 'Acropolis of Athens',
     country: 'Greece',
+    imageName: 'Acropolis of Athens',
     facts: [
       'The most famous building on the Acropolis is the Parthenon.',
       "The word Acropolis is from the Greek words 'akron' (highest point) and 'polis' (city).",
@@ -322,6 +346,7 @@ export const levels: Level[] = [
     id: 'lvl_024',
     place: 'Golden Gate Bridge',
     country: 'USA',
+    imageName: 'Golden Gate Bridge',
     facts: [
       "Its signature color is called 'International Orange'.",
       'The bridge has been closed due to high winds only three times.',
@@ -335,6 +360,7 @@ export const levels: Level[] = [
     id: 'lvl_025',
     place: 'Sagrada Família',
     country: 'Spain',
+    imageName: 'Sagrada Familia',
     facts: [
       'It has been under construction since 1882 and is still not finished.',
       'The architect, Antoni Gaudí, is buried in the crypt.',
@@ -348,6 +374,7 @@ export const levels: Level[] = [
     id: 'lvl_026',
     place: 'Hallgrímskirkja',
     country: 'Iceland',
+    imageName: 'Hallgrimskirkja',
     facts: [
       'At 74.5 meters high, it is the largest church in Iceland.',
       "Its design is inspired by the basalt lava flows found in Iceland's nature.",
@@ -361,6 +388,7 @@ export const levels: Level[] = [
     id: 'lvl_027',
     place: 'Fushimi Inari Shrine',
     country: 'Japan',
+    imageName: 'Fushimi Inari Shrine',
     facts: [
       'It is famous for its thousands of vermilion torii gates.',
       'Each gate is donated by an individual or a company, with the name inscribed on the back.',
@@ -374,6 +402,7 @@ export const levels: Level[] = [
     id: 'lvl_028',
     place: 'Flatiron Building',
     country: 'USA',
+    imageName: 'Flatiron Building',
     facts: [
       "It was one of New York City's first skyscrapers.",
       'Its triangular shape was a response to the shape of the plot of land it was built on.',
@@ -387,6 +416,7 @@ export const levels: Level[] = [
     id: 'lvl_029',
     place: 'The Shard',
     country: 'UK',
+    imageName: 'The Shard',
     facts: [
       'It is the tallest building in the United Kingdom.',
       'The building is named for its resemblance to a shard of glass.',
@@ -400,6 +430,7 @@ export const levels: Level[] = [
     id: 'lvl_030',
     place: 'Guggenheim Museum Bilbao',
     country: 'Spain',
+    imageName: 'Guggenheim Museum Bilbao',
     facts: [
       'It is one of the most admired works of contemporary architecture.',
       'The building is covered in titanium panels, which change color depending on the light.',
@@ -415,6 +446,7 @@ export const levels: Level[] = [
     id: 'lvl_031',
     place: 'Fallingwater',
     country: 'USA',
+    imageName: 'Fallingwater',
     facts: [
       'It was designed by architect Frank Lloyd Wright in 1935.',
       'The house is built partially over a waterfall on Bear Run.',
@@ -428,6 +460,7 @@ export const levels: Level[] = [
     id: 'lvl_032',
     place: 'Atomium',
     country: 'Belgium',
+    imageName: 'Atomium',
     facts: [
       "It was constructed for the 1958 Brussels World's Fair (Expo 58).",
       'It represents an iron crystal magnified 165 billion times.',
@@ -441,6 +474,7 @@ export const levels: Level[] = [
     id: 'lvl_033',
     place: 'Notre-Dame Cathedral',
     country: 'France',
+    imageName: 'Notre-Dame Cathedral',
     facts: [
       'Construction began in 1163 and was largely complete by 1260.',
       'It is one of the finest examples of French Gothic architecture.',
@@ -454,6 +488,7 @@ export const levels: Level[] = [
     id: 'lvl_034',
     place: 'Leaning Tower of Pisa',
     country: 'Italy',
+    imageName: 'Leaning Tower of Pisa',
     facts: [
       "The tower's tilt began during construction due to an inadequate foundation.",
       'The tilt was stabilized in the late 20th and early 21st centuries.',
@@ -467,6 +502,7 @@ export const levels: Level[] = [
     id: 'lvl_035',
     place: 'Marina Bay Sands',
     country: 'Singapore',
+    imageName: 'Marina Bay Sands',
     facts: [
       'The resort is topped by a 340-metre-long SkyPark with a capacity of 3,902 people.',
       "The infinity pool on the roof is the world's largest at that height.",
@@ -480,6 +516,7 @@ export const levels: Level[] = [
     id: 'lvl_036',
     place: 'Petronas Towers',
     country: 'Malaysia',
+    imageName: 'Petronas Towers',
     facts: [
       'They were the tallest buildings in the world from 1998 to 2004.',
       'The two towers are connected by a double-decker skybridge on the 41st and 42nd floors.',
@@ -493,6 +530,7 @@ export const levels: Level[] = [
     id: 'lvl_037',
     place: 'Empire State Building',
     country: 'USA',
+    imageName: 'Empire State Building',
     facts: [
       "It was the world's tallest building for nearly 40 years.",
       'It has its own zip code: 10118.',
@@ -506,6 +544,7 @@ export const levels: Level[] = [
     id: 'lvl_038',
     place: 'CN Tower',
     country: 'Canada',
+    imageName: 'CN Tower',
     facts: [
       "It was the world's tallest free-standing structure for 32 years.",
       "The EdgeWalk is the world's highest full circle hands-free walk.",
@@ -519,6 +558,7 @@ export const levels: Level[] = [
     id: 'lvl_039',
     place: 'Mont Saint-Michel',
     country: 'France',
+    imageName: 'Mont Saint-Michel',
     facts: [
       'It is a tidal island and mainland commune in Normandy, France.',
       'The abbey was used as a prison during the French Revolution.',
@@ -532,6 +572,7 @@ export const levels: Level[] = [
     id: 'lvl_040',
     place: 'Space Needle',
     country: 'USA',
+    imageName: 'Space Needle',
     facts: [
       'It was built for the 1962 World\'s Fair.',
       'The observation deck is 520 ft (160 m) high.',
@@ -545,6 +586,7 @@ export const levels: Level[] = [
     id: 'lvl_041',
     place: 'Taipei 101',
     country: 'Taiwan',
+    imageName: 'Taipei 101',
     facts: [
       'It was the world\'s tallest building from 2004 until 2010.',
       "It has one of the world's fastest elevators.",
@@ -558,6 +600,7 @@ export const levels: Level[] = [
     id: 'lvl_042',
     place: 'Bran Castle',
     country: 'Romania',
+    imageName: 'Bran Castle',
     facts: [
       "It is commonly known as 'Dracula's Castle'.",
       'It is now a museum dedicated to displaying art and furniture collected by Queen Marie of Romania.',
@@ -571,6 +614,7 @@ export const levels: Level[] = [
     id: 'lvl_043',
     place: 'Chichen Itza',
     country: 'Mexico',
+    imageName: 'Chichen Itza',
     facts: [
       'It was one of the largest Maya cities.',
       'The main pyramid, El Castillo, is a temple to the god Kukulkan.',
@@ -584,6 +628,7 @@ export const levels: Level[] = [
     id: 'lvl_044',
     place: 'Moai Statues',
     country: 'Chile',
+    imageName: 'Moai Statues',
     facts: [
       'They were carved by the Rapa Nui people on Easter Island between 1250 and 1500.',
       'Most moai were carved from the volcanic tuff at Rano Raraku quarry.',
@@ -597,6 +642,7 @@ export const levels: Level[] = [
     id: 'lvl_045',
     place: 'The Alhambra',
     country: 'Spain',
+    imageName: 'The Alhambra',
     facts: [
       'It is a palace and fortress complex of the Moorish rulers in Granada.',
       "The name Alhambra comes from an Arabic root which means 'red castle'.",
@@ -610,6 +656,7 @@ export const levels: Level[] = [
     id: 'lvl_046',
     place: 'Buckingham Palace',
     country: 'UK',
+    imageName: 'Buckingham Palace',
     facts: [
       'It is the London residence and administrative headquarters of the monarch of the United Kingdom.',
       'The palace has 775 rooms.',
@@ -623,6 +670,7 @@ export const levels: Level[] = [
     id: 'lvl_047',
     place: 'Forbidden City',
     country: 'China',
+    imageName: 'Forbidden City',
     facts: [
       'It was the former Chinese imperial palace from the Ming dynasty to the end of the Qing dynasty.',
       'It consists of over 980 buildings.',
@@ -636,6 +684,7 @@ export const levels: Level[] = [
     id: 'lvl_048',
     place: 'Brandenburg Gate',
     country: 'Germany',
+    imageName: 'Brandenburg Gate',
     facts: [
       'It is an 18th-century neoclassical monument in Berlin.',
       'It has often been a site for major historical events and is today considered a symbol of European unity.',
@@ -649,6 +698,7 @@ export const levels: Level[] = [
     id: 'lvl_049',
     place: "St. Peter's Basilica",
     country: 'Vatican City',
+    imageName: "St. Peter's Basilica",
     facts: [
       'It is the largest church in the world.',
       'Designed by architects including Michelangelo and Bernini.',
@@ -662,6 +712,7 @@ export const levels: Level[] = [
     id: 'lvl_050',
     place: 'Hollywood Sign',
     country: 'USA',
+    imageName: 'Hollywood Sign',
     facts: [
       "It originally read 'HOLLYWOODLAND' and was an advertisement for a local real estate development.",
       'Each of the letters is 45 ft (13.7 m) tall.',
@@ -681,23 +732,23 @@ export function getImageUrl(imageId: string, round = 0): { url: string; hint: st
     if (!levelData || !placeholderData) {
         console.error(`No data found for imageId: ${imageId}`);
         // A fallback that is guaranteed to exist.
-        return { url: `/images/eiffel-tower.jpg`, hint: "fallback" };
+        return { url: `/images/Eiffel Tower.jpg`, hint: "fallback" };
     }
     
     // Cycle through 0, 1, 2, 3 for game rounds
     const variationNumber = round % 4; 
-    const placeName = levelData.place;
+    const imageName = levelData.imageName;
 
     let url: string;
 
     if (variationNumber === 0) {
         // Round 0 uses the base image, e.g., 'Eiffel Tower.jpg'
-        url = `/images/${placeName}.jpg`;
+        url = `/images/${imageName}.jpg`;
     } else {
         // Subsequent rounds use variations 2, 3, 4. 
         // We add 1 to the variation number to get the filename suffix.
         // Round 1 -> variationNumber 1 -> uses filename2.jpg
-        url = `/images/${placeName}${variationNumber + 1}.jpg`;
+        url = `/images/${imageName}${variationNumber + 1}.jpg`;
     }
 
     return { url, hint: placeholderData.imageHint };
@@ -737,5 +788,6 @@ export const generatePuzzle = (imageId: string, grid: number) => {
     hint: proceduralHint, // Use the new procedural hint
   };
 };
+
 
 

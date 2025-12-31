@@ -171,6 +171,7 @@ export default function GameContainer() {
   };
 
   const resetForRetry = () => {
+    setMistakeCount(0); // Reset mistake count for the retry
     setRetryCount((prev) => prev + 1); // This will trigger puzzle regeneration via useMemo
     setGameState("PREVIEW"); // Go back to preview for another look
     resetTimer();

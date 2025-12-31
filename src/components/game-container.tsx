@@ -41,7 +41,7 @@ import { useRouter } from "next/navigation";
 import { usePrefetchNextImages } from "@/hooks/use-prefetch-images";
 
 
-const MAX_MISTAKES = 1; // Allows 1 mistake, game over on the 2nd.
+const MAX_MISTAKES = 0; // Allows 0 mistakes, game over on the 1st.
 const PREVIEW_TIME = 5; // 5 seconds to memorize
 
 function shuffle<T>(array: T[]): T[] {
@@ -258,7 +258,7 @@ export default function GameContainer() {
               Find the two swapped pieces.
             </CardTitle>
             <CardDescription className="text-muted-foreground">
-              You have {MAX_MISTAKES - mistakeCount + 1} chance(s) remaining.
+              You have {MAX_MISTAKES - mistakeCount + 1} chance remaining.
             </CardDescription>
             {levelIndex >= 2 && (
               <AlertDialog>

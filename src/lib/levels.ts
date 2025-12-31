@@ -686,6 +686,8 @@ export function getImageUrl(imageId: string, placeName: string): { url: string; 
   const variationNumber = round % 4; // Cycles through 0, 1, 2, 3
 
   let url: string;
+  // This logic is flawed for names with numbers in them already.
+  // e.g. "Taipei 101" + "2" becomes "Taipei 1012.jpg"
   if (variationNumber === 0) {
     // First playthrough uses the base image, which has no number
     url = `/images/${placeName}.jpg`;
@@ -708,7 +710,7 @@ export const generateRandomSwap = (gridSize: number): [number, number] => {
 };
 
 export const generatePuzzle = (level: Level, grid: number) => {
-  const { url: imageUrl } = getImageUrl(level.imageId, level.place);
+  const { url: imageUrl, hint: imageHint } = getImageUrl(level.imageId, level.place);
   const solvedBoard = Array.from({ length: grid * grid }, (_, i) => i);
   const scrambledBoard = [...solvedBoard];
 

@@ -675,30 +675,32 @@ export const levels: Level[] = [
 
 
 export function getImageUrl(imageId: string, round = 0): { url: string; hint: string } {
-    const imageData = PlaceHolderImages.find((p) => p.id === imageId);
+    const levelData = levels.find(l => l.imageId === imageId);
+    const placeholderData = PlaceHolderImages.find((p) => p.id === imageId);
 
-    if (!imageData) {
-        console.error(`No placeholder image meta found for imageId: ${imageId}`);
+    if (!levelData || !placeholderData) {
+        console.error(`No data found for imageId: ${imageId}`);
         // A fallback that is guaranteed to exist.
         return { url: `/images/eiffel-tower.jpg`, hint: "fallback" };
     }
     
     // Cycle through 0, 1, 2, 3 for game rounds
     const variationNumber = round % 4; 
+    const placeName = levelData.place;
 
     let url: string;
 
     if (variationNumber === 0) {
-        // Round 0 uses the base image, e.g., 'eiffel-tower.jpg'
-        url = `/images/${imageId}.jpg`;
+        // Round 0 uses the base image, e.g., 'Eiffel Tower.jpg'
+        url = `/images/${placeName}.jpg`;
     } else {
         // Subsequent rounds use variations 2, 3, 4. 
         // We add 1 to the variation number to get the filename suffix.
         // Round 1 -> variationNumber 1 -> uses filename2.jpg
-        url = `/images/${imageId}${variationNumber + 1}.jpg`;
+        url = `/images/${placeName}${variationNumber + 1}.jpg`;
     }
 
-    return { url, hint: imageData.imageHint };
+    return { url, hint: placeholderData.imageHint };
 }
 
 export const generateRandomSwap = (gridSize: number): [number, number] => {
@@ -714,7 +716,7 @@ export const generateRandomSwap = (gridSize: number): [number, number] => {
 export const generatePuzzle = (imageId: string, grid: number) => {
   // Determine the variation based on the game round stored in localStorage.
   const round = typeof window !== 'undefined' ? parseInt(localStorage.getItem('gameRound') || '0', 10) : 0;
-  const { url: imageUrl } = getImageUrl(imageId, round);
+  const { url: imageUrl, hint } = getImageUrl(imageId, round);
   const solvedBoard = Array.from({ length: grid * grid }, (_, i) => i);
   const scrambledBoard = [...solvedBoard];
 
@@ -725,14 +727,15 @@ export const generatePuzzle = (imageId: string, grid: number) => {
     scrambledBoard[index1],
   ];
 
-  const hint = generateHint(grid, swappedIndices);
+  const proceduralHint = generateHint(grid, swappedIndices);
 
   return {
     solvedBoard,
     scrambledBoard,
     swapped: swappedIndices,
     imageUrl: imageUrl,
-    hint: hint,
+    hint: proceduralHint, // Use the new procedural hint
   };
 };
+
 

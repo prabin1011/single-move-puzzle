@@ -724,36 +724,18 @@ const allLevels: Level[] = [
   },
 ];
 
-const workingImageNames = new Set([
-    'Eiffel Tower',
-    'Colosseum',
-    'Mount Fuji',
-    'Santorini',
-    'Petra',
-    'Burj Khalifa',
-    'The Louvre',
-    'Fallingwater',
-    'Atomium',
-    'Hallgrimskirkja',
-]);
 
-
-export const levels: Level[] = allLevels.filter(level => workingImageNames.has(level.imageName));
-
+export const levels: Level[] = allLevels;
 
 export function getImageUrl(imageName: string, round = 0): { url: string; hint: string } {
-    const levelData = allLevels.find(l => l.imageName === imageName);
-    const placeholderData = PlaceHolderImages.find((p) => p.id === levelData?.imageId);
-
-    if (!levelData || !placeholderData) {
-        console.error(`No data found for imageName: ${imageName}`);
-        // A fallback that is guaranteed to exist.
-        return { url: `/images/Eiffel Tower.jpg`, hint: "fallback" };
+    const placeholderData = PlaceHolderImages.find((p) => p.id === allLevels.find(l => l.imageName === imageName)?.imageId);
+    if (!placeholderData) {
+      // Fallback or error
+      return { url: `/images/Eiffel Tower.jpg`, hint: "fallback hint" };
     }
-    
-    // Cycle through 0, 1, 2, 3 for game rounds
-    const variationNumber = round % 4; 
 
+    // Cycle through 0, 1, 2, 3 for game rounds for image variations
+    const variationNumber = round % 4; 
     let url: string;
 
     if (variationNumber === 0) {

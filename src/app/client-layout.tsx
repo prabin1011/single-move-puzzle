@@ -17,15 +17,26 @@ const ImageCacheAgent = () => {
           const cacheName = 'image-cache-v1';
           const cache = await caches.open(cacheName);
           // Get all image URLs from our new centralized source
-          const imageUrls = levels.map(level => getImageUrl(level.imageId).url);
+          const imageUrls = levels.flatMap(level => {
+            // Generate all 4 variations for each level
+            const urls = [];
+            for (let i = 0; i < 4; i++) {
+                urls.push(getImageUrl(level.imageId, i).url);
+            }
+            return urls;
+          });
           
+          const uniqueImageUrls = [...new Set(imageUrls)];
+
           // A loop with `cache.add` is more resilient than `cache.addAll`.
-          for (const url of imageUrls) {
+          for (const url of uniqueImageUrls) {
             // `add` fetches and caches. If the request is already in the cache, it's a no-op.
             try {
-              await cache.add(new Request(url, { mode: 'no-cors' }));
+              // We use 'no-cors' because we are caching opaque responses from a third-party domain.
+              // This is fine for images we just want to display.
+              await cache.add(new Request(url));
             } catch (error) {
-              console.error(`Image caching agent failed for URL: ${url}`, error);
+              console.warn(`Image caching agent failed for URL: ${url}`, error);
             }
           }
         } catch (error) {

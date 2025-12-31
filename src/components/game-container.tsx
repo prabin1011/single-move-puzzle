@@ -38,10 +38,6 @@ import { useGameTimer } from "@/hooks/use-game-timer";
 import { useRouter } from "next/navigation";
 import { usePrefetchNextImages } from "@/hooks/use-prefetch-images";
 
-
-const MAX_MISTAKES = 0; // Allows 0 mistakes, game over on the 1st.
-const PREVIEW_TIME = 5; // 5 seconds to memorize
-
 function shuffle<T>(array: T[]): T[] {
   let currentIndex = array.length,
     randomIndex;
@@ -54,6 +50,10 @@ function shuffle<T>(array: T[]): T[] {
   }
   return arr;
 }
+
+
+const MAX_MISTAKES = 0; // Allows 0 mistakes, game over on the 1st.
+const PREVIEW_TIME = 5; // 5 seconds to memorize
 
 export default function GameContainer() {
   const router = useRouter();
@@ -142,7 +142,8 @@ export default function GameContainer() {
 
   const { scrambledBoard, swapped, imageUrl, hint } = currentPuzzle;
   // This now just gets the base URL and hint, variation is handled inside getImageUrl
-  const { url: currentImageUrl, hint: currentImageHint } = getImageUrl(currentLevelData.imageId);
+  const round = typeof window !== 'undefined' ? parseInt(localStorage.getItem('gameRound') || '0', 10) : 0;
+  const { url: currentImageUrl, hint: currentImageHint } = getImageUrl(currentLevelData.imageId, round);
 
 
   const handleSuccess = async () => {
@@ -176,7 +177,25 @@ export default function GameContainer() {
   };
 
   const restartGame = () => {
-    router.push('/');
+    // This is the new "Play Again" logic
+    // 1. Increment game round for new images
+    const currentRound = parseInt(localStorage.getItem('gameRound') || '0', 10);
+    localStorage.setItem('gameRound', (currentRound + 1).toString());
+
+    // 2. Create and save a new shuffled list for the new game
+    const newShuffledLevels = shuffle(initialLevels);
+    localStorage.setItem('shuffledLevels', JSON.stringify(newShuffledLevels));
+    setLevels(newShuffledLevels);
+
+    // 3. Reset all game state
+    setLevelIndex(0);
+    setHighestLevel(0);
+    setMistakeCount(0);
+    setRetryCount(0);
+    setShowFacts(false);
+    
+    // 4. Set the game state to ready for the new first level
+    setGameState("READY");
   }
 
   const nextLevel = () => {

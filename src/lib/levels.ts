@@ -539,7 +539,7 @@ export const levels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'low',
-imageId: 'space-needle'
+    imageId: 'space-needle'
   },
   {
     id: 'lvl_041',
@@ -674,7 +674,7 @@ imageId: 'space-needle'
 ];
 
 
-export function getImageUrl(imageId: string): { url: string; hint: string } {
+export function getImageUrl(imageId: string, round = 0): { url: string; hint: string } {
     const imageData = PlaceHolderImages.find((p) => p.id === imageId);
     const levelData = levels.find((l) => l.imageId === imageId);
 
@@ -684,8 +684,6 @@ export function getImageUrl(imageId: string): { url: string; hint: string } {
         return { url: `/images/eiffel-tower.jpg`, hint: "fallback" };
     }
     
-    // Determine the variation based on the game round stored in localStorage.
-    const round = typeof window !== 'undefined' ? parseInt(localStorage.getItem('gameRound') || '0', 10) : 0;
     const variationNumber = round % 4; // Cycles through 0, 1, 2, 3
 
     let url: string;
@@ -697,7 +695,7 @@ export function getImageUrl(imageId: string): { url: string; hint: string } {
         url = `/images/${baseFilename}.jpg`;
     } else {
         // Subsequent playthroughs use variations 2, 3, 4. We add 1 to the variation number.
-        // For game round 1 -> variation 0 -> use filename2.jpg
+        // For game round 1 -> variationNumber 1 -> use filename2.jpg
         url = `/images/${baseFilename}${variationNumber + 1}.jpg`;
     }
 
@@ -715,8 +713,9 @@ export const generateRandomSwap = (gridSize: number): [number, number] => {
 };
 
 export const generatePuzzle = (imageId: string, grid: number) => {
-  // The variation logic is now handled inside getImageUrl
-  const { url: imageUrl } = getImageUrl(imageId);
+  // Determine the variation based on the game round stored in localStorage.
+  const round = typeof window !== 'undefined' ? parseInt(localStorage.getItem('gameRound') || '0', 10) : 0;
+  const { url: imageUrl } = getImageUrl(imageId, round);
   const solvedBoard = Array.from({ length: grid * grid }, (_, i) => i);
   const scrambledBoard = [...solvedBoard];
 
@@ -737,4 +736,3 @@ export const generatePuzzle = (imageId: string, grid: number) => {
     hint: hint,
   };
 };
-

@@ -38,8 +38,8 @@ export function usePrefetchNextImages(currentLevelIndex: number) {
       if (!level) continue;
 
       if (!prefetched.has(level.imageId)) {
-        // We need the placeName to generate the correct image URL
-        const { url } = getImageUrl(level.imageId, level.place);
+        // We now get the URL from the centralized getImageUrl function
+        const { url } = getImageUrl(level.imageId);
 
         // Preload into browser cache
         const img = new (window as any).Image();

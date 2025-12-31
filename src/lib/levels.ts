@@ -12,7 +12,7 @@ export interface Level {
   imageId: string; // This now links to the placeholder-images.ts
 }
 
-// The 'image' and 'hint' properties are removed from here.
+// The 'hint' properties are removed from here.
 export const levels: Level[] = [
   // 5 Easy Levels (3x3)
   {
@@ -197,7 +197,7 @@ export const levels: Level[] = [
     ],
     category: 'city',
     visualComplexity: 'high',
-imageId: 'venice-canals'
+    imageId: 'venice-canals'
   },
   {
     id: 'lvl_015',
@@ -674,29 +674,32 @@ imageId: 'venice-canals'
 ];
 
 
-export function getImageUrl(imageId: string, placeName: string): { url: string; hint: string } {
-  const imageData = PlaceHolderImages.find((p) => p.id === imageId);
+export function getImageUrl(imageId: string): { url: string; hint: string } {
+    const imageData = PlaceHolderImages.find((p) => p.id === imageId);
 
-  if (!imageData) {
-    console.error(`No placeholder image meta found for imageId: ${imageId}`);
-    return { url: `/images/eiffel-tower.jpg`, hint: "fallback" };
-  }
-  
-  const round = typeof window !== 'undefined' ? parseInt(localStorage.getItem('gameRound') || '0', 10) : 0;
-  const variationNumber = round % 4; // Cycles through 0, 1, 2, 3
+    if (!imageData) {
+        console.error(`No placeholder image meta found for imageId: ${imageId}`);
+        return { url: `/images/eiffel-tower.jpg`, hint: "fallback" };
+    }
+    
+    // Determine the variation based on the game round stored in localStorage.
+    const round = typeof window !== 'undefined' ? parseInt(localStorage.getItem('gameRound') || '0', 10) : 0;
+    const variationNumber = round % 4; // Cycles through 0, 1, 2, 3
 
-  let url: string;
-  // This logic is flawed for names with numbers in them already.
-  // e.g. "Taipei 101" + "2" becomes "Taipei 1012.jpg"
-  if (variationNumber === 0) {
-    // First playthrough uses the base image, which has no number
-    url = `/images/${placeName}.jpg`;
-  } else {
-    // Subsequent playthroughs use variations 2, 3, 4. We add 1 to the variation number.
-    url = `/images/${placeName}${variationNumber + 1}.jpg`;
-  }
-  
-  return { url, hint: imageData.imageHint };
+    // Sanitize the imageId to create a base filename.
+    // This removes special characters and converts to lowercase.
+    const baseFilename = imageId.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+
+    let url: string;
+    if (variationNumber === 0) {
+        // First playthrough uses the base image, which has no number.
+        url = `/images/${baseFilename}.jpg`;
+    } else {
+        // Subsequent playthroughs use variations 2, 3, 4. We add 1 to the variation number.
+        url = `/images/${baseFilename}${variationNumber + 1}.jpg`;
+    }
+
+    return { url, hint: imageData.imageHint };
 }
 
 export const generateRandomSwap = (gridSize: number): [number, number] => {
@@ -709,8 +712,9 @@ export const generateRandomSwap = (gridSize: number): [number, number] => {
   return [index1, index2];
 };
 
-export const generatePuzzle = (level: Level, grid: number) => {
-  const { url: imageUrl, hint: imageHint } = getImageUrl(level.imageId, level.place);
+export const generatePuzzle = (imageId: string, grid: number) => {
+  // The variation logic is now handled inside getImageUrl
+  const { url: imageUrl } = getImageUrl(imageId);
   const solvedBoard = Array.from({ length: grid * grid }, (_, i) => i);
   const scrambledBoard = [...solvedBoard];
 
@@ -731,3 +735,4 @@ export const generatePuzzle = (level: Level, grid: number) => {
     hint: hint,
   };
 };
+

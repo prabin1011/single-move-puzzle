@@ -20,13 +20,11 @@ import {
   AlertDialogDescription,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { levels as initialLevels, generatePuzzle, getImageUrl, type Level } from "@/lib/levels";
 import { getLevelConfig } from "@/lib/game-config";
 import {
   CheckCircle,
-  XCircle,
   ArrowRight,
   HeartCrack,
   Info,
@@ -120,7 +118,8 @@ export default function GameContainer() {
   // Generate the puzzle for the current level
   const currentPuzzle = useMemo(() => {
     if (!currentLevelData) return null;
-    return generatePuzzle(currentLevelData, currentGridSize);
+    // Pass only the imageId and grid size.
+    return generatePuzzle(currentLevelData.imageId, currentGridSize);
   }, [currentLevelData, currentGridSize, retryCount]); // Rerun if level or retryCount changes
 
   // Game timer logic
@@ -142,7 +141,8 @@ export default function GameContainer() {
   }
 
   const { scrambledBoard, swapped, imageUrl, hint } = currentPuzzle;
-  const { url: currentImageUrl, hint: currentImageHint } = getImageUrl(currentLevelData.imageId, currentLevelData.place);
+  // This now just gets the base URL and hint, variation is handled inside getImageUrl
+  const { url: currentImageUrl, hint: currentImageHint } = getImageUrl(currentLevelData.imageId);
 
 
   const handleSuccess = async () => {
@@ -281,16 +281,14 @@ export default function GameContainer() {
           </>
         )}
         {gameState === "SOLVED" && (
+          // This state is now handled by the AlertDialog for level completion
           <>
             <div className="flex justify-center text-green-400">
               <CheckCircle className="h-16 w-16" />
             </div>
             <CardTitle className="text-3xl font-bold pt-4">
-              {currentLevelData.place}
+              Analyzing...
             </CardTitle>
-            <CardDescription className="text-lg text-muted-foreground">
-              {currentLevelData.country}
-            </CardDescription>
           </>
         )}
         
@@ -302,8 +300,8 @@ export default function GameContainer() {
               <CardTitle className="text-3xl font-bold pt-4">
                 Game Over
               </CardTitle>
-              <CardDescription className="text-muted-foreground">
-                You reached level {levelIndex + 1}. Better luck next time!
+              <CardDescription className="text-muted-foreground px-4">
+                You reached level {levelIndex + 1}. Every master was once a beginner. Try again!
               </CardDescription>
             </>
         )}
@@ -354,44 +352,47 @@ export default function GameContainer() {
             isReadOnly={gameState !== "PLAYING"}
           />
         )}
-
-        {gameState === "SOLVED" && (
-          <div className="flex flex-col items-center w-full">
-            <div className="relative h-[300px] w-[300px] rounded-lg overflow-hidden shadow-lg mx-auto mb-6 border-2 border-green-400/50">
-              <Image
-                src={currentImageUrl}
-                alt={currentLevelData.place}
-                width={300}
-                height={300}
-                priority
-                data-ai-hint={currentImageHint}
-                className="object-cover h-[300px] w-[300px]"
-              />
-            </div>
+        
+        <AlertDialog open={gameState === 'SOLVED'}>
+          <AlertDialogContent>
+            <AlertDialogHeader className="items-center text-center">
+              <div className="flex justify-center text-green-400 pb-4">
+                <CheckCircle className="h-16 w-16" />
+              </div>
+              <AlertDialogTitle className="text-3xl font-bold">
+                Level {levelIndex + 1} Complete!
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-lg text-muted-foreground !mt-2">
+                Well done! You found the swaps for {currentLevelData.place}.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
             <div
               className={cn(
-                "transition-opacity duration-500 w-full",
+                "transition-opacity duration-500 w-full pt-4",
                 showFacts ? "opacity-100" : "opacity-0"
               )}
             >
-              <ul className="space-y-3 text-left text-base">
+              <ul className="space-y-3 text-left text-sm sm:text-base">
                 {currentLevelData.facts.map((fact, index) => (
                   <li
                     key={index}
                     className="flex items-start gap-3 p-3 bg-secondary rounded-md"
                   >
-                    <span className="text-primary mt-1">✓</span>
+                    <span className="text-primary mt-1 shrink-0">✓</span>
                     <span>{fact}</span>
                   </li>
                 ))}
               </ul>
             </div>
-          </div>
-        )}
+            <Button onClick={nextLevel} size="lg" className="w-full mt-6">
+              Next Puzzle <ArrowRight className="ml-2" />
+            </Button>
+          </AlertDialogContent>
+        </AlertDialog>
+
         
         {(gameState === "GAME_OVER") && (
             <div className="text-center">
-                <p>You made too many mistakes.</p>
                 <p>You successfully completed {levelIndex} {levelIndex === 1 ? 'level' : 'levels'}.</p>
             </div>
         )}
@@ -435,12 +436,6 @@ export default function GameContainer() {
             <Button onClick={restartGame} size="lg" className="w-full">
                 Play Again
             </Button>
-        )}
-
-        {gameState === "SOLVED" && (
-          <Button onClick={nextLevel} size="lg" className="w-full">
-            Next Puzzle <ArrowRight className="ml-2" />
-          </Button>
         )}
 
         <div className="relative w-full text-center h-6">

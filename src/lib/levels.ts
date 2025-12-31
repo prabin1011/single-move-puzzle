@@ -14,7 +14,7 @@ export interface Level {
 }
 
 // The 'hint' properties are removed from here.
-export const levels: Level[] = [
+const allLevels: Level[] = [
   // 5 Easy Levels (3x3)
   {
     id: 'lvl_001',
@@ -724,9 +724,25 @@ export const levels: Level[] = [
   },
 ];
 
+const workingImageNames = new Set([
+    'Eiffel Tower',
+    'Colosseum',
+    'Mount Fuji',
+    'Santorini',
+    'Petra',
+    'Burj Khalifa',
+    'The Louvre',
+    'Fallingwater',
+    'Atomium',
+    'Hallgrímskirkja',
+]);
+
+
+export const levels: Level[] = allLevels.filter(level => workingImageNames.has(level.imageName));
+
 
 export function getImageUrl(imageId: string, round = 0): { url: string; hint: string } {
-    const levelData = levels.find(l => l.imageId === imageId);
+    const levelData = allLevels.find(l => l.imageId === imageId);
     const placeholderData = PlaceHolderImages.find((p) => p.id === imageId);
 
     if (!levelData || !placeholderData) {
@@ -788,7 +804,3 @@ export const generatePuzzle = (imageId: string, grid: number) => {
     hint: proceduralHint, // Use the new procedural hint
   };
 };
-
-
-
-

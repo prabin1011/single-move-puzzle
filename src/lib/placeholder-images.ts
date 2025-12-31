@@ -43,7 +43,7 @@ export const PlaceHolderImages: PlaceholderImage[] = [
   { id: 'petronas-towers', imageHint: 'kuala-lumpur malaysia' },
   { id: 'empire-state-building', imageHint: 'new-york city' },
   { id: 'cn-tower', imageHint: 'toronto canada' },
-  { id 'mont-saint-michel', imageHint: 'normandy france' },
+  { id: 'mont-saint-michel', imageHint: 'normandy france' },
   { id: 'space-needle', imageHint: 'seattle usa' },
   { id: 'taipei-101', imageHint: 'taipei taiwan' },
   { id: 'bran-castle', imageHint: 'romania castle' },

@@ -676,27 +676,26 @@ export const levels: Level[] = [
 
 export function getImageUrl(imageId: string, round = 0): { url: string; hint: string } {
     const imageData = PlaceHolderImages.find((p) => p.id === imageId);
-    const levelData = levels.find((l) => l.imageId === imageId);
 
-    if (!imageData || !levelData) {
-        console.error(`No placeholder/level image meta found for imageId: ${imageId}`);
-        // A fallback that is guaranteed to exist in the public folder.
+    if (!imageData) {
+        console.error(`No placeholder image meta found for imageId: ${imageId}`);
+        // A fallback that is guaranteed to exist.
         return { url: `/images/eiffel-tower.jpg`, hint: "fallback" };
     }
     
-    const variationNumber = round % 4; // Cycles through 0, 1, 2, 3
+    // Cycle through 0, 1, 2, 3 for game rounds
+    const variationNumber = round % 4; 
 
     let url: string;
-    // Use the `place` name from the level data to construct the filename
-    const baseFilename = levelData.place;
 
     if (variationNumber === 0) {
-        // First playthrough uses the base image, which has no number.
-        url = `/images/${baseFilename}.jpg`;
+        // Round 0 uses the base image, e.g., 'eiffel-tower.jpg'
+        url = `/images/${imageId}.jpg`;
     } else {
-        // Subsequent playthroughs use variations 2, 3, 4. We add 1 to the variation number.
-        // For game round 1 -> variationNumber 1 -> use filename2.jpg
-        url = `/images/${baseFilename}${variationNumber + 1}.jpg`;
+        // Subsequent rounds use variations 2, 3, 4. 
+        // We add 1 to the variation number to get the filename suffix.
+        // Round 1 -> variationNumber 1 -> uses filename2.jpg
+        url = `/images/${imageId}${variationNumber + 1}.jpg`;
     }
 
     return { url, hint: imageData.imageHint };
@@ -736,3 +735,4 @@ export const generatePuzzle = (imageId: string, grid: number) => {
     hint: hint,
   };
 };
+

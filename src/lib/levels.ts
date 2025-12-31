@@ -734,26 +734,25 @@ const workingImageNames = new Set([
     'The Louvre',
     'Fallingwater',
     'Atomium',
-    'Hallgrímskirkja',
+    'Hallgrimskirkja',
 ]);
 
 
 export const levels: Level[] = allLevels.filter(level => workingImageNames.has(level.imageName));
 
 
-export function getImageUrl(imageId: string, round = 0): { url: string; hint: string } {
-    const levelData = allLevels.find(l => l.imageId === imageId);
-    const placeholderData = PlaceHolderImages.find((p) => p.id === imageId);
+export function getImageUrl(imageName: string, round = 0): { url: string; hint: string } {
+    const levelData = allLevels.find(l => l.imageName === imageName);
+    const placeholderData = PlaceHolderImages.find((p) => p.id === levelData?.imageId);
 
     if (!levelData || !placeholderData) {
-        console.error(`No data found for imageId: ${imageId}`);
+        console.error(`No data found for imageName: ${imageName}`);
         // A fallback that is guaranteed to exist.
         return { url: `/images/Eiffel Tower.jpg`, hint: "fallback" };
     }
     
     // Cycle through 0, 1, 2, 3 for game rounds
     const variationNumber = round % 4; 
-    const imageName = levelData.imageName;
 
     let url: string;
 
@@ -781,9 +780,13 @@ export const generateRandomSwap = (gridSize: number): [number, number] => {
 };
 
 export const generatePuzzle = (imageId: string, grid: number) => {
+  const level = allLevels.find(l => l.imageId === imageId);
+  if (!level) {
+    throw new Error(`Could not find level with imageId: ${imageId}`);
+  }
   // Determine the variation based on the game round stored in localStorage.
   const round = typeof window !== 'undefined' ? parseInt(localStorage.getItem('gameRound') || '0', 10) : 0;
-  const { url: imageUrl, hint } = getImageUrl(imageId, round);
+  const { url: imageUrl, hint } = getImageUrl(level.imageName, round);
   const solvedBoard = Array.from({ length: grid * grid }, (_, i) => i);
   const scrambledBoard = [...solvedBoard];
 

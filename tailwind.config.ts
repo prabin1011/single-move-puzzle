@@ -25,7 +25,7 @@ export default {
           foreground: 'hsl(var(--popover-foreground))',
         },
         primary: {
-          DEFAULT: 'hsl(var(--primary))',
+          DEFAULT: '#3D9BE9', // Sky Blue HEX
           foreground: 'hsl(var(--primary-foreground))',
         },
         secondary: {
@@ -37,7 +37,7 @@ export default {
           foreground: 'hsl(var(--muted-foreground))',
         },
         accent: {
-          DEFAULT: 'hsl(var(--accent))',
+          DEFAULT: '#3D9BE9', // Sky Blue HEX for accent
           foreground: 'hsl(var(--accent-foreground))',
         },
         destructive: {
@@ -46,7 +46,7 @@ export default {
         },
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
-        ring: 'hsl(var(--ring))',
+        ring: '#3D9BE9', // Sky Blue HEX for ring
         success: 'hsl(var(--success))',
         error: 'hsl(var(--error))',
       },

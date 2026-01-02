@@ -291,8 +291,10 @@ export default function GameContainer() {
                 <AlertDialogContent>
                   <AlertDialogHeader>
                     <AlertDialogTitle className="font-headline">Hint for {currentLevelData.place}</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      {hint}
+                    <AlertDialogDescription asChild>
+                       <div className="text-left text-lg p-4 bg-secondary rounded-lg mt-2">
+                         {hint}
+                       </div>
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogAction>Got it!</AlertDialogAction>

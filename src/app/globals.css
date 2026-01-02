@@ -78,9 +78,6 @@
 
 @layer utilities {
   .tile-glow {
-    box-shadow: 0 0 15px 5px theme('colors.yellow.300 / 70%');
-  }
-  .dark .tile-glow {
-    box-shadow: 0 0 20px 7px theme('colors.yellow.400 / 60%');
+    box-shadow: 0 0 0 3px hsl(var(--primary)), 0 0 15px 3px hsl(var(--primary) / 0.8);
   }
 }

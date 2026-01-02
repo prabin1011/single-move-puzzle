@@ -40,7 +40,7 @@ export function usePrefetchNextImages(currentLevelIndex: number, levels: Level[]
       if (!level) continue;
 
       // The identifier should be unique per image variation
-      const imageIdentifier = `${level.imageId}-r${gameRound}-v${(gameRound % level.variations) + 1}`;
+      const imageIdentifier = `${level.imageId}-r${gameRound}`;
 
       if (!prefetched.has(imageIdentifier)) {
         // We now get the URL from the centralized getImageUrl function

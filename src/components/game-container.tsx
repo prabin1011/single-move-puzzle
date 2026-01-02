@@ -21,7 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { levels as initialLevels, generatePuzzle, getImageUrl, type Level } from "@/lib/levels";
+import { levels as initialLevels, generatePuzzle, type Level } from "@/lib/levels";
 import { getLevelConfig } from "@/lib/game-config";
 import {
   CheckCircle,
@@ -139,7 +139,7 @@ export default function GameContainer() {
     );
   }
 
-  const { imageUrl: currentImageUrl, hint, imageHint: currentImageHint } = currentPuzzle;
+  const { imageUrl: currentImageUrl, hint, imageHint: currentImageHint, facts } = currentPuzzle;
   const { scrambledBoard, swapped } = currentPuzzle;
 
   const handleSuccess = async () => {
@@ -389,7 +389,7 @@ export default function GameContainer() {
               )}
             >
               <ul className="space-y-3 text-left text-sm sm:text-base">
-                {currentLevelData.facts.map((fact, index) => (
+                {facts.map((fact, index) => (
                   <li
                     key={index}
                     className="flex items-start gap-3 p-3 bg-secondary rounded-md"

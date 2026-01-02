@@ -303,7 +303,7 @@ export default function GameContainer() {
               <CheckCircle className="h-16 w-16" />
             </div>
             <CardTitle className="text-3xl font-bold pt-4 font-headline">
-              Analyzing...
+              Puzzle Solved!
             </CardTitle>
           </>
         )}

@@ -139,5 +139,3 @@ export default function PuzzleBoard({
     </div>
   );
 }
-
-    

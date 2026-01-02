@@ -18,6 +18,7 @@ import {
   AlertDialogAction,
   AlertDialogContent,
   AlertDialogDescription,
+  AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
@@ -404,9 +405,11 @@ export default function GameContainer() {
                 ))}
               </ul>
             </div>
-            <Button onClick={nextLevel} size="lg" className="w-full mt-6">
-              Next Puzzle <ArrowRight className="ml-2" />
-            </Button>
+            <AlertDialogFooter className="pt-4">
+                <Button onClick={nextLevel} size="lg" className="w-full">
+                Next Puzzle <ArrowRight className="ml-2" />
+                </Button>
+            </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
 
@@ -426,11 +429,20 @@ export default function GameContainer() {
 
       </CardContent>
 
-      <CardFooter className="flex flex-col items-center justify-center p-6 space-y-4 min-h-[110px]">
+      <CardFooter className="flex flex-col items-center justify-center p-6 space-y-4 min-h-[110px] relative">
         {gameState === "READY" && (
+          <div className="w-full text-center space-y-4">
             <Button onClick={handleStart} size="lg" className="w-full">
                 <Play className="mr-2" /> Start Puzzle
             </Button>
+            <Button
+              asChild
+              variant="link"
+              className="text-muted-foreground"
+            >
+              <Link href="/">Back to Home</Link>
+            </Button>
+          </div>
         )}
         
         {gameState === "PREVIEW" && (
@@ -445,21 +457,10 @@ export default function GameContainer() {
         )}
         
         {gameState === "FAILED" && (
-           <div className="flex w-full space-x-2">
+           <div className="w-full text-center space-y-4">
             <Button onClick={resetForRetry} size="lg" className="w-full">
                 Try Again
             </Button>
-            </div>
-        )}
-
-        {(gameState === "GAME_OVER" || gameState === "ALL_LEVELS_COMPLETE") && (
-            <Button onClick={restartGame} size="lg" className="w-full">
-                Play Again
-            </Button>
-        )}
-
-        <div className="relative w-full text-center h-6">
-          {gameState !== "PREVIEW" && (
             <Button
               asChild
               variant="link"
@@ -467,8 +468,24 @@ export default function GameContainer() {
             >
               <Link href="/">Back to Home</Link>
             </Button>
-          )}
-        </div>
+            </div>
+        )}
+
+        {(gameState === "GAME_OVER" || gameState === "ALL_LEVELS_COMPLETE") && (
+          <div className="w-full text-center space-y-4">
+            <Button onClick={restartGame} size="lg" className="w-full">
+                Play Again
+            </Button>
+            <Button
+              asChild
+              variant="link"
+              className="text-muted-foreground"
+            >
+              <Link href="/">Back to Home</Link>
+            </Button>
+          </div>
+        )}
+
       </CardFooter>
     </Card>
   );

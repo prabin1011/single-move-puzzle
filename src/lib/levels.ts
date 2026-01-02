@@ -324,7 +324,7 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'high',
-    imageId: 'sagrada-família',
+    imageId: 'sagrada-familia',
     variations: 4,
   },
   {
@@ -337,7 +337,7 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'medium',
-    imageId: 'hallgrímskirkja',
+    imageId: 'hallgrimskirkja',
     variations: 4,
   },
   {
@@ -350,7 +350,7 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'high',
-    imageId: 'fushimi-inari',
+    imageId: 'fushimi-inari-shrine',
     variations: 4,
   },
   {
@@ -692,8 +692,10 @@ export function getImageUrl(
   const factIndex = round % level.facts.length;
   const facts = level.facts[factIndex] ?? level.facts[0];
 
+  // The new file convention is imageId-1.jpg, imageId-2.jpg, etc.
   const variationIndex = round % safeVariations; // 0, 1, 2...
   const fileVariantNumber = variationIndex + 1; // 1, 2, 3...
+
   const url = `/images/${imageId}-${fileVariantNumber}.jpg`;
 
   return { url, hint, facts };
@@ -746,5 +748,3 @@ export const generatePuzzle = (imageId: string, grid: number) => {
     facts: facts, // Pass the selected facts to the puzzle
   };
 };
-
-    

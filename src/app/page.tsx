@@ -74,7 +74,7 @@ export default function Home() {
 
   if (isUserLoading || !auth) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-background">
+      <main className="flex h-screen flex-col items-center justify-center p-4 bg-background overflow-hidden">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
         <p className="mt-4 text-muted-foreground">Connecting...</p>
       </main>
@@ -82,7 +82,7 @@ export default function Home() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-background">
+    <main className="flex h-screen flex-col items-center justify-center p-4 bg-background overflow-hidden">
       <div className="absolute top-4 right-4">
         <ThemeToggle />
       </div>

@@ -1,17 +1,18 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    /* Clean Light Theme with Sky Blue Accent */
-    --background: 0 0% 98%; /* Off-White */
+    /* Pure White Light Theme */
+    --background: 0 0% 100%; /* White */
     --foreground: 0 0% 3.9%; /* Near-Black for text */
 
-    --card: 0 0% 100%; /* White cards to stand out slightly */
+    --card: 0 0% 98%; /* Off-white cards to be visible on white */
     --card-foreground: 0 0% 3.9%;
 
-    --popover: 0 0% 100%;
+    --popover: 0 0% 98%;
     --popover-foreground: 0 0% 3.9%;
 
     --primary: 206 79% 60%; /* #3D9BE9 - Sky Blue */

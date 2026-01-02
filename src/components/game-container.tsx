@@ -451,7 +451,7 @@ export default function GameContainer() {
         )}
 
         <div className="relative w-full text-center h-6">
-          {(gameState === "READY" || gameState === "PREVIEW" || gameState === "PLAYING" || gameState === "FAILED" || gameState === "GAME_OVER") && (
+          {(gameState === "READY" || gameState === "PLAYING" || gameState === "FAILED" || gameState === "GAME_OVER") && (
             <Button
               asChild
               variant="link"
@@ -465,5 +465,7 @@ export default function GameContainer() {
     </Card>
   );
 }
+
+    
 
     

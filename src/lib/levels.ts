@@ -324,7 +324,7 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'high',
-    imageId: 'sagrada-familia',
+    imageId: 'sagrada-família',
     variations: 4,
   },
   {
@@ -666,7 +666,7 @@ export function getImageUrl(
   if (!level) {
     // Fallback to something that definitely exists
     return {
-      url: `/images/eiffel-tower.jpg`,
+      url: `/images/eiffel-tower-1.jpg`,
       hint: "fallback",
       facts: [],
     };
@@ -675,26 +675,13 @@ export function getImageUrl(
   const hint =
     PlaceHolderImages.find((p) => p.id === imageId)?.imageHint ?? "landmark";
 
-  // Ensure we never have 0 variations
   const safeVariations = Math.max(1, availableVariations || 1);
-
-  // Cycle through fact sets with round
   const factIndex = round % level.facts.length;
   const facts = level.facts[factIndex] ?? level.facts[0];
 
-  // idx: 0..safeVariations-1
-  const idx = round % safeVariations;
-
-  let url: string;
-
-  if (idx === 0) {
-    // Base file: imageId.jpg (no suffix)
-    url = `/images/${imageId}.jpg`;
-  } else {
-    // Variants: imageId-2.jpg, imageId-3.jpg, ...
-    const fileVariantNumber = idx + 1; // 1 → 2, 2 → 3, ...
-    url = `/images/${imageId}-${fileVariantNumber}.jpg`;
-  }
+  const variationIndex = round % safeVariations; // 0, 1, 2...
+  const fileVariantNumber = variationIndex + 1; // 1, 2, 3...
+  const url = `/images/${imageId}-${fileVariantNumber}.jpg`;
 
   return { url, hint, facts };
 }

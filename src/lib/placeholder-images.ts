@@ -56,3 +56,6 @@ export const PlaceHolderImages: PlaceholderImage[] = [
   { id: 'hollywood-sign', imageHint: 'los-angeles usa' },
   { id: 'kremlin', imageHint: 'moscow russia'},
 ];
+
+
+    

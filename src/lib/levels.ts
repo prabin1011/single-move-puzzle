@@ -748,3 +748,6 @@ export const generatePuzzle = (imageId: string, grid: number) => {
     facts: facts, // Pass the selected facts to the puzzle
   };
 };
+
+
+    

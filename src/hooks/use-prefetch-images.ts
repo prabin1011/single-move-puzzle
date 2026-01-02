@@ -17,6 +17,7 @@ function getPrefetchedIds(): Set<string> {
 }
 
 function savePrefetchedIds(set: Set<string>) {
+  if (typeof window === "undefined") return;
   const arr = Array.from(set);
   localStorage.setItem(PREFETCH_KEY, JSON.stringify(arr));
 }
@@ -26,6 +27,7 @@ export function usePrefetchNextImages(currentLevelIndex: number) {
     if (typeof window === "undefined") return;
 
     const prefetched = getPrefetchedIds();
+    const gameRound = parseInt(localStorage.getItem('gameRound') || '0', 10);
 
     // Decide how many levels ahead to prefetch
     const PREFETCH_AHEAD = 5;
@@ -37,15 +39,17 @@ export function usePrefetchNextImages(currentLevelIndex: number) {
       const level = levels[i];
       if (!level) continue;
 
-      if (!prefetched.has(level.imageId)) {
+      const imageIdentifier = `${level.imageId}-r${gameRound}`;
+
+      if (!prefetched.has(imageIdentifier)) {
         // We now get the URL from the centralized getImageUrl function
-        const { url } = getImageUrl(level.imageId);
+        const { url } = getImageUrl(level.imageId, gameRound);
 
         // Preload into browser cache
         const img = new (window as any).Image();
         img.src = url;
 
-        prefetched.add(level.imageId);
+        prefetched.add(imageIdentifier);
       }
     }
 

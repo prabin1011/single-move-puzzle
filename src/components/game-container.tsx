@@ -118,7 +118,6 @@ export default function GameContainer() {
   // Generate the puzzle for the current level
   const currentPuzzle = useMemo(() => {
     if (!currentLevelData) return null;
-    // Pass only the imageId and grid size.
     return generatePuzzle(currentLevelData.imageId, currentGridSize);
   }, [currentLevelData, currentGridSize, retryCount]); // Rerun if level or retryCount changes
 
@@ -140,11 +139,8 @@ export default function GameContainer() {
     );
   }
 
-  const { scrambledBoard, swapped, imageUrl, hint } = currentPuzzle;
-  // This now just gets the base URL and hint, variation is handled inside getImageUrl
-  const round = typeof window !== 'undefined' ? parseInt(localStorage.getItem('gameRound') || '0', 10) : 0;
-  const { url: currentImageUrl, hint: currentImageHint } = getImageUrl(currentLevelData.imageId, round);
-
+  const { imageUrl: currentImageUrl, hint, imageHint: currentImageHint } = currentPuzzle;
+  const { scrambledBoard, swapped } = currentPuzzle;
 
   const handleSuccess = async () => {
     // Check if this was the last level
@@ -363,7 +359,7 @@ export default function GameContainer() {
         {(gameState === "PLAYING" || gameState === "FAILED") && (
           <PuzzleBoard
             key={puzzleKey}
-            imageUrl={imageUrl}
+            imageUrl={currentImageUrl}
             grid={currentGridSize}
             boardState={scrambledBoard}
             swappedIndices={swapped}

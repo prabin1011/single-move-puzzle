@@ -116,7 +116,7 @@ export default function PuzzleBoard({
               className={cn(
                 'relative overflow-hidden rounded-sm transition-all duration-300',
                 !isReadOnly && !showSolution && 'cursor-pointer',
-                isSelected && 'ring-4 ring-yellow-400 ring-inset z-10',
+                isSelected && 'ring-2 ring-yellow-400 ring-inset z-10 tile-glow',
                 shouldHighlight && 'ring-4 ring-red-500 ring-inset animate-pulse z-10'
               )}
               style={{

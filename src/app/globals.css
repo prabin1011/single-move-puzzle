@@ -77,7 +77,10 @@
 }
 
 @layer utilities {
-  .glow {
-    box-shadow: 0 0 15px hsl(var(--accent)), 0 0 30px hsl(var(--accent));
+  .tile-glow {
+    box-shadow: 0 0 15px 5px theme('colors.yellow.300 / 70%');
+  }
+  .dark .tile-glow {
+    box-shadow: 0 0 15px 5px theme('colors.yellow.400 / 60%');
   }
 }

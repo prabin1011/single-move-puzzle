@@ -14,7 +14,7 @@ export interface Level {
 }
 
 const allLevels: Level[] = [
-  // 49 Levels (Removed Kremlin and St. Basil's)
+  // 49 Levels
   {
     id: 'lvl_001',
     place: 'Eiffel Tower',

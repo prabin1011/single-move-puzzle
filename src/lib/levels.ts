@@ -6,11 +6,10 @@ export interface Level {
   id: string;
   place: string;
   country: string;
-  // The 'imageName' property is removed, 'imageId' is now the source of truth for filenames.
   facts: string[];
   category: 'architecture' | 'nature' | 'sky' | 'city' | 'interior' | 'abstract';
   visualComplexity: 'low' | 'medium' | 'high';
-  imageId: string; // This now links to the placeholder-images.ts and is used for filenames.
+  imageId: string; 
 }
 
 const allLevels: Level[] = [

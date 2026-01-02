@@ -6,72 +6,72 @@
 @layer base {
   :root {
     /* Pure White Light Theme */
-    --background: hsl(0 0% 100%); /* White */
-    --foreground: hsl(0 0% 3.9%); /* Near-Black for text */
+    --background: hsl(0, 0%, 100%); /* White */
+    --foreground: hsl(0, 0%, 3.9%); /* Near-Black for text */
 
-    --card: hsl(0 0% 100%); /* White */
-    --card-foreground: hsl(0 0% 3.9%);
+    --card: hsl(0, 0%, 100%); /* White */
+    --card-foreground: hsl(0, 0%, 3.9%);
 
-    --popover: hsl(0 0% 100%);
-    --popover-foreground: hsl(0 0% 3.9%);
+    --popover: hsl(0, 0%, 100%);
+    --popover-foreground: hsl(0, 0%, 3.9%);
 
-    --primary: hsl(206 79% 60%); /* #3D9BE9 - Sky Blue */
-    --primary-foreground: hsl(0 0% 100%); /* White */
+    --primary: hsl(206, 79%, 60%); /* #3D9BE9 - Sky Blue */
+    --primary-foreground: hsl(0, 0%, 100%); /* White */
 
-    --secondary: hsl(0 0% 98%); /* Very light gray for secondary elements */
-    --secondary-foreground: hsl(0 0% 9%); /* Black */
+    --secondary: hsl(0, 0%, 98%); /* Very light gray for secondary elements */
+    --secondary-foreground: hsl(0, 0%, 9%); /* Black */
 
-    --muted: hsl(0 0% 96.1%);
-    --muted-foreground: hsl(0 0% 45.1%);
+    --muted: hsl(0, 0%, 96.1%);
+    --muted-foreground: hsl(0, 0%, 45.1%);
 
-    --accent: hsl(206 79% 60%); /* Re-using primary for accent */
-    --accent-foreground: hsl(0 0% 100%);
+    --accent: hsl(206, 79%, 60%); /* Re-using primary for accent */
+    --accent-foreground: hsl(0, 0%, 100%);
 
-    --destructive: hsl(0 84.2% 60.2%);
-    --destructive-foreground: hsl(0 0% 98%);
+    --destructive: hsl(0, 84.2%, 60.2%);
+    --destructive-foreground: hsl(0, 0%, 98%);
 
-    --border: hsl(0 0% 90%); /* Lightened border */
-    --input: hsl(0 0% 90%);
-    --ring: hsl(206 79% 60%);
+    --border: hsl(0, 0%, 90%); /* Lightened border */
+    --input: hsl(0, 0%, 90%);
+    --ring: hsl(206, 79%, 60%);
 
     --radius: 0.5rem;
     
-    --success: hsl(142.1 76.2% 36.3%);
-    --error: hsl(9 80% 56%); /* #E53935 - Red */
+    --success: hsl(206, 79%, 60%);
+    --error: hsl(9, 80%, 56%); /* #E53935 - Red */
   }
 
   .dark {
     /* Pure Black Dark Theme */
-    --background: hsl(0 0% 0%); /* Black */
-    --foreground: hsl(0 0% 98%); /* Off-White text */
+    --background: hsl(0, 0%, 0%); /* Black */
+    --foreground: hsl(0, 0%, 98%); /* Off-White text */
 
-    --card: hsl(0 0% 5%); /* Near-black cards */
-    --card-foreground: hsl(0 0% 98%);
+    --card: hsl(0, 0%, 5%); /* Near-black cards */
+    --card-foreground: hsl(0, 0%, 98%);
 
-    --popover: hsl(0 0% 5%);
-    --popover-foreground: hsl(0 0% 98%);
+    --popover: hsl(0, 0%, 5%);
+    --popover-foreground: hsl(0, 0%, 98%);
 
-    --primary: hsl(206 79% 60%);
-    --primary-foreground: hsl(0 0% 100%);
+    --primary: hsl(206, 79%, 60%);
+    --primary-foreground: hsl(0, 0%, 100%);
 
-    --secondary: hsl(0 0% 14.9%); /* Dark Gray for secondary elements */
-    --secondary-foreground: hsl(0 0% 98%);
+    --secondary: hsl(0, 0%, 14.9%); /* Dark Gray for secondary elements */
+    --secondary-foreground: hsl(0, 0%, 98%);
 
-    --muted: hsl(0 0% 14.9%);
-    --muted-foreground: hsl(0 0% 63.9%);
+    --muted: hsl(0, 0%, 14.9%);
+    --muted-foreground: hsl(0, 0%, 63.9%);
 
-    --accent: hsl(206 79% 60%);
-    --accent-foreground: hsl(0 0% 100%);
+    --accent: hsl(206, 79%, 60%);
+    --accent-foreground: hsl(0, 0%, 100%);
 
-    --destructive: hsl(0 62.8% 30.6%);
-    --destructive-foreground: hsl(0 0% 98%);
+    --destructive: hsl(0, 62.8%, 30.6%);
+    --destructive-foreground: hsl(0, 0%, 98%);
 
-    --border: hsl(0 0% 14.9%);
-    --input: hsl(0 0% 14.9%);
-    --ring: hsl(206 79% 60%);
+    --border: hsl(0, 0%, 14.9%);
+    --input: hsl(0, 0%, 14.9%);
+    --ring: hsl(206, 79%, 60%);
 
-    --success: hsl(142.1 76.2% 36.3%);
-    --error: hsl(9 80% 56%); /* #E53935 - Red */
+    --success: hsl(206, 79%, 60%);
+    --error: hsl(9, 80%, 56%); /* #E53935 - Red */
   }
 }
 
@@ -87,7 +87,7 @@
 
 @layer utilities {
   .tile-glow {
-    box-shadow: 0 0 0 4px hsl(120 100% 35% / 0.9), 0 0 10px 4px hsl(120 100% 45% / 0.7);
+    box-shadow: 0 0 0 4px hsl(120, 100%, 35%, 0.9), 0 0 10px 4px hsl(120, 100%, 45%, 0.7);
   }
   .text-success {
     color: hsl(var(--success));

@@ -113,6 +113,11 @@ export default function Home() {
                 </Button>
               </Link>
             )}
+             <Link href="/profile" className="w-full">
+              <Button size="lg" variant="outline" className="w-full">
+                Profile & Leaderboard
+              </Button>
+            </Link>
           </div>
         </CardContent>
       </Card>

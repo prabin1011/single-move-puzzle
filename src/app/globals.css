@@ -4,34 +4,34 @@
 
 @layer base {
   :root {
-    /* New Color Palette based on Style Guide */
-    --background: 54 86% 90%; /* #FAF3E0 - Soft Beige */
-    --foreground: 240 10% 3.9%; /* #09090b - Kept for base text */
+    /* Simple Black & White Theme with Blue Accent */
+    --background: 0 0% 100%; /* white */
+    --foreground: 0 0% 0%; /* black */
 
-    --card: 54 86% 90%; /* #FAF3E0 */
-    --card-foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
 
-    --popover: 54 86% 90%;
-    --popover-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
 
-    --primary: 26 100% 63%; /* #FF8C42 - Orange */
+    --primary: 206 79% 60%; /* #3D9BE9 - Sky Blue */
     --primary-foreground: 0 0% 100%; /* #FFFFFF - White */
 
-    --secondary: 206 79% 60%; /* #3D9BE9 - Blue */
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 0 0% 90%; /* Light Gray for secondary elements */
+    --secondary-foreground: 0 0% 0%; /* Black */
 
-    --muted: 45 100% 76%; /* #FFE082 - Light Yellow */
-    --muted-foreground: 45 50% 30%;
+    --muted: 0 0% 95%; /* Lighter Gray for muted backgrounds */
+    --muted-foreground: 0 0% 40%; /* Darker gray text */
 
-    --accent: 26 100% 63%; /* #FF8C42 - Orange */
+    --accent: 206 79% 60%; /* #3D9BE9 - Sky Blue */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 35 83% 72%; /* #F1C27D - Medium Beige */
-    --input: 35 83% 72%;
-    --ring: 26 100% 63%; /* #FF8C42 - Orange */
+    --border: 0 0% 85%;
+    --input: 0 0% 85%;
+    --ring: 206 79% 60%;
 
     --radius: 0.5rem;
 
@@ -40,33 +40,33 @@
   }
 
   .dark {
-    --background: 206 50% 15%; /* Dark Blue */
-    --foreground: 0 0% 98%;
+    --background: 0 0% 0%; /* black */
+    --foreground: 0 0% 100%; /* white */
 
-    --card: 206 50% 15%;
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 0%;
+    --card-foreground: 0 0% 100%;
 
-    --popover: 206 50% 15%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 0 0% 0%;
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 26 100% 63%; /* #FF8C42 - Orange */
+    --primary: 206 79% 60%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 206 79% 60%; /* #3D9BE9 - Blue */
+    --secondary: 0 0% 15%; /* Dark Gray for secondary elements */
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 35 83% 22%; /* Darker Beige/Brown */
-    --muted-foreground: 35 83% 82%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 60%;
 
-    --accent: 26 100% 63%;
+    --accent: 206 79% 60%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 63% 31%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 35 83% 32%;
-    --input: 35 83% 32%;
-    --ring: 26 100% 63%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 206 79% 60%;
   }
 }
 
@@ -82,7 +82,7 @@
 
 @layer utilities {
   .tile-glow {
-    box-shadow: 0 0 0 3px hsl(var(--primary)), 0 0 15px 3px hsl(var(--primary) / 0.8);
+    box-shadow: 0 0 0 3px hsl(var(--success)), 0 0 15px 3px hsl(var(--success) / 0.8);
   }
   .text-success {
     color: hsl(var(--success));

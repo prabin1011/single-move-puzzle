@@ -14,7 +14,7 @@ export interface Level {
 }
 
 const allLevels: Level[] = [
-  // 5 Easy Levels (3x3)
+  // 50 Levels
   {
     id: 'lvl_001',
     place: 'Eiffel Tower',
@@ -233,7 +233,7 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'high',
-    imageId: 'louvre-museum',
+    imageId: 'louvre',
     variations: 4,
   },
   {
@@ -337,7 +337,7 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'medium',
-    imageId: 'hallgrimskirkja',
+    imageId: 'hallgrímskirkja',
     variations: 4,
   },
   {
@@ -350,7 +350,7 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'high',
-    imageId: 'fushimi-inari-shrine',
+    imageId: 'fushimi-inari',
     variations: 4,
   },
   {
@@ -652,6 +652,19 @@ const allLevels: Level[] = [
     imageId: 'hollywood-sign',
     variations: 4,
   },
+  {
+    id: 'lvl_050',
+    place: 'Kremlin',
+    country: 'Russia',
+    facts: [
+        ["The Moscow Kremlin is a fortified complex in the heart of Moscow.", "It serves as the official residence of the President of the Russian Federation.", "The complex includes five palaces, four cathedrals, and the enclosing Kremlin Wall with Kremlin towers."],
+        ["The name 'Kremlin' means 'fortress inside a city'.", "The Grand Kremlin Palace was formerly the tsar's Moscow residence.", "The walls are over 2km long and up to 19m high."]
+    ],
+    category: 'architecture',
+    visualComplexity: 'high',
+    imageId: 'kremlin',
+    variations: 4,
+  }
 ];
 
 
@@ -733,3 +746,5 @@ export const generatePuzzle = (imageId: string, grid: number) => {
     facts: facts, // Pass the selected facts to the puzzle
   };
 };
+
+    

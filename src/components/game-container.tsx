@@ -72,7 +72,7 @@ export default function GameContainer() {
   const isTimerRunning = gameState === "PREVIEW";
   const { time, reset: resetTimer, stop: stopTimer } = useGameTimer(isTimerRunning);
 
-  usePrefetchNextImages(levelIndex);
+  usePrefetchNextImages(levelIndex, levels);
 
   // Load progress and shuffled levels on mount
   useEffect(() => {

@@ -1,6 +1,6 @@
 
 import { useEffect } from "react";
-import { levels } from "@/lib/levels";
+import type { Level } from "@/lib/levels";
 import { getImageUrl } from "@/lib/levels";
 
 const PREFETCH_KEY = "landmark-prefetched-ids";
@@ -22,9 +22,9 @@ function savePrefetchedIds(set: Set<string>) {
   localStorage.setItem(PREFETCH_KEY, JSON.stringify(arr));
 }
 
-export function usePrefetchNextImages(currentLevelIndex: number) {
+export function usePrefetchNextImages(currentLevelIndex: number, levels: Level[]) {
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || levels.length === 0) return;
 
     const prefetched = getPrefetchedIds();
     const gameRound = parseInt(localStorage.getItem('gameRound') || '0', 10);
@@ -39,11 +39,12 @@ export function usePrefetchNextImages(currentLevelIndex: number) {
       const level = levels[i];
       if (!level) continue;
 
-      const imageIdentifier = `${level.imageId}-r${gameRound}`;
+      // The identifier should be unique per image variation
+      const imageIdentifier = `${level.imageId}-r${gameRound}-v${(gameRound % level.variations) + 1}`;
 
       if (!prefetched.has(imageIdentifier)) {
         // We now get the URL from the centralized getImageUrl function
-        const { url } = getImageUrl(level.imageId, gameRound);
+        const { url } = getImageUrl(level.imageId, level.variations, gameRound);
 
         // Preload into browser cache
         const img = new (window as any).Image();
@@ -54,5 +55,5 @@ export function usePrefetchNextImages(currentLevelIndex: number) {
     }
 
     savePrefetchedIds(prefetched);
-  }, [currentLevelIndex]);
+  }, [currentLevelIndex, levels]);
 }

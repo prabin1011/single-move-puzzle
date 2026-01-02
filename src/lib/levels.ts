@@ -10,6 +10,7 @@ export interface Level {
   category: 'architecture' | 'nature' | 'sky' | 'city' | 'interior' | 'abstract';
   visualComplexity: 'low' | 'medium' | 'high';
   imageId: string; 
+  variations: number; // The number of available image variations (e.g., 3 means name.jpg, name-2.jpg, name-3.jpg exist)
 }
 
 const allLevels: Level[] = [
@@ -25,7 +26,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'medium',
-    imageId: 'eiffel-tower'
+    imageId: 'eiffel-tower',
+    variations: 4,
   },
   {
     id: 'lvl_002',
@@ -38,7 +40,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'high',
-    imageId: 'colosseum'
+    imageId: 'colosseum',
+    variations: 4,
   },
   {
     id: 'lvl_003',
@@ -51,7 +54,8 @@ const allLevels: Level[] = [
     ],
     category: 'nature',
     visualComplexity: 'low',
-    imageId: 'mount-fuji'
+    imageId: 'mount-fuji',
+    variations: 4,
   },
   {
     id: 'lvl_004',
@@ -64,7 +68,8 @@ const allLevels: Level[] = [
     ],
     category: 'city',
     visualComplexity: 'medium',
-    imageId: 'santorini'
+    imageId: 'santorini',
+    variations: 4,
   },
   {
     id: 'lvl_005',
@@ -77,7 +82,8 @@ const allLevels: Level[] = [
     ],
     category: 'sky',
     visualComplexity: 'low',
-    imageId: 'northern-lights'
+    imageId: 'northern-lights',
+    variations: 2,
   },
 
   // 10 Easy-Medium Levels (4x4)
@@ -92,7 +98,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'medium',
-    imageId: 'statue-of-liberty'
+    imageId: 'statue-of-liberty',
+    variations: 4,
   },
   {
     id: 'lvl_007',
@@ -105,7 +112,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'medium',
-    imageId: 'taj-mahal'
+    imageId: 'taj-mahal',
+    variations: 4,
   },
   {
     id: 'lvl_008',
@@ -118,7 +126,8 @@ const allLevels: Level[] = [
     ],
     category: 'nature',
     visualComplexity: 'high',
-    imageId: 'machu-picchu'
+    imageId: 'machu-picchu',
+    variations: 4,
   },
   {
     id: 'lvl_009',
@@ -131,7 +140,8 @@ const allLevels: Level[] = [
     ],
     category: 'nature',
     visualComplexity: 'high',
-    imageId: 'great-wall-of-china'
+    imageId: 'great-wall-of-china',
+    variations: 4,
   },
   {
     id: 'lvl_010',
@@ -144,7 +154,8 @@ const allLevels: Level[] = [
     ],
     category: 'nature',
     visualComplexity: 'high',
-    imageId: 'pyramids-of-giza'
+    imageId: 'pyramids-of-giza',
+    variations: 4,
   },
   {
     id: 'lvl_011',
@@ -157,7 +168,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'medium',
-    imageId: 'christ-the-redeemer'
+    imageId: 'christ-the-redeemer',
+    variations: 4,
   },
   {
     id: 'lvl_012',
@@ -170,7 +182,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'high',
-    imageId: 'petra'
+    imageId: 'petra',
+    variations: 4,
   },
   {
     id: 'lvl_013',
@@ -183,7 +196,8 @@ const allLevels: Level[] = [
     ],
     category: 'nature',
     visualComplexity: 'high',
-    imageId: 'grand-canyon'
+    imageId: 'grand-canyon',
+    variations: 4,
   },
   {
     id: 'lvl_014',
@@ -196,7 +210,8 @@ const allLevels: Level[] = [
     ],
     category: 'city',
     visualComplexity: 'high',
-    imageId: 'venice-canals'
+    imageId: 'venice-canals',
+    variations: 4,
   },
   {
     id: 'lvl_015',
@@ -209,7 +224,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'medium',
-    imageId: 'sydney-opera-house'
+    imageId: 'sydney-opera-house',
+    variations: 4,
   },
 
   // 15 Medium Levels (5x5)
@@ -224,7 +240,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'medium',
-    imageId: 'burj-khalifa'
+    imageId: 'burj-khalifa',
+    variations: 4,
   },
   {
     id: 'lvl_017',
@@ -237,7 +254,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'high',
-    imageId: 'louvre-museum'
+    imageId: 'louvre-museum',
+    variations: 4,
   },
   {
     id: 'lvl_018',
@@ -250,7 +268,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'high',
-    imageId: 'st-basils-cathedral'
+    imageId: 'st-basils-cathedral',
+    variations: 4,
   },
   {
     id: 'lvl_019',
@@ -263,7 +282,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'high',
-    imageId: 'neuschwanstein-castle'
+    imageId: 'neuschwanstein-castle',
+    variations: 4,
   },
   {
     id: 'lvl_020',
@@ -276,7 +296,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'high',
-    imageId: 'angkor-wat'
+    imageId: 'angkor-wat',
+    variations: 4,
   },
   {
     id: 'lvl_021',
@@ -289,7 +310,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'medium',
-    imageId: 'london-eye'
+    imageId: 'london-eye',
+    variations: 4,
   },
   {
     id: 'lvl_022',
@@ -302,7 +324,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'high',
-    imageId: 'hagia-sophia'
+    imageId: 'hagia-sophia',
+    variations: 4,
   },
   {
     id: 'lvl_023',
@@ -315,7 +338,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'high',
-    imageId: 'acropolis'
+    imageId: 'acropolis',
+    variations: 4,
   },
   {
     id: 'lvl_024',
@@ -328,7 +352,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'medium',
-    imageId: 'golden-gate-bridge'
+    imageId: 'golden-gate-bridge',
+    variations: 4,
   },
   {
     id: 'lvl_025',
@@ -341,7 +366,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'high',
-    imageId: 'sagrada-familia'
+    imageId: 'sagrada-familia',
+    variations: 4,
   },
   {
     id: 'lvl_026',
@@ -354,7 +380,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'medium',
-    imageId: 'hallgrimskirkja'
+    imageId: 'hallgrimskirkja',
+    variations: 4,
   },
   {
     id: 'lvl_027',
@@ -367,7 +394,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'high',
-    imageId: 'fushimi-inari-shrine'
+    imageId: 'fushimi-inari-shrine',
+    variations: 4,
   },
   {
     id: 'lvl_028',
@@ -380,7 +408,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'medium',
-    imageId: 'flatiron-building'
+    imageId: 'flatiron-building',
+    variations: 4,
   },
   {
     id: 'lvl_029',
@@ -393,7 +422,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'low',
-    imageId: 'the-shard'
+    imageId: 'the-shard',
+    variations: 4,
   },
   {
     id: 'lvl_030',
@@ -406,7 +436,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'high',
-    imageId: 'guggenheim-bilbao'
+    imageId: 'guggenheim-bilbao',
+    variations: 4,
   },
 
   // 20 Hard Levels (6x6)
@@ -421,7 +452,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'high',
-    imageId: 'fallingwater'
+    imageId: 'fallingwater',
+    variations: 4,
   },
   {
     id: 'lvl_032',
@@ -434,7 +466,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'medium',
-    imageId: 'atomium'
+    imageId: 'atomium',
+    variations: 4,
   },
   {
     id: 'lvl_033',
@@ -447,7 +480,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'high',
-    imageId: 'notre-dame'
+    imageId: 'notre-dame',
+    variations: 4,
   },
   {
     id: 'lvl_034',
@@ -460,7 +494,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'low',
-    imageId: 'leaning-tower-of-pisa'
+    imageId: 'leaning-tower-of-pisa',
+    variations: 4,
   },
   {
     id: 'lvl_035',
@@ -473,7 +508,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'medium',
-    imageId: 'marina-bay-sands'
+    imageId: 'marina-bay-sands',
+    variations: 4,
   },
   {
     id: 'lvl_036',
@@ -486,7 +522,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'medium',
-    imageId: 'petronas-towers'
+    imageId: 'petronas-towers',
+    variations: 4,
   },
   {
     id: 'lvl_037',
@@ -499,7 +536,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'medium',
-    imageId: 'empire-state-building'
+    imageId: 'empire-state-building',
+    variations: 4,
   },
   {
     id: 'lvl_038',
@@ -512,7 +550,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'low',
-    imageId: 'cn-tower'
+    imageId: 'cn-tower',
+    variations: 4,
   },
   {
     id: 'lvl_039',
@@ -525,7 +564,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'high',
-    imageId: 'mont-saint-michel'
+    imageId: 'mont-saint-michel',
+    variations: 4,
   },
   {
     id: 'lvl_040',
@@ -538,7 +578,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'low',
-    imageId: 'space-needle'
+    imageId: 'space-needle',
+    variations: 4,
   },
   {
     id: 'lvl_041',
@@ -551,7 +592,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'medium',
-    imageId: 'taipei-101'
+    imageId: 'taipei-101',
+    variations: 4,
   },
   {
     id: 'lvl_042',
@@ -564,7 +606,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'high',
-    imageId: 'bran-castle'
+    imageId: 'bran-castle',
+    variations: 4,
   },
   {
     id: 'lvl_043',
@@ -577,7 +620,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'medium',
-    imageId: 'chichen-itza'
+    imageId: 'chichen-itza',
+    variations: 4,
   },
   {
     id: 'lvl_044',
@@ -590,7 +634,8 @@ const allLevels: Level[] = [
     ],
     category: 'nature',
     visualComplexity: 'medium',
-    imageId: 'moai-statues'
+    imageId: 'moai-statues',
+    variations: 4,
   },
   {
     id: 'lvl_045',
@@ -603,7 +648,8 @@ const allLevels: Level[] = [
     ],
     category: 'interior',
     visualComplexity: 'high',
-    imageId: 'alhambra'
+    imageId: 'alhambra',
+    variations: 4,
   },
   {
     id: 'lvl_046',
@@ -616,7 +662,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'high',
-    imageId: 'buckingham-palace'
+    imageId: 'buckingham-palace',
+    variations: 4,
   },
   {
     id: 'lvl_047',
@@ -629,7 +676,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'high',
-    imageId: 'forbidden-city'
+    imageId: 'forbidden-city',
+    variations: 4,
   },
   {
     id: 'lvl_048',
@@ -642,7 +690,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'medium',
-    imageId: 'brandenburg-gate'
+    imageId: 'brandenburg-gate',
+    variations: 4,
   },
   {
     id: 'lvl_049',
@@ -655,7 +704,8 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'high',
-    imageId: 'st-peters-basilica'
+    imageId: 'st-peters-basilica',
+    variations: 4,
   },
   {
     id: 'lvl_050',
@@ -668,32 +718,34 @@ const allLevels: Level[] = [
     ],
     category: 'nature',
     visualComplexity: 'low',
-    imageId: 'hollywood-sign'
+    imageId: 'hollywood-sign',
+    variations: 4,
   },
 ];
 
 
 export const levels: Level[] = allLevels;
 
-export function getImageUrl(imageId: string, round = 0): { url: string; hint: string } {
+export function getImageUrl(imageId: string, availableVariations: number, round = 0): { url: string; hint: string } {
     const placeholderData = PlaceHolderImages.find((p) => p.id === imageId);
     if (!placeholderData) {
-      // Fallback or error. This should ideally not happen if all levels have a corresponding placeholder entry.
+      // Fallback or error. This should ideally not happen.
       return { url: `/images/eiffel-tower.jpg`, hint: "fallback hint" };
     }
-
-    // Cycle through 0, 1, 2, 3 for game rounds for image variations
-    const variationNumber = round % 4; 
+    
+    // The base image (e.g., 'eiffel-tower.jpg') is always variation 1.
+    // The variations are 1-based, but our filenames for extras are 2, 3, 4.
+    // The modulo logic handles cycling through available images.
+    // We add 1 to the round to start cycling from the first image.
+    let variationNumber = (round % availableVariations) + 1;
+    
     let url: string;
-
-    if (variationNumber === 0) {
-        // Round 0 uses the base image, e.g., 'bran-castle.jpg'
+    if (variationNumber === 1) {
+        // The first variation is just the base imageId.
         url = `/images/${imageId}.jpg`;
     } else {
-        // Subsequent rounds use variations -2, -3, -4. 
-        // e.g., round 1 -> variationNumber 1 -> uses filename-2.jpg
-        const suffix = `-${variationNumber + 1}`;
-        url = `/images/${imageId}${suffix}.jpg`;
+        // Subsequent variations are imageId-2.jpg, imageId-3.jpg, etc.
+        url = `/images/${imageId}-${variationNumber}.jpg`;
     }
 
     return { url, hint: placeholderData.imageHint };
@@ -716,7 +768,8 @@ export const generatePuzzle = (imageId: string, grid: number) => {
   }
   // Determine the variation based on the game round stored in localStorage.
   const round = typeof window !== 'undefined' ? parseInt(localStorage.getItem('gameRound') || '0', 10) : 0;
-  const { url: imageUrl, hint: imageHint } = getImageUrl(level.imageId, round);
+  const { url: imageUrl, hint: imageHint } = getImageUrl(level.imageId, level.variations, round);
+  
   const solvedBoard = Array.from({ length: grid * grid }, (_, i) => i);
   const scrambledBoard = [...solvedBoard];
 

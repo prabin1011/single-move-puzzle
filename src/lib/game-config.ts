@@ -14,10 +14,10 @@ interface LevelConfig {
  * @returns {LevelConfig} The configuration for that level.
  */
 export function getLevelConfig(level: number): LevelConfig {
-    if (level <= 4) return { grid: 3, categories: ['all'] }; // Levels 1-5
-    if (level <= 14) return { grid: 4, categories: ['architecture', 'city', 'nature'] }; // Levels 6-15
-    if (level <= 29) return { grid: 5, categories: ['architecture', 'interior'] }; // Levels 16-30
-    if (level <= 49) return { grid: 6, categories: ['architecture'] }; // Levels 31-50
+    if (level < 5) return { grid: 3, categories: ['all'] }; // Levels 1-5
+    if (level < 15) return { grid: 4, categories: ['architecture', 'city', 'nature'] }; // Levels 6-15
+    if (level < 30) return { grid: 5, categories: ['architecture', 'interior', 'high'] }; // Levels 16-30
+    if (level < 50) return { grid: 6, categories: ['architecture', 'high'] }; // Levels 31-50
     // For levels 51+, introduce a timer as an added challenge
     return { grid: 6, categories: ['architecture'], timer: true }; // Levels 51+
 }

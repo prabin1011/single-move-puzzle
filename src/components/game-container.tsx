@@ -217,7 +217,7 @@ export default function GameContainer() {
   const puzzleKey = `${currentLevelData.id}-${retryCount}`;
 
   return (
-    <Card className="w-full max-w-sm bg-card border-border shadow-2xl transition-all duration-500">
+    <Card className="w-full max-w-sm bg-card border shadow-2xl transition-all duration-500">
       <CardHeader className="text-center min-h-[160px] flex flex-col justify-center relative">
         {gameState === "READY" && (
             <>
@@ -342,7 +342,7 @@ export default function GameContainer() {
 
       <CardContent className="flex flex-col items-center gap-4 sm:gap-6 px-2 sm:px-6">
         {(gameState === "READY" || gameState === "PREVIEW") && (
-          <div className="relative w-full max-w-[300px] aspect-square rounded-lg overflow-hidden shadow-lg border-2 border-border flex items-center justify-center">
+          <div className="relative w-full max-w-[300px] aspect-square rounded-lg overflow-hidden shadow-lg border-2 flex items-center justify-center">
             <Image
               key={currentImageUrl}
               src={currentImageUrl}

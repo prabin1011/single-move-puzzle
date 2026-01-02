@@ -84,7 +84,7 @@
 
 @layer utilities {
   .tile-glow {
-    box-shadow: 0 0 0 3px hsl(var(--success)), 0 0 15px 3px hsl(var(--success) / 0.8);
+    box-shadow: 0 0 0 4px hsl(120 100% 35% / 0.9), 0 0 10px 4px hsl(120 100% 45% / 0.7);
   }
   .text-success {
     color: hsl(var(--success));

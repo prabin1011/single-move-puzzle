@@ -9,16 +9,16 @@
     --background: 0 0% 100%; /* White */
     --foreground: 0 0% 3.9%; /* Near-Black for text */
 
-    --card: 0 0% 98%; /* Off-white cards to be visible on white */
+    --card: 0 0% 100%; /* White */
     --card-foreground: 0 0% 3.9%;
 
-    --popover: 0 0% 98%;
+    --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
 
     --primary: 206 79% 60%; /* #3D9BE9 - Sky Blue */
-    --primary-foreground: 0 0% 100%; /* #FFFFFF - White */
+    --primary-foreground: 0 0% 100%; /* White */
 
-    --secondary: 0 0% 96.1%; /* Light Gray for secondary elements */
+    --secondary: 0 0% 98%; /* Very light gray for secondary elements */
     --secondary-foreground: 0 0% 9%; /* Black */
 
     --muted: 0 0% 96.1%;
@@ -30,8 +30,8 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
+    --border: 0 0% 90%; /* Lightened border */
+    --input: 0 0% 90%;
     --ring: 206 79% 60%;
 
     --radius: 0.5rem;
@@ -45,10 +45,10 @@
     --background: 0 0% 0%; /* Black */
     --foreground: 0 0% 98%; /* Off-White text */
 
-    --card: 0 0% 3.9%; /* Near-black cards */
+    --card: 0 0% 5%; /* Near-black cards */
     --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 3.9%;
+    --popover: 0 0% 5%;
     --popover-foreground: 0 0% 98%;
 
     --primary: 206 79% 60%;

@@ -37,6 +37,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useGameTimer } from "@/hooks/use-game-timer";
 import { usePrefetchNextImages } from "@/hooks/use-prefetch-images";
+import { playSound } from "@/lib/sounds";
 
 function shuffle<T>(array: T[]): T[] {
   let currentIndex = array.length,
@@ -142,9 +143,11 @@ export default function GameContainer() {
   const { scrambledBoard, swapped } = currentPuzzle;
 
   const handleSuccess = async () => {
+    playSound('success');
     setGameState("SOLVED_VISUALIZING");
     setTimeout(() => {
       if (levelIndex === levels.length - 1) {
+        playSound('win');
         setGameState("ALL_LEVELS_COMPLETE");
         localStorage.removeItem('currentLevelIndex');
         localStorage.removeItem('highestLevel');
@@ -156,6 +159,7 @@ export default function GameContainer() {
   };
 
   const handleFail = () => {
+    playSound('fail');
     const newMistakeCount = mistakeCount + 1;
     setMistakeCount(newMistakeCount);
     if (newMistakeCount > MAX_MISTAKES) {

@@ -1,7 +1,9 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { cn } from '@/lib/utils';
+import { playSound } from '@/lib/sounds';
 
 interface PuzzleBoardProps {
   imageUrl: string;
@@ -50,6 +52,7 @@ export default function PuzzleBoard({
       return;
     }
     
+    playSound('click');
     // If the clicked tile is already selected, deselect it
     if (selectedIndices.includes(boardIndex)) {
       setSelectedIndices(selectedIndices.filter(i => i !== boardIndex));

@@ -57,5 +57,4 @@ export const PlaceHolderImages: PlaceholderImage[] = [
   { id: 'kremlin', imageHint: 'moscow russia'},
 ];
 
-
     

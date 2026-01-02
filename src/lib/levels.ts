@@ -14,7 +14,7 @@ export interface Level {
 }
 
 const allLevels: Level[] = [
-  // 50 Levels
+  // 49 Levels (Removed St. Basil's)
   {
     id: 'lvl_001',
     place: 'Eiffel Tower',
@@ -681,7 +681,7 @@ export function getImageUrl(
     return {
       url: `/images/eiffel-tower-1.jpg`,
       hint: "fallback",
-      facts: [],
+      facts: ["This is a fallback fact. Something went wrong."],
     };
   }
 
@@ -693,7 +693,7 @@ export function getImageUrl(
   const facts = level.facts[factIndex] ?? level.facts[0];
 
   // The new file convention is imageId-1.jpg, imageId-2.jpg, etc.
-  const variationIndex = round % safeVariations; // 0, 1, 2...
+  const variationIndex = round % safeVariations; // 0, 1, 2, ...
   const fileVariantNumber = variationIndex + 1; // 1, 2, 3...
 
   const url = `/images/${imageId}-${fileVariantNumber}.jpg`;
@@ -712,18 +712,20 @@ export const generateRandomSwap = (gridSize: number): [number, number] => {
   return [index1, index2];
 };
 
-export const generatePuzzle = (imageId: string, grid: number) => {
+export const generatePuzzle = (imageId: string, grid: number, retryCount = 0) => {
   const level = allLevels.find(l => l.imageId === imageId);
   if (!level) {
     throw new Error(`Could not find level with imageId: ${imageId}`);
   }
-  // Determine the variation based on the game round stored in localStorage.
-  const round = typeof window !== 'undefined' ? parseInt(localStorage.getItem('gameRound') || '0', 10) : 0;
   
+  // Use a combination of round and retry count to vary images even on retry
+  const round = typeof window !== 'undefined' ? parseInt(localStorage.getItem('gameRound') || '0', 10) : 0;
+  const effectiveRound = round + retryCount;
+
   const { url: imageUrl, hint: imageHint, facts } = getImageUrl(
     level.imageId,
     level.variations,
-    round
+    effectiveRound
   );
   
   const solvedBoard = Array.from({ length: grid * grid }, (_, i) => i);
@@ -748,6 +750,5 @@ export const generatePuzzle = (imageId: string, grid: number) => {
     facts: facts, // Pass the selected facts to the puzzle
   };
 };
-
 
     

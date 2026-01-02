@@ -21,7 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
 import { levels as initialLevels, generatePuzzle, type Level } from "@/lib/levels";
 import { getLevelConfig } from "@/lib/game-config";
 import {
@@ -36,7 +36,6 @@ import {
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useGameTimer } from "@/hooks/use-game-timer";
-import { useRouter } from "next/navigation";
 import { usePrefetchNextImages } from "@/hooks/use-prefetch-images";
 
 function shuffle<T>(array: T[]): T[] {
@@ -57,7 +56,6 @@ const MAX_MISTAKES = 0; // Allows 0 mistakes, game over on the 1st.
 const PREVIEW_TIME = 5; // 5 seconds to memorize
 
 export default function GameContainer() {
-  const router = useRouter();
   const [levels, setLevels] = useState<Level[]>([]);
   const [levelIndex, setLevelIndex] = useState(0);
   const [highestLevel, setHighestLevel] = useState(0);
@@ -119,7 +117,7 @@ export default function GameContainer() {
   // Generate the puzzle for the current level
   const currentPuzzle = useMemo(() => {
     if (!currentLevelData) return null;
-    return generatePuzzle(currentLevelData.imageId, currentGridSize);
+    return generatePuzzle(currentLevelData.imageId, currentGridSize, retryCount);
   }, [currentLevelData, currentGridSize, retryCount]); // Rerun if level or retryCount changes
 
   // Game timer logic
@@ -298,7 +296,6 @@ export default function GameContainer() {
           </>
         )}
         {gameState === "SOLVED" && (
-          // This state is now handled by the AlertDialog for level completion
           <>
             <div className="flex justify-center text-green-400">
               <CheckCircle className="h-16 w-16" />
@@ -337,20 +334,18 @@ export default function GameContainer() {
         )}
       </CardHeader>
 
-      <CardContent className="flex flex-col items-center gap-6 px-4 sm:px-6">
+      <CardContent className="flex flex-col items-center gap-4 sm:gap-6 px-2 sm:px-6">
         {(gameState === "READY" || gameState === "PREVIEW") && (
-          <div className="relative h-[300px] w-[300px] rounded-lg overflow-hidden shadow-lg border-2 border-border flex items-center justify-center">
+          <div className="relative w-full max-w-[300px] aspect-square rounded-lg overflow-hidden shadow-lg border-2 border-border flex items-center justify-center">
             <Image
               key={currentImageUrl}
               src={currentImageUrl}
               alt={currentLevelData.place}
-              width={300}
-              height={300}
-              priority
+              fill
+              sizes="(max-width: 640px) 90vw, 300px"
               data-ai-hint={currentImageHint}
               className={cn(
                   "object-cover transition-all duration-500",
-                  "h-[300px] w-[300px]",
                   gameState === "READY" && "blur-md scale-110",
               )}
             />
@@ -470,3 +465,5 @@ export default function GameContainer() {
     </Card>
   );
 }
+
+    

@@ -27,8 +27,24 @@ export default function PuzzleBoard({
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
   const [showSolution, setShowSolution] = useState(false);
   
-  const PUZZLE_SIZE = 300;
-  const TILE_SIZE = PUZZLE_SIZE / grid;
+  // Use a state for puzzle size to make it adaptable if needed in future
+  const [puzzleSize, setPuzzleSize] = useState(300);
+
+  // Effect to adjust puzzle size based on window width for responsiveness
+  useEffect(() => {
+    const handleResize = () => {
+      // 32px for padding on body, 32px for padding on card, 32px for safety margin
+      const newSize = window.innerWidth - 32 - 32 - 32;
+      setPuzzleSize(Math.min(300, newSize));
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const TILE_SIZE = puzzleSize / grid;
 
   const handleTileClick = (boardIndex: number) => {
     if (isReadOnly || selectedIndices.includes(boardIndex) || selectedIndices.length >= 2 || showSolution) {
@@ -78,13 +94,13 @@ export default function PuzzleBoard({
 
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center gap-4 w-full">
       <div
         className="grid gap-1 rounded-lg bg-muted p-1 shadow-md"
         style={{ 
           gridTemplateColumns: `repeat(${grid}, 1fr)`,
-          width: `${PUZZLE_SIZE}px`,
-          height: `${PUZZLE_SIZE}px`,
+          width: `${puzzleSize}px`,
+          height: `${puzzleSize}px`,
         }}
       >
         {board.map((tileValue, boardIndex) => {
@@ -107,7 +123,7 @@ export default function PuzzleBoard({
                 width: `${TILE_SIZE}px`,
                 height: `${TILE_SIZE}px`,
                 backgroundImage: `url('${imageUrl}')`,
-                backgroundSize: `${PUZZLE_SIZE}px ${PUZZLE_SIZE}px`,
+                backgroundSize: `${puzzleSize}px ${puzzleSize}px`,
                 backgroundPosition: `-${col * TILE_SIZE}px -${row * TILE_SIZE}px`,
               }}
             />
@@ -123,3 +139,5 @@ export default function PuzzleBoard({
     </div>
   );
 }
+
+    

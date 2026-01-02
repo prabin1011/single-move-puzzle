@@ -30,7 +30,7 @@
     --destructive: hsl(0, 84.2%, 60.2%);
     --destructive-foreground: hsl(0, 0%, 98%);
 
-    --border: hsl(0, 0%, 90%); /* Lightened border */
+    --border: hsl(0, 0%, 100%); /* White border for minimal effect */
     --input: hsl(0, 0%, 90%);
     --ring: hsl(206, 79%, 60%);
 

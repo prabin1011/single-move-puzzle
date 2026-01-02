@@ -33,6 +33,7 @@ import {
   Play,
   Loader2,
   PartyPopper,
+  Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -399,7 +400,7 @@ export default function GameContainer() {
                     key={index}
                     className="flex items-start gap-3 p-3 bg-secondary rounded-md"
                   >
-                    <span className="text-primary mt-1 shrink-0">✓</span>
+                    <Check className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                     <span className="text-secondary-foreground">{fact}</span>
                   </li>
                 ))}

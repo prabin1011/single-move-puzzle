@@ -86,12 +86,12 @@ export default function Home() {
       <div className="absolute top-4 right-4">
         <ThemeToggle />
       </div>
-      <Card className="w-full max-w-md text-center border-border shadow-2xl">
+      <Card className="w-full max-w-md text-center border-border shadow-2xl bg-card">
         <CardHeader className="space-y-4">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground">
             <AppLogo className="h-8 w-8" />
           </div>
-          <CardTitle className="text-3xl font-bold">One Move Puzzle</CardTitle>
+          <CardTitle className="text-3xl font-bold font-headline">One Move Puzzle</CardTitle>
           <CardDescription className="text-lg text-muted-foreground px-4">
             A calm, educational puzzle game.
           </CardDescription>
@@ -103,12 +103,12 @@ export default function Home() {
             <p className="flex items-start gap-3"><span className="mt-1 text-primary">✓</span><span>Learn a few fun facts.</span></p>
           </div>
           <div className="flex flex-col space-y-3 px-6">
-            <Button size="lg" className="w-full" onClick={handleNewGame}>
+            <Button size="lg" className="w-full font-headline" onClick={handleNewGame}>
               New Game
             </Button>
             {showContinue && (
               <Link href="/play" className="w-full">
-                <Button size="lg" variant="secondary" className="w-full">
+                <Button size="lg" variant="secondary" className="w-full font-headline">
                   Continue (Level {highestLevel + 1})
                 </Button>
               </Link>

@@ -211,11 +211,11 @@ export default function GameContainer() {
   const puzzleKey = `${currentLevelData.id}-${retryCount}`;
 
   return (
-    <Card className="w-full max-w-sm bg-background border-border shadow-2xl transition-all duration-500">
+    <Card className="w-full max-w-sm bg-card border-border shadow-2xl transition-all duration-500">
       <CardHeader className="text-center min-h-[160px] flex flex-col justify-center relative">
         {gameState === "READY" && (
             <>
-                <CardTitle className="text-3xl font-bold">
+                <CardTitle className="text-3xl font-bold font-headline">
                 {currentLevelData.place}
                 </CardTitle>
                 <CardDescription className="text-muted-foreground">
@@ -256,7 +256,7 @@ export default function GameContainer() {
                   </svg>
                 </div>
             </div>
-            <CardTitle className="text-3xl font-bold">
+            <CardTitle className="text-3xl font-bold font-headline">
               Memorize!
             </CardTitle>
             <CardDescription className="text-muted-foreground">
@@ -269,7 +269,7 @@ export default function GameContainer() {
         )}
         {(gameState === "PLAYING" || gameState === "FAILED") && (
           <>
-            <CardTitle className="text-2xl font-semibold">
+            <CardTitle className="text-2xl font-semibold font-headline">
               Find the two swapped pieces.
             </CardTitle>
             <CardDescription className="text-muted-foreground">
@@ -284,7 +284,7 @@ export default function GameContainer() {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Hint for {currentLevelData.place}</AlertDialogTitle>
+                    <AlertDialogTitle className="font-headline">Hint for {currentLevelData.place}</AlertDialogTitle>
                     <AlertDialogDescription>
                       {hint}
                     </AlertDialogDescription>
@@ -297,10 +297,10 @@ export default function GameContainer() {
         )}
         {gameState === "SOLVED" && (
           <>
-            <div className="flex justify-center text-green-400">
+            <div className="flex justify-center text-success">
               <CheckCircle className="h-16 w-16" />
             </div>
-            <CardTitle className="text-3xl font-bold pt-4">
+            <CardTitle className="text-3xl font-bold pt-4 font-headline">
               Analyzing...
             </CardTitle>
           </>
@@ -308,10 +308,10 @@ export default function GameContainer() {
         
         {gameState === "GAME_OVER" && (
             <>
-              <div className="flex justify-center text-red-500">
+              <div className="flex justify-center text-error">
                 <HeartCrack className="h-16 w-16" />
               </div>
-              <CardTitle className="text-3xl font-bold pt-4">
+              <CardTitle className="text-3xl font-bold pt-4 font-headline">
                 Game Over
               </CardTitle>
               <CardDescription className="text-muted-foreground px-4">
@@ -324,7 +324,7 @@ export default function GameContainer() {
             <div className="flex justify-center text-yellow-400">
               <PartyPopper className="h-16 w-16" />
             </div>
-            <CardTitle className="text-3xl font-bold pt-4">
+            <CardTitle className="text-3xl font-bold pt-4 font-headline">
               Congratulations!
             </CardTitle>
             <CardDescription className="text-muted-foreground">
@@ -368,10 +368,10 @@ export default function GameContainer() {
         <AlertDialog open={gameState === 'SOLVED'}>
           <AlertDialogContent>
             <AlertDialogHeader className="items-center text-center">
-              <div className="flex justify-center text-green-400 pb-4">
+              <div className="flex justify-center text-success pb-4">
                 <CheckCircle className="h-16 w-16" />
               </div>
-              <AlertDialogTitle className="text-3xl font-bold">
+              <AlertDialogTitle className="text-3xl font-bold font-headline">
                 Level {levelIndex + 1} Complete!
               </AlertDialogTitle>
               <AlertDialogDescription className="text-lg text-muted-foreground !mt-2">
@@ -391,7 +391,7 @@ export default function GameContainer() {
                     className="flex items-start gap-3 p-3 bg-secondary rounded-md"
                   >
                     <span className="text-primary mt-1 shrink-0">✓</span>
-                    <span>{fact}</span>
+                    <span className="text-secondary-foreground">{fact}</span>
                   </li>
                 ))}
               </ul>
@@ -451,7 +451,7 @@ export default function GameContainer() {
         )}
 
         <div className="relative w-full text-center h-6">
-          {(gameState === "READY" || gameState === "PLAYING" || gameState === "FAILED" || gameState === "GAME_OVER") && (
+          {gameState !== "PREVIEW" && (
             <Button
               asChild
               variant="link"
@@ -465,7 +465,3 @@ export default function GameContainer() {
     </Card>
   );
 }
-
-    
-
-    

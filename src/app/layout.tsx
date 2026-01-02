@@ -1,10 +1,19 @@
 
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Poppins, Inter } from 'next/font/google';
 import './globals.css';
 import ClientLayout from './client-layout';
 
-const inter = Inter({ subsets: ['latin'] });
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['600', '700'],
+  variable: '--font-poppins',
+});
+
+const inter = Inter({ 
+  subsets: ['latin'],
+  variable: '--font-inter',
+});
 
 export const metadata: Metadata = {
   title: 'One Move Puzzle',
@@ -18,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} antialiased`}>
+      <body className={`${poppins.variable} ${inter.variable} font-sans antialiased`}>
         <ClientLayout>{children}</ClientLayout>
       </body>
     </html>

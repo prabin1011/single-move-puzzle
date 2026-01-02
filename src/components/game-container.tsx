@@ -64,7 +64,7 @@ export default function GameContainer() {
   const [retryCount, setRetryCount] = useState(0);
 
   const [gameState, setGameState] = useState<
-    "READY" | "PREVIEW" | "PLAYING" | "SOLVED" | "FAILED" | "GAME_OVER" | "ALL_LEVELS_COMPLETE"
+    "READY" | "PREVIEW" | "PLAYING" | "SOLVED_VISUALIZING" | "SOLVED_COMPLETE" | "FAILED" | "GAME_OVER" | "ALL_LEVELS_COMPLETE"
   >("READY");
   const [showFacts, setShowFacts] = useState(false);
   
@@ -138,19 +138,21 @@ export default function GameContainer() {
     );
   }
 
-  const { imageUrl: currentImageUrl, hint, imageHint: currentImageHint, facts } = currentPuzzle;
+  const { imageUrl: currentImageUrl, hint, imageHint: currentImageHint, facts, solvedBoard } = currentPuzzle;
   const { scrambledBoard, swapped } = currentPuzzle;
 
   const handleSuccess = async () => {
-    // Check if this was the last level
-    if (levelIndex === levels.length - 1) {
-      setGameState("ALL_LEVELS_COMPLETE");
-      localStorage.removeItem('currentLevelIndex');
-      localStorage.removeItem('highestLevel');
-    } else {
-      setGameState("SOLVED");
-    }
-    setTimeout(() => setShowFacts(true), 500);
+    setGameState("SOLVED_VISUALIZING");
+    setTimeout(() => {
+      if (levelIndex === levels.length - 1) {
+        setGameState("ALL_LEVELS_COMPLETE");
+        localStorage.removeItem('currentLevelIndex');
+        localStorage.removeItem('highestLevel');
+      } else {
+        setGameState("SOLVED_COMPLETE");
+      }
+      setTimeout(() => setShowFacts(true), 500);
+    }, 1500);
   };
 
   const handleFail = () => {
@@ -295,7 +297,7 @@ export default function GameContainer() {
             )}
           </>
         )}
-        {gameState === "SOLVED" && (
+        {gameState === "SOLVED_VISUALIZING" && (
           <>
             <div className="flex justify-center text-success">
               <CheckCircle className="h-16 w-16" />
@@ -352,12 +354,12 @@ export default function GameContainer() {
           </div>
         )}
 
-        {(gameState === "PLAYING" || gameState === "FAILED") && (
+        {(gameState === "PLAYING" || gameState === "FAILED" || gameState === "SOLVED_VISUALIZING") && (
           <PuzzleBoard
             key={puzzleKey}
             imageUrl={currentImageUrl}
             grid={currentGridSize}
-            boardState={scrambledBoard}
+            boardState={gameState === 'SOLVED_VISUALIZING' ? solvedBoard : scrambledBoard}
             swappedIndices={swapped}
             onSuccess={handleSuccess}
             onFail={handleFail}
@@ -365,7 +367,7 @@ export default function GameContainer() {
           />
         )}
         
-        <AlertDialog open={gameState === 'SOLVED'}>
+        <AlertDialog open={gameState === 'SOLVED_COMPLETE'}>
           <AlertDialogContent>
             <AlertDialogHeader className="items-center text-center">
               <div className="flex justify-center text-success pb-4">

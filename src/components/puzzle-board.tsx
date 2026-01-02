@@ -46,10 +46,17 @@ export default function PuzzleBoard({
   const TILE_SIZE = puzzleSize / grid;
 
   const handleTileClick = (boardIndex: number) => {
-    if (isReadOnly || selectedIndices.includes(boardIndex) || selectedIndices.length >= 2 || showSolution) {
+    if (isReadOnly || selectedIndices.length >= 2 || showSolution) {
       return;
     }
-    setSelectedIndices([...selectedIndices, boardIndex]);
+    
+    // If the clicked tile is already selected, deselect it
+    if (selectedIndices.includes(boardIndex)) {
+      setSelectedIndices(selectedIndices.filter(i => i !== boardIndex));
+    } else {
+      // Otherwise, add it to the selection
+      setSelectedIndices([...selectedIndices, boardIndex]);
+    }
   };
 
   const checkSolution = useCallback(() => {

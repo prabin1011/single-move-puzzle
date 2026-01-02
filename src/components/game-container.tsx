@@ -20,6 +20,7 @@ import {
   AlertDialogDescription,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { levels as initialLevels, generatePuzzle, type Level } from "@/lib/levels";
 import { getLevelConfig } from "@/lib/game-config";
@@ -456,14 +457,13 @@ export default function GameContainer() {
 
         <div className="relative w-full text-center h-6">
           {(gameState === "PLAYING" || gameState === "FAILED" || gameState === "GAME_OVER") && (
-            <Link href="/" passHref legacyBehavior>
-              <Button
-                variant="link"
-                className=" text-muted-foreground"
-              >
-                Back to Home
-              </Button>
-            </Link>
+            <Button
+              asChild
+              variant="link"
+              className="text-muted-foreground"
+            >
+              <Link href="/">Back to Home</Link>
+            </Button>
           )}
         </div>
       </CardFooter>

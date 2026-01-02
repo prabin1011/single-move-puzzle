@@ -661,27 +661,40 @@ export function getImageUrl(
   imageId: string,
   availableVariations: number,
   round = 0
-): { url: string; hint: string, facts: string[] } {
-  const level = allLevels.find(l => l.imageId === imageId);
+): { url: string; hint: string; facts: string[] } {
+  const level = allLevels.find((l) => l.imageId === imageId);
   if (!level) {
-    // This should not happen if the data is correct.
-    return { url: `/images/eiffel-tower-1.jpg`, hint: "fallback", facts: [] };
+    // Fallback to something that definitely exists
+    return {
+      url: `/images/eiffel-tower.jpg`,
+      hint: "fallback",
+      facts: [],
+    };
   }
 
-  const hint = PlaceHolderImages.find((p) => p.id === imageId)?.imageHint ?? "landmark";
+  const hint =
+    PlaceHolderImages.find((p) => p.id === imageId)?.imageHint ?? "landmark";
 
+  // Ensure we never have 0 variations
   const safeVariations = Math.max(1, availableVariations || 1);
 
-  // Cycle through available images and facts based on the game round
-  const variationIndex = round % safeVariations; // 0, 1, 2, ...
-  const factIndex = round % level.facts.length; // Cycle through fact sets
+  // Cycle through fact sets with round
+  const factIndex = round % level.facts.length;
+  const facts = level.facts[factIndex] ?? level.facts[0];
 
-  const facts = level.facts[factIndex] || level.facts[0];
+  // idx: 0..safeVariations-1
+  const idx = round % safeVariations;
 
-  // The new file convention is imageId-1.jpg, imageId-2.jpg, etc.
-  const fileVariantNumber = variationIndex + 1;
+  let url: string;
 
-  const url = `/images/${imageId}-${fileVariantNumber}.jpg`;
+  if (idx === 0) {
+    // Base file: imageId.jpg (no suffix)
+    url = `/images/${imageId}.jpg`;
+  } else {
+    // Variants: imageId-2.jpg, imageId-3.jpg, ...
+    const fileVariantNumber = idx + 1; // 1 → 2, 2 → 3, ...
+    url = `/images/${imageId}-${fileVariantNumber}.jpg`;
+  }
 
   return { url, hint, facts };
 }
@@ -704,7 +717,12 @@ export const generatePuzzle = (imageId: string, grid: number) => {
   }
   // Determine the variation based on the game round stored in localStorage.
   const round = typeof window !== 'undefined' ? parseInt(localStorage.getItem('gameRound') || '0', 10) : 0;
-  const { url: imageUrl, hint: imageHint, facts } = getImageUrl(level.imageId, level.variations, round);
+  
+  const { url: imageUrl, hint: imageHint, facts } = getImageUrl(
+    level.imageId,
+    level.variations,
+    round
+  );
   
   const solvedBoard = Array.from({ length: grid * grid }, (_, i) => i);
   const scrambledBoard = [...solvedBoard];

@@ -91,7 +91,7 @@ export default function Home() {
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground">
             <AppLogo className="h-8 w-8" />
           </div>
-          <CardTitle className="text-3xl font-bold">Single Move Puzzle</CardTitle>
+          <CardTitle className="text-3xl font-bold">One Move Puzzle</CardTitle>
           <CardDescription className="text-lg text-muted-foreground px-4">
             A calm, educational puzzle game.
           </CardDescription>

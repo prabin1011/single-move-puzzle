@@ -7,7 +7,7 @@ import ClientLayout from './client-layout';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Single Move Puzzle',
+  title: 'One Move Puzzle',
   description: 'Solve a simple puzzle. Discover famous places.',
 };
 

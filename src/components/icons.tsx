@@ -9,9 +9,9 @@ export const AppLogo = (props: React.SVGProps<SVGSVGElement>) => (
       strokeLinejoin="round"
       {...props}
     >
-      <rect width="18" height="18" x="3" y="3" rx="2" />
-      <path d="M12 8v8" />
-      <path d="m15 13-3 3-3-3" />
+        <path d="M15 14c.2-1 .7-1.7 1.5-2.5C17.7 10.2 18 9 18 7c0-2.2-1.8-4-4-4S10 4.8 10 7c0 2 .3 3.2 1.5 4.5.8.8 1.3 1.5 1.5 2.5" />
+        <path d="M9 18h6" />
+        <path d="M10 22h4" />
     </svg>
   );
   

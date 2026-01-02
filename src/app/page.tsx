@@ -11,6 +11,7 @@ import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { Loader2 } from 'lucide-react';
 import { levels } from '@/lib/levels';
 import type { Level } from '@/lib/levels';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 function shuffle<T>(array: T[]): T[] {
   let currentIndex = array.length,
@@ -82,6 +83,9 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-background">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
       <Card className="w-full max-w-md text-center border-border shadow-2xl">
         <CardHeader className="space-y-4">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground">

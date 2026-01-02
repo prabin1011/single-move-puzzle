@@ -6,6 +6,7 @@ import { FirebaseClientProvider } from '@/firebase';
 import { useEffect } from 'react';
 import { levels } from '@/lib/levels';
 import { getImageUrl } from '@/lib/levels';
+import { ThemeProvider } from '@/components/theme-provider';
 
 
 // This is our "silent agent" for image pre-caching.
@@ -70,12 +71,17 @@ export default function ClientLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
       <ImageCacheAgent />
       <FirebaseClientProvider>
         {children}
       </FirebaseClientProvider>
       <Toaster />
-    </>
+    </ThemeProvider>
   );
 }

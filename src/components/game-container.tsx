@@ -238,7 +238,8 @@ export default function GameContainer() {
                     mt-3 inline-flex items-center justify-center
                     rounded-full px-3 py-1
                     text-[11px] font-semibold uppercase tracking-wide
-                    bg-secondary/90 text-primary
+                    bg-blue-100 text-primary border border-blue-200
+                    dark:bg-secondary/90 dark:border-transparent
                   "
                 >
                   Level {levelIndex + 1} • {currentGridSize}x{currentGridSize} Grid
@@ -286,7 +287,8 @@ export default function GameContainer() {
                 mt-2 inline-flex items-center justify-center
                 rounded-full px-3 py-1
                 text-[11px] font-semibold uppercase tracking-wide
-                bg-secondary/90 text-primary
+                bg-blue-100 text-primary border border-blue-200
+                dark:bg-secondary/90 dark:border-transparent
               "
             >
               Level {levelIndex + 1} • {currentGridSize}x{currentGridSize} Grid

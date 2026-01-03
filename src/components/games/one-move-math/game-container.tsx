@@ -83,8 +83,12 @@ export default function GameContainer() {
     playSound('success', isSoundOn);
     setGameState('SOLVED_VISUALIZING');
     setTimeout(() => {
-        setGameState('SOLVED_COMPLETE');
-    }, 1500)
+        if (level >= 49) {
+            setGameState('ALL_LEVELS_COMPLETE');
+        } else {
+            setGameState('SOLVED_COMPLETE');
+        }
+    }, 1500);
   };
 
   const handleFail = () => {
@@ -125,6 +129,7 @@ export default function GameContainer() {
     setMistakeCount(0);
     setRetryCount(0);
     setGameState("READY");
+    loadPuzzle(0, 0); // explicitly reload puzzle for level 0
     localStorage.removeItem('mathCurrentLevel');
     localStorage.removeItem('mathHighestLevel');
   }
@@ -149,15 +154,10 @@ export default function GameContainer() {
   const solutionBoard = {
     ...puzzle,
     board: puzzle.correctSolution.map((val, i) => {
-      const originalTile = puzzle.board.find((t, ti) => solutionValuesMatch(t.value, val) && t.isLocked) || puzzle.board[i];
-      return { value: val, isLocked: originalTile.isLocked };
+      const isLocked = typeof val === 'string';
+      return { value: val, isLocked: isLocked };
     })
   };
-
-  function solutionValuesMatch(a: TileValue, b: TileValue) {
-    if (a === null || b === null) return false;
-    return a === b;
-  }
 
   return (
     <Card
@@ -233,6 +233,19 @@ export default function GameContainer() {
                 You reached level {level + 1}. Here's the solution.
               </CardDescription>
         </div>
+        
+        <div className={cn("transition-opacity duration-300 absolute inset-0 p-6 flex flex-col justify-center", gameState === 'ALL_LEVELS_COMPLETE' ? 'opacity-100' : 'opacity-0 invisible')}>
+            <PartyPopper className="h-12 w-12 mx-auto text-yellow-400" />
+            <CardTitle className="text-3xl font-bold font-headline mt-2">All Levels Complete!</CardTitle>
+            <CardDescription
+                className="
+                mt-2 text-base text-muted-foreground
+                "
+            >
+                You are a math wizard! Congratulations!
+            </CardDescription>
+        </div>
+
 
       </CardHeader>
       <CardContent className={cn("flex items-center justify-center min-h-[128px] transition-opacity duration-500", (gameState === 'READY' || isLoading) ? 'opacity-0' : 'opacity-100')}>
@@ -311,7 +324,7 @@ export default function GameContainer() {
             </div>
         )}
 
-        {(gameState === "GAME_OVER") && (
+        {(gameState === "GAME_OVER" || gameState === "ALL_LEVELS_COMPLETE") && (
           <div className="w-full text-center space-y-4">
             <Button onClick={restartGame} size="lg" className="w-full">
               Play Again

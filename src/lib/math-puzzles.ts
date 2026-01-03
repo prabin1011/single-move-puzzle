@@ -28,10 +28,10 @@ interface PuzzleConfig {
  */
 export function getMathPuzzleConfig(level: number): PuzzleConfig {
     // Levels 1-8: Rapid introduction to all four operations
-    if (level < 2) return { type: 'add', rangeA: [2, 9], rangeB: [2, 9], description: "Let's warm up with some simple addition." };
-    if (level < 4) return { type: 'subtract', rangeA: [10, 20], rangeB: [2, 9], description: "Time to practice subtraction." };
-    if (level < 6) return { type: 'multiply', rangeA: [2, 9], rangeB: [2, 9], description: "Can you solve these multiplication puzzles?" };
-    if (level < 8) return { type: 'divide', rangeA: [10, 81], rangeB: [2, 9], description: "Now for some division. The answer will always be a whole number." };
+    if (level < 2) return { type: 'add', rangeA: [2, 9], rangeB: [2, 9], description: "Let's warm up with some simple addition." }; // Lvl 1-2
+    if (level < 4) return { type: 'subtract', rangeA: [10, 20], rangeB: [2, 9], description: "Time to practice subtraction." }; // Lvl 3-4
+    if (level < 6) return { type: 'multiply', rangeA: [2, 9], rangeB: [2, 9], description: "Can you solve these multiplication puzzles?" }; // Lvl 5-6
+    if (level < 8) return { type: 'divide', rangeA: [10, 81], rangeB: [2, 9], description: "Now for some division. The answer will always be a whole number." }; // Lvl 7-8
     
     // Levels 9-25: Order of Operations (PEMDAS/BODMAS)
     if (level < 25) return { type: 'equation', rangeA: [1, 9], rangeB: [2, 9], rangeC: [2, 5], description: "Think about the order of operations!" };
@@ -42,22 +42,22 @@ export function getMathPuzzleConfig(level: number): PuzzleConfig {
 
 const getRandom = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-// Helper to convert a number or operator into an array of single-character strings
-const toChars = (value: number | string): string[] => String(value).split('');
+// Helper to convert a number into an array of single-digit numbers
+const toDigits = (value: number): number[] => String(value).split('').map(Number);
 
-// Helper function to convert an array of characters to an array of Tiles
-const toTiles = (chars: (string|null)[], isLocked: boolean): Tile[] => {
-    return chars.map(char => ({
-        value: char === null ? null : (isNaN(Number(char)) ? (char as TileValue) : Number(char)),
-        isLocked,
+// Helper function to convert an array of TileValues to an array of Tiles
+const toTiles = (values: TileValue[], isLocked: (value: TileValue) => boolean): Tile[] => {
+    return values.map(val => ({
+        value: val,
+        isLocked: isLocked(val),
     }));
 };
 
-const generateSimplePuzzle = (level: number): { equation: Tile[], solution: (TileValue)[] } => {
+const generateSimplePuzzle = (level: number): { board: Tile[], solution: TileValue[] } => {
     const config = getMathPuzzleConfig(level);
     let a=0, b=0, c=0;
     let op: '+' | '-' | '*' | '/' = '+';
-    let solution: (TileValue)[] = [];
+    let solution: TileValue[] = [];
 
     switch(config.type) {
         case 'subtract':
@@ -87,18 +87,13 @@ const generateSimplePuzzle = (level: number): { equation: Tile[], solution: (Til
             break;
     }
     
-    solution = [...toChars(a), op, ...toChars(b), '=', ...toChars(c)].map(v => isNaN(Number(v)) ? v as TileValue : Number(v));
-    const equation = [
-        ...toTiles(toChars(a), false),
-        ...toTiles([op], true),
-        ...toTiles(toChars(b), false),
-        ...toTiles(['='], true),
-        ...toTiles(toChars(c), false),
-    ];
-    return { equation, solution };
+    solution = [...toDigits(a), op, ...toDigits(b), '=', ...toDigits(c)];
+    const isLocked = (v: TileValue) => typeof v === 'string';
+    const board = toTiles(solution, isLocked);
+    return { board, solution };
 }
 
-const generateComplexPuzzle = (level: number): { equation: Tile[], solution: (TileValue)[] } => {
+const generateComplexPuzzle = (level: number): { board: Tile[], solution: TileValue[] } => {
     const config = getMathPuzzleConfig(level);
     const { rangeA, rangeB, rangeC } = config;
 
@@ -117,22 +112,14 @@ const generateComplexPuzzle = (level: number): { equation: Tile[], solution: (Ti
         solutionValue = (op1 === '+') ? a + b + cVal : a - b + cVal;
     }
 
-    const solution: (TileValue)[] = [...toChars(a), op1, ...toChars(b), op2, ...toChars(cVal), '=', ...toChars(solutionValue)].map(v => isNaN(Number(v)) ? v as TileValue : Number(v));
-    
-    const equation = [
-        ...toTiles(toChars(a), false),
-        ...toTiles([op1], true),
-        ...toTiles(toChars(b), false),
-        ...toTiles([op2], true),
-        ...toTiles(toChars(cVal), false),
-        ...toTiles(['='], true),
-        ...toTiles(toChars(solutionValue), false),
-    ];
+    const solution: TileValue[] = [...toDigits(a), op1, ...toDigits(b), op2, ...toDigits(cVal), '=', ...toDigits(solutionValue)];
+    const isLocked = (v: TileValue) => typeof v === 'string';
+    const board = toTiles(solution, isLocked);
 
-    return { equation, solution };
+    return { board, solution };
 }
 
-const generateFillBlankPuzzle = (level: number): { equation: Tile[], solution: (TileValue)[] } => {
+const generateFillBlankPuzzle = (level: number): { board: Tile[], solution: TileValue[] } => {
     const config = getMathPuzzleConfig(level);
     const { rangeA, rangeB } = config;
     const op = Math.random() > 0.5 ? '*' : '+';
@@ -142,51 +129,51 @@ const generateFillBlankPuzzle = (level: number): { equation: Tile[], solution: (
     const c = op === '*' ? a * b : a + b;
 
     const parts = [
-        { value: a, locked: false, isAnswer: false },
-        { value: op, locked: true, isAnswer: false },
-        { value: b, locked: false, isAnswer: false },
-        { value: '=', locked: true, isAnswer: false },
-        { value: c, locked: false, isAnswer: false },
+        { value: toDigits(a), locked: false, isAnswer: false },
+        { value: [op], locked: true, isAnswer: false },
+        { value: toDigits(b), locked: false, isAnswer: false },
+        { value: ['='], locked: true, isAnswer: false },
+        { value: toDigits(c), locked: false, isAnswer: false },
     ];
     
     // Decide which number to make the blank
-    const blankPartIndex = [0, 2, 4][Math.floor(Math.random() * 3)];
+    const blankPartIndices = [0, 2, 4].filter(i => parts[i].value.length === 1); // Only make single-digit numbers blank
+    const blankPartIndex = blankPartIndices[Math.floor(Math.random() * blankPartIndices.length)];
     parts[blankPartIndex].isAnswer = true;
-    const answerValue = parts[blankPartIndex].value;
+    const answerValue = parts[blankPartIndex].value[0];
 
-    let solution: (TileValue)[] = [];
-    let equation: Tile[] = [];
-
-    parts.forEach((part) => {
-        const chars = part.isAnswer ? Array(String(part.value).length).fill(null) : toChars(part.value);
-        solution.push(...(toChars(part.value).map(v => isNaN(Number(v)) ? v as TileValue : Number(v))));
-        equation.push(...toTiles(chars, part.locked));
-    });
+    const solution: TileValue[] = parts.flatMap(p => p.value);
+    let boardValues: TileValue[] = [];
     
-    // Add the answer digit(s) somewhere else on the board to be swapped in.
-    const answerDigits = toChars(answerValue);
-    const nonAnswerTiles = equation.filter(t => t.value !== null && !t.isLocked);
-    
-    // Find a random tile to replace with the first answer digit
-    if (nonAnswerTiles.length > 0 && answerDigits.length > 0) {
-        const tileToReplaceIndex = getRandom(0, nonAnswerTiles.length - 1);
-        const originalTile = nonAnswerTiles[tileToReplaceIndex];
-        
-        // Find this tile in the main equation board
-        const boardIndex = equation.findIndex(t => t === originalTile);
-        
-        if(boardIndex > -1) {
-            // Place the answer digit there.
-             equation.push(...toTiles(toChars(equation[boardIndex].value as number), false));
-             equation[boardIndex] = toTiles([answerDigits[0]], false)[0];
+    parts.forEach(part => {
+        if (part.isAnswer) {
+            boardValues.push(null); // This is the blank spot
+        } else {
+            boardValues.push(...part.value);
         }
+    });
+
+    const isLocked = (v: TileValue) => typeof v === 'string';
+    const board = toTiles(boardValues, isLocked);
+    
+    // Find a swappable number tile on the board to replace with the answer digit
+    const swappableIndices = board.map((tile, i) => 
+        typeof tile.value === 'number' && !tile.isLocked ? i : -1
+    ).filter(i => i !== -1);
+    
+    if (swappableIndices.length > 0) {
+        const indexToSwapWith = swappableIndices[Math.floor(Math.random() * swappableIndices.length)];
+        const valueToKeep = board[indexToSwapWith].value;
+        
+        const blankIndex = board.findIndex(t => t.value === null);
+        board[blankIndex].value = valueToKeep; // Put the displaced number in the blank spot
+        board[indexToSwapWith].value = answerValue; // Put the answer digit on the board
     } else {
-        // Fallback: just append the answer
-        equation.push(...toTiles(answerDigits, false));
+        // Fallback: if no swappable numbers, just add the answer at the end
+        board.push({ value: answerValue, isLocked: false });
     }
 
-
-    return { equation, solution };
+    return { board, solution };
 }
 
 
@@ -194,44 +181,39 @@ const generateFillBlankPuzzle = (level: number): { equation: Tile[], solution: (
 export const generatePuzzle = (level: number, retryCount: number = 0): MathPuzzle => {
     const config = getMathPuzzleConfig(level);
     let finalCorrectBoard: Tile[] = [];
-    let solutionValues: (TileValue)[] = [];
+    let solutionValues: TileValue[] = [];
 
     if (config.type === 'equation') {
-        const { equation, solution } = generateComplexPuzzle(level);
-        finalCorrectBoard = equation;
+        const { board, solution } = generateComplexPuzzle(level);
+        finalCorrectBoard = board;
         solutionValues = solution;
     } else if (config.type === 'fill-blank') {
-        const { equation, solution } = generateFillBlankPuzzle(level);
-        finalCorrectBoard = equation;
-        solutionValues = solution;
-        // In fill-blank, the puzzle is already scrambled. The "swap" is moving the answer into the blank.
-        // We need to find the index of the blank and the index of the answer tile.
-        const blankIndex = finalCorrectBoard.findIndex(t => t.value === null);
-        const answerValue = String(solution[blankIndex]);
-        const answerIndex = finalCorrectBoard.findIndex(t => String(t.value) === answerValue && t.isLocked === false && t !== finalCorrectBoard[blankIndex]);
-
+        const { board, solution } = generateFillBlankPuzzle(level);
+        
+        const blankIndex = solution.findIndex((v, i) => board[i]?.value !== v && board[i]?.value !== null );
+        const answerValue = solution[blankIndex];
+        const answerIndex = board.findIndex(t => t.value === answerValue && !t.isLocked);
+        
         if (blankIndex > -1 && answerIndex > -1) {
-            return {
+             return {
                 id: `math-lvl-${level}-${retryCount}-${new Date().getTime()}`,
-                board: finalCorrectBoard,
+                board: board,
                 swappedIndices: [blankIndex, answerIndex].sort((a,b) => a-b) as [number, number],
                 correctSolution: solutionValues,
             };
         }
-        // Fallback if something goes wrong
         return generatePuzzle(level, retryCount + 1);
 
-
     } else {
-        const { equation, solution } = generateSimplePuzzle(level);
-        finalCorrectBoard = equation;
+        const { board, solution } = generateSimplePuzzle(level);
+        finalCorrectBoard = board;
         solutionValues = solution;
     }
 
   // --- Scramble the board by swapping two number tiles ---
   const scrambledBoard: Tile[] = JSON.parse(JSON.stringify(finalCorrectBoard));
   
-  // Get indices of all tiles that are single-digit numbers (not locked)
+  // Get indices of all tiles that are numbers (not locked)
   const numberIndices = finalCorrectBoard
     .map((tile, i) => (typeof tile.value === 'number' && !tile.isLocked) ? i : -1)
     .filter(i => i !== -1);
@@ -260,7 +242,7 @@ export const generatePuzzle = (level: number, retryCount: number = 0): MathPuzzl
 
 
   // Swap the values at these indices to create the puzzle
-  [scrambledBoard[idx1], scrambledBoard[idx2]] = [scrambledBoard[idx2], scrambledBoard[idx1]];
+  [scrambledBoard[idx1].value, scrambledBoard[idx2].value] = [scrambledBoard[idx2].value, scrambledBoard[idx1].value];
   
   return {
     id: `math-lvl-${level}-${retryCount}-${new Date().getTime()}`,

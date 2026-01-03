@@ -1,3 +1,4 @@
+
 export type TileValue = number | '+' | '-' | '*' | '/' | '=' | null;
 
 export interface Tile {
@@ -8,85 +9,53 @@ export interface Tile {
 export interface MathPuzzle {
   id: string;
   board: Tile[];
-  gridSize: number;
+  gridSize: number; // Will be the length of the equation array
   swappedIndices: [number, number];
-  correctSolution: number[]; // The board state when solved
-}
-
-function shuffle<T>(array: T[]): T[] {
-    let currentIndex = array.length, randomIndex;
-    while (currentIndex > 0) {
-      randomIndex = Math.floor(Math.random() * currentIndex);
-      currentIndex--;
-      [array[currentIndex], array[randomIndex]] = [
-        array[randomIndex], array[currentIndex]];
-    }
-    return array;
+  correctSolution: (number | string)[]; 
 }
 
 // Generates a simple puzzle: a + b = c
 export const generatePuzzle = (level: number): MathPuzzle => {
-  const gridSize = 3; // For now, let's stick to a 3x3 grid
-  const board: Tile[] = Array(gridSize * gridSize).fill(null).map(() => ({ value: null, isLocked: false }));
-
+  const gridSize = 5; // e.g., [a, +, b, =, c]
+  
   // --- 1. Generate a correct equation ---
   let a, b, c;
   const operator = '+'; // For simplicity, start with addition
   
+  // Create simple, single-digit addition problems
   a = Math.floor(Math.random() * 8) + 1; // 1-8
   b = Math.floor(Math.random() * (9 - a)) + 1; // Ensure a+b <= 9
   c = a + b;
 
-  // --- 2. Place the equation on the board ---
-  // Example placement: [a, +, b, =, c] on the middle row
-  const equationTiles: TileValue[] = [a, operator, b, '=', c];
-  const emptyTiles: TileValue[] = [
-    Math.floor(Math.random() * 9) + 1,
-    Math.floor(Math.random() * 9) + 1,
-    Math.floor(Math.random() * 9) + 1,
-    Math.floor(Math.random() * 9) + 1,
+  const correctBoard: Tile[] = [
+    { value: a, isLocked: false },
+    { value: operator, isLocked: true },
+    { value: b, isLocked: false },
+    { value: '=', isLocked: true },
+    { value: c, isLocked: false },
   ];
 
-  // Avoid placing numbers that are already in the equation in empty spots
-  const equationNumbers = [a, b, c];
-  let filteredEmptyTiles = emptyTiles.filter(t => t !== null && !equationNumbers.includes(t));
-  while(filteredEmptyTiles.length < 4) {
-      const newTile = Math.floor(Math.random() * 9) + 1;
-      if (!equationNumbers.includes(newTile) && !filteredEmptyTiles.includes(newTile)) {
-        filteredEmptyTiles.push(newTile);
-      }
+  // --- 2. Create the puzzle by swapping two numbers ---
+  const scrambledBoard = JSON.parse(JSON.stringify(correctBoard));
+  const numberIndices = [0, 2, 4]; // Indices of the numbers a, b, c
+
+  // Pick two distinct random indices from the available number positions
+  let idx1 = numberIndices[Math.floor(Math.random() * numberIndices.length)];
+  let idx2 = numberIndices[Math.floor(Math.random() * numberIndices.length)];
+  while (idx1 === idx2) {
+    idx2 = numberIndices[Math.floor(Math.random() * numberIndices.length)];
   }
 
-  const allTiles = [...equationTiles, ...filteredEmptyTiles];
-  const shuffledBoardContent = shuffle(allTiles);
-
-  const initialBoard: Tile[] = shuffledBoardContent.map(value => ({
-      value,
-      isLocked: typeof value === 'string'
-  }));
-
-  // --- 3. Find where the numbers landed to create a swap ---
-  let numIndices: number[] = [];
-  initialBoard.forEach((tile, index) => {
-    if(typeof tile.value === 'number') {
-        numIndices.push(index);
-    }
-  });
-
-  // --- 4. Perform a swap to make the puzzle ---
-  const scrambledBoard = JSON.parse(JSON.stringify(initialBoard));
-  const [idx1, idx2] = shuffle(numIndices).slice(0, 2);
-
-  // Swap the values
+  // Swap the values at these indices to create the puzzle
   [scrambledBoard[idx1].value, scrambledBoard[idx2].value] = [scrambledBoard[idx2].value, scrambledBoard[idx1].value];
   
-  const correctSolutionBoard = initialBoard.map(t => t.value);
+  const correctSolutionValues = correctBoard.map(tile => tile.value);
 
   return {
     id: `math-lvl-${level}-${new Date().getTime()}`,
     board: scrambledBoard,
     gridSize,
     swappedIndices: [idx1, idx2].sort((a,b) => a - b) as [number, number],
-    correctSolution: correctSolutionBoard.map(v => (v === null ? 0 : (typeof v === 'string' ? -1 : v))), // Not used yet
+    correctSolution: correctSolutionValues.map(v => (v === null ? '' : String(v))),
   };
 };

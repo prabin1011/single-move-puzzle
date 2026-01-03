@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -23,20 +24,19 @@ export default function PuzzleBoard({
   const [board, setBoard] = useState(puzzle.board);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
   const { isSoundOn } = useSound();
-  const puzzleSize = 280; // Fixed size for math puzzle
-  const TILE_SIZE = puzzleSize / puzzle.gridSize;
-
+  
   const handleTileClick = (index: number) => {
-    if (isReadOnly || board[index].isLocked || selectedIndices.includes(index)) {
-        if(selectedIndices.includes(index)) {
-            setSelectedIndices(selectedIndices.filter(i => i !== index));
-            playSound('click', isSoundOn);
-        }
+    if (isReadOnly || board[index].isLocked) {
       return;
     }
 
-    playSound('click', isSoundOn);
-    setSelectedIndices([...selectedIndices, index]);
+    if(selectedIndices.includes(index)) {
+      setSelectedIndices(selectedIndices.filter(i => i !== index));
+      playSound('click', isSoundOn);
+    } else {
+      playSound('click', isSoundOn);
+      setSelectedIndices([...selectedIndices, index]);
+    }
   };
 
   useEffect(() => {
@@ -61,14 +61,16 @@ export default function PuzzleBoard({
     }
   }, [selectedIndices, puzzle, onSuccess, onFail, board, isSoundOn]);
 
+  useEffect(() => {
+    // Reset internal state if the puzzle changes (e.g., new level)
+    setBoard(puzzle.board);
+    setSelectedIndices([]);
+  }, [puzzle.id]);
+
+
   return (
     <div
-      className="grid gap-2 rounded-lg bg-muted/50 p-2 shadow-inner"
-      style={{
-        gridTemplateColumns: `repeat(${puzzle.gridSize}, 1fr)`,
-        width: `${puzzleSize}px`,
-        height: `${puzzleSize}px`,
-      }}
+      className="flex justify-center items-center gap-2 rounded-lg bg-muted/50 p-4 shadow-inner"
     >
       {board.map((tile, index) => {
         const isSelected = selectedIndices.includes(index);
@@ -77,16 +79,12 @@ export default function PuzzleBoard({
             key={index}
             onClick={() => handleTileClick(index)}
             className={cn(
-              'flex items-center justify-center rounded-md text-4xl font-bold font-headline select-none transition-all duration-300',
+              'flex items-center justify-center rounded-md w-16 h-20 text-4xl font-bold font-headline select-none transition-all duration-300',
               tile.isLocked ? 'bg-secondary text-secondary-foreground' : 'bg-card text-card-foreground shadow-sm border',
               !isReadOnly && !tile.isLocked && 'cursor-pointer',
               isSelected && 'z-10 scale-[1.08] tile-glow',
               isReadOnly && puzzle.swappedIndices.includes(index) && 'bg-success/20'
             )}
-            style={{
-              width: `${TILE_SIZE - 8}px`,
-              height: `${TILE_SIZE - 8}px`,
-            }}
           >
             {tile.value}
           </div>

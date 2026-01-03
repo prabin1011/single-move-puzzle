@@ -92,6 +92,8 @@ export default function PuzzleBoard({
           const isOperator = ['+', '-', '*', '/'].includes(tile.value as string);
           const isEquals = tile.value === '=';
           const isNumber = typeof tile.value === 'number';
+          const isBlank = tile.value === null;
+
 
           return (
             <div
@@ -104,6 +106,9 @@ export default function PuzzleBoard({
                 
                 // Styles for number tiles
                 isNumber && 'bg-card text-card-foreground shadow-sm border',
+                
+                // Styles for blank tiles
+                isBlank && 'bg-card/50 text-card-foreground shadow-inner border-2 border-dashed',
 
                 // Styles for operator/equals tiles
                 (isOperator || isEquals) && 'bg-secondary text-secondary-foreground text-3xl md:text-4xl',
@@ -117,7 +122,7 @@ export default function PuzzleBoard({
                 isReadOnly && 'cursor-default'
               )}
             >
-              {tile.value === '*' ? <X className="h-1/2 w-1/2" /> : tile.value}
+              {tile.value === '*' ? <X className="h-1/2 w-1/2" /> : (isBlank ? <span className="text-muted-foreground">_</span> : tile.value)}
             </div>
           );
         })}

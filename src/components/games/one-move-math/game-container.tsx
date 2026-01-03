@@ -103,8 +103,12 @@ export default function GameContainer() {
   const handleNextLevel = () => {
     playSound('ui', isSoundOn);
     setMistakeCount(0);
-    setLevel(prev => prev + 1);
-    setGameState('READY');
+    if (level >= 49) {
+      restartGame(); // Or a "You finished all levels" state
+    } else {
+      setLevel(prev => prev + 1);
+      setGameState('READY');
+    }
   };
   
   const handleTryAgain = () => {

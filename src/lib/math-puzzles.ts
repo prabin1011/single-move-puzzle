@@ -36,7 +36,7 @@ export function getMathPuzzleConfig(level: number): PuzzleConfig {
     // Levels 9-25: Order of Operations (PEMDAS/BODMAS)
     if (level < 25) return { type: 'equation', rangeA: [1, 9], rangeB: [2, 9], rangeC: [2, 5], description: "Think about the order of operations!" };
 
-    // Levels 26-50+: Algebraic thinking with "fill-in-the-blank"
+    // Levels 26-50: Algebraic thinking with "fill-in-the-blank"
     return { type: 'fill-blank', rangeA: [2, 12], rangeB: [2, 12], description: "Solve for the blank. A taste of algebra!" };
 }
 

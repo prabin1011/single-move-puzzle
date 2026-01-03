@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { cn } from '@/lib/utils';
-import type { MathPuzzle, TileValue } from '@/lib/math-puzzles';
+import type { MathPuzzle, Tile } from '@/lib/math-puzzles';
 import { playSound } from '@/lib/sounds';
 import { useSound } from '@/contexts/sound-context';
 import { X } from 'lucide-react'; // Using X for multiplication
@@ -21,7 +21,7 @@ export default function PuzzleBoard({
   onFail,
   isReadOnly = false,
 }: PuzzleBoardProps) {
-  const [board, setBoard] = useState(puzzle.board);
+  const [board, setBoard] = useState<Tile[]>(puzzle.board);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
   const [showIncorrect, setShowIncorrect] = useState(false);
   const { isSoundOn } = useSound();
@@ -41,14 +41,14 @@ export default function PuzzleBoard({
   
   const checkSolution = useCallback(() => {
       const sortedSelection = [...selectedIndices].sort((a,b) => a - b);
-      const sortedSwapped = [...puzzle.swappedIndices].sort((a,b) => a-b);
+      const sortedSwapped = [...puzzle.swappedIndices].sort((a,b) => a - b);
       
       if (sortedSelection[0] === sortedSwapped[0] && sortedSelection[1] === sortedSwapped[1]) {
         // Correct swap
         playSound('swap', isSoundOn);
         const newBoard = [...board];
         const [firstIndex, secondIndex] = selectedIndices;
-        [newBoard[firstIndex], newBoard[secondIndex]] = [newBoard[secondIndex], newBoard[firstIndex]];
+        [newBoard[firstIndex].value, newBoard[secondIndex].value] = [newBoard[secondIndex].value, newBoard[firstIndex].value];
         setBoard(newBoard);
         setSelectedIndices([]); 
         
@@ -62,7 +62,7 @@ export default function PuzzleBoard({
           setShowIncorrect(false);
         }, 800);
       }
-  }, [selectedIndices, puzzle, onSuccess, onFail, board, isSoundOn]);
+  }, [selectedIndices, puzzle.swappedIndices, onSuccess, onFail, board, isSoundOn]);
 
 
   useEffect(() => {
@@ -92,7 +92,7 @@ export default function PuzzleBoard({
           const isOperator = ['+', '-', '*', '/'].includes(tile.value as string);
           const isEquals = tile.value === '=';
           const isNumber = typeof tile.value === 'number';
-          const isBlank = tile.value === null;
+          const isBlank = tile.value === '_';
 
 
           return (
@@ -128,8 +128,8 @@ export default function PuzzleBoard({
         })}
       </div>
       <div className="h-6 text-center mt-2">
-          {!isReadOnly && !showIncorrect && selectedIndices.length === 0 && <p className="text-sm text-muted-foreground">Select the first number to swap.</p>}
-          {!isReadOnly && !showIncorrect && selectedIndices.length === 1 && <p className="text-sm text-muted-foreground">Select the second number to swap.</p>}
+          {!isReadOnly && !showIncorrect && selectedIndices.length === 0 && <p className="text-sm text-muted-foreground">Select the first tile to swap.</p>}
+          {!isReadOnly && !showIncorrect && selectedIndices.length === 1 && <p className="text-sm text-muted-foreground">Select the second tile to swap.</p>}
           {isReadOnly && !showIncorrect && <p className="text-sm text-muted-foreground">&nbsp;</p>}
        </div>
     </div>

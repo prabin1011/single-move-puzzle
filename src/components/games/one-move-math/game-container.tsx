@@ -13,7 +13,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import Link from 'next/link';
 import { generatePuzzle, getHint, type MathPuzzle, getMathPuzzleConfig } from '@/lib/math-puzzles';
@@ -40,8 +39,7 @@ export default function GameContainer() {
 
   const loadPuzzle = (currentLevel: number, retries: number) => {
     setIsLoading(true);
-    // Adding a small delay to allow for smooth transitions, feels less jarring
-    // Use a promise to handle async puzzle generation if it becomes async
+    // Puzzle generation is now instant from the template library
     const newPuzzle = generatePuzzle(currentLevel, retries);
     setPuzzle(newPuzzle);
     setIsLoading(false);
@@ -58,7 +56,7 @@ export default function GameContainer() {
     setLevel(initialLevel);
     setHighestLevel(initialHighest);
     loadPuzzle(initialLevel, retryCount);
-  }, []);
+  }, []); // Only runs on initial mount
 
   // Save progress whenever level changes
   useEffect(() => {
@@ -73,17 +71,16 @@ export default function GameContainer() {
   
   useEffect(() => {
     // This effect now correctly handles level changes and retries
-    if (!isLoading) { // Only load if not already loading
-        loadPuzzle(level, retryCount);
-    }
-  }, [level, retryCount]);
+    loadPuzzle(level, retryCount);
+  }, [level, retryCount]); // Reruns when level or retryCount changes
 
 
   const handleSuccess = () => {
     playSound('success', isSoundOn);
     setGameState('SOLVED_VISUALIZING');
     setTimeout(() => {
-        if (level >= 49) { // We have 50 levels (0-49)
+        // There are 50 levels, indexed 0-49
+        if (level >= 49) { 
             playSound('win', isSoundOn);
             setGameState('ALL_LEVELS_COMPLETE');
             localStorage.removeItem('mathCurrentLevel');
@@ -110,6 +107,7 @@ export default function GameContainer() {
   const handleNextLevel = () => {
     playSound('ui', isSoundOn);
     setMistakeCount(0);
+    setRetryCount(0); // Reset retries for the new level
     setLevel(prev => prev + 1);
     setGameState('READY');
   };
@@ -118,6 +116,7 @@ export default function GameContainer() {
     playSound('ui', isSoundOn);
     setMistakeCount(0);
     // Instead of just retrying, we now regenerate the puzzle for the same level
+    // by incrementing retryCount, which fetches a new variation.
     setRetryCount(prev => prev + 1);
     setGameState('PLAYING');
   };
@@ -148,14 +147,14 @@ export default function GameContainer() {
     );
   }
   
-  const hint = getHint(puzzle);
+  const hint = getHint(puzzle, level);
   const puzzleConfig = getMathPuzzleConfig(level);
 
   // This creates a renderable board from the correct solution for the "Game Over" state
   const solutionBoard = {
     ...puzzle,
-    board: puzzle.correctSolution.map((val, i) => {
-      const isLocked = typeof val === 'string' || val === null;
+    board: puzzle.correctSolution.map((val) => {
+      const isLocked = typeof val === 'string';
       return { value: val, isLocked: isLocked };
     })
   };
@@ -173,43 +172,41 @@ export default function GameContainer() {
       <CardHeader className="text-center min-h-[160px] flex flex-col justify-center relative transition-all duration-300">
         <div className={cn("transition-opacity duration-300 absolute inset-0 p-6 flex flex-col justify-center", gameState === 'READY' ? 'opacity-100' : 'opacity-0 invisible')}>
             <BrainCircuit className="h-12 w-12 mx-auto text-primary" />
-            <CardTitle className="text-3xl font-bold font-headline mt-2">Level {level + 1}</CardTitle>
+            <CardTitle className="text-3xl font-bold font-headline mt-2">Level {level + 1}: {puzzleConfig.description}</CardTitle>
             <CardDescription
                 className="
                 mt-2 text-base text-muted-foreground
                 "
             >
-                {puzzleConfig.description}
+                Press Start to begin the challenge.
             </CardDescription>
         </div>
         
         <div className={cn("transition-opacity duration-300 absolute inset-0 p-6 flex flex-col justify-center", (gameState === "PLAYING" || gameState === "FAILED") ? 'opacity-100' : 'opacity-0 invisible')}>
             <CardTitle className="text-2xl font-semibold font-headline">
-              Swap two numbers to solve the equation.
+              Swap two tiles to solve the equation.
             </CardTitle>
             <CardDescription className="text-muted-foreground">
               You have {MAX_MISTAKES - mistakeCount + 1} chance remaining.
             </CardDescription>
-            {level >= 3 && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="mx-auto mt-2">
-                    <Info className="mr-2 h-4 w-4" /> Hint
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle className="font-headline">Hint for Level {level + 1}</AlertDialogTitle>
-                    <AlertDialogDescription asChild>
-                       <div className="text-left text-base p-4 rounded-lg mt-2 bg-yellow-100/70 dark:bg-yellow-900/40 border border-yellow-200/70 dark:border-yellow-700/60">
-                         {hint}
-                       </div>
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogAction>Got it!</AlertDialogAction>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm" className="mx-auto mt-2">
+                  <Info className="mr-2 h-4 w-4" /> Hint
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="font-headline">Hint for Level {level + 1}</AlertDialogTitle>
+                  <AlertDialogDescription asChild>
+                      <div className="text-left text-base p-4 rounded-lg mt-2 bg-yellow-100/70 dark:bg-yellow-900/40 border border-yellow-200/70 dark:border-yellow-700/60">
+                        {hint}
+                      </div>
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogAction>Got it!</AlertDialogAction>
+              </AlertDialogContent>
+            </AlertDialog>
             {gameState === 'FAILED' && <p className="text-error animate-pulse pt-2">Not quite! That wasn't the correct swap.</p>}
         </div>
         
@@ -250,7 +247,7 @@ export default function GameContainer() {
 
 
       </CardHeader>
-      <CardContent className={cn("flex items-center justify-center min-h-[128px] transition-opacity duration-500 px-4 sm:px-6", (gameState === 'READY' || isLoading) ? 'opacity-0' : 'opacity-100')}>
+      <CardContent className={cn("flex items-center justify-center min-h-[128px] transition-opacity duration-500 px-2 sm:px-4", (gameState === 'READY' || isLoading) ? 'opacity-0' : 'opacity-100')}>
         { (gameState === 'PLAYING' || gameState === 'FAILED' || gameState === 'SOLVED_VISUALIZING') && (
             <PuzzleBoard
               key={puzzle.id}

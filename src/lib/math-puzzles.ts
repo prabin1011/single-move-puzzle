@@ -14,9 +14,10 @@ export interface MathPuzzle {
 }
 
 interface PuzzleConfig {
-    type: 'add' | 'subtract' | 'multiply';
+    type: 'add' | 'subtract' | 'multiply' | 'divide' | 'equation' | 'fill-blank';
     rangeA: [number, number];
     rangeB: [number, number];
+    rangeC?: [number, number];
     description: string;
 }
 
@@ -26,64 +27,155 @@ interface PuzzleConfig {
  * @returns {PuzzleConfig} The configuration for that level.
  */
 export function getMathPuzzleConfig(level: number): PuzzleConfig {
-    if (level < 2) return { type: 'add', rangeA: [1, 5], rangeB: [1, 5], description: "Let's warm up. A simple addition." };
-    if (level < 10) return { type: 'add', rangeA: [1, 9], rangeB: [1, 9], description: "More addition practice." };
-    if (level < 20) return { type: 'add', rangeA: [10, 20], rangeB: [10, 20], description: "Time for some double-digit addition." };
-    if (level < 35) return { type: 'subtract', rangeA: [10, 50], rangeB: [1, 20], description: "Now, let's try some subtraction." };
-    if (level < 50) return { type: 'multiply', rangeA: [2, 9], rangeB: [2, 9], description: "Can you solve this multiplication puzzle?" };
+    if (level < 5) return { type: 'add', rangeA: [1, 9], rangeB: [1, 9], description: "Let's warm up with some simple addition." };
+    if (level < 10) return { type: 'subtract', rangeA: [5, 15], rangeB: [1, 9], description: "Time to practice subtraction." };
+    if (level < 18) return { type: 'multiply', rangeA: [2, 9], rangeB: [2, 9], description: "Can you solve these multiplication puzzles?" };
+    if (level < 25) return { type: 'divide', rangeA: [10, 50], rangeB: [2, 9], description: "Now for some division. The answer will always be a whole number." };
+    if (level < 40) return { type: 'equation', rangeA: [1, 9], rangeB: [2, 5], rangeC: [2, 5], description: "Think about the order of operations! (e.g., 3 + 4 * 2)" };
     
-    // Default for levels 50+
-    return { type: 'multiply', rangeA: [5, 12], rangeB: [5, 12], description: "Getting tougher! Let's multiply." };
+    // Levels 41-50+
+    return { type: 'fill-blank', rangeA: [2, 9], rangeB: [2, 9], description: "Fill in the blank to solve the puzzle." };
 }
 
-const generateNumbers = (level: number): {a: number, b: number, c: number, op: '+' | '-' | '*'} => {
-    const config = getMathPuzzleConfig(level);
-    let a = 0, b = 0, c = 0;
+const getRandom = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-    const getRandom = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
+// Helper to convert a number or operator into an array of single-character strings
+const toChars = (value: number | string): string[] => String(value).split('');
+
+// Helper function to convert an array of characters to an array of Tiles
+const toTiles = (chars: string[], isLocked: boolean): Tile[] => {
+    return chars.map(char => ({
+        value: isNaN(Number(char)) ? (char as TileValue) : Number(char),
+        isLocked,
+    }));
+};
+
+const generateSimplePuzzle = (level: number): { equation: Tile[], solution: number } => {
+    const config = getMathPuzzleConfig(level);
+    let a=0, b=0, c=0;
+    let op: '+' | '-' | '*' | '/' = '+';
+    let equation: Tile[] = [];
 
     switch(config.type) {
         case 'subtract':
             a = getRandom(config.rangeA[0], config.rangeA[1]);
             b = getRandom(config.rangeB[0], Math.min(a - 1, config.rangeB[1])); // Ensure b is smaller than a
             c = a - b;
-            return { a, b, c, op: '-' };
+            op = '-';
+            break;
         case 'multiply':
             a = getRandom(config.rangeA[0], config.rangeA[1]);
             b = getRandom(config.rangeB[0], config.rangeB[1]);
             c = a * b;
-            return { a, b, c, op: '*' };
+            op = '*';
+            break;
+        case 'divide':
+            b = getRandom(config.rangeB[0], config.rangeB[1]);
+            c = getRandom(2, Math.floor(config.rangeA[1] / b));
+            a = b * c; // Ensure a is perfectly divisible by b
+            op = '/';
+            break;
         case 'add':
         default:
             a = getRandom(config.rangeA[0], config.rangeA[1]);
             b = getRandom(config.rangeB[0], config.rangeB[1]);
             c = a + b;
-            return { a, b, c, op: '+' };
+            op = '+';
+            break;
     }
+    
+    equation = [
+        ...toTiles(toChars(a), false),
+        ...toTiles([op], true),
+        ...toTiles(toChars(b), false),
+        ...toTiles(['='], true),
+        ...toTiles(toChars(c), false),
+    ];
+    return { equation, solution: c };
 }
 
-// Helper function to convert a number or operator into an array of Tiles
-const toTiles = (value: number | string, isLocked: boolean): Tile[] => {
-    return String(value).split('').map(char => ({
-        value: isNaN(Number(char)) ? (char as TileValue) : Number(char),
-        isLocked,
-    }));
-};
+const generateComplexPuzzle = (level: number): { equation: Tile[], solution: number } => {
+    const config = getMathPuzzleConfig(level);
+    const { rangeA, rangeB, rangeC } = config;
+
+    const a = getRandom(rangeA![0], rangeA![1]);
+    const b = getRandom(rangeB![0], rangeB![1]);
+    const c = getRandom(rangeC![0], rangeC![1]);
+    
+    const op1 = Math.random() > 0.5 ? '+' : '-';
+    const op2 = Math.random() > 0.5 ? '*' : '+';
+
+    const solution = op2 === '*' ? (op1 === '+' ? a + (b * c) : a - (b * c)) : (op1 === '+' ? a + b + c : a - b + c);
+
+    const equation = [
+        ...toTiles(toChars(a), false),
+        ...toTiles([op1], true),
+        ...toTiles(toChars(b), false),
+        ...toTiles([op2], true),
+        ...toTiles(toChars(c), false),
+        ...toTiles(['='], true),
+        ...toTiles(toChars(solution), false),
+    ];
+
+    return { equation, solution };
+}
+
+const generateFillBlankPuzzle = (level: number): { equation: Tile[], solution: number } => {
+    const config = getMathPuzzleConfig(level);
+    const { rangeA, rangeB } = config;
+    const op = Math.random() > 0.5 ? '*' : '+';
+    
+    const a = getRandom(rangeA[0], rangeA[1]);
+    const b = getRandom(rangeB[0], rangeB[1]);
+    const c = op === '*' ? a * b : a + b;
+
+    const parts = [
+        { value: a, locked: false, isAnswer: false },
+        { value: op, locked: true, isAnswer: false },
+        { value: b, locked: false, isAnswer: false },
+        { value: '=', locked: true, isAnswer: false },
+        { value: c, locked: false, isAnswer: false },
+    ];
+    
+    const blankIndex = Math.random() > 0.5 ? 0 : 2; // Make 'a' or 'b' the blank
+    parts[blankIndex].isAnswer = true;
+    const solution = parts[blankIndex].value as number;
+    
+    let equation: Tile[] = [];
+    parts.forEach((part, index) => {
+        if(index === blankIndex) {
+            equation.push({ value: null, isLocked: false }); // The blank tile
+        } else {
+            equation.push(...toTiles(toChars(part.value), part.locked));
+        }
+    });
+
+    return { equation, solution };
+}
 
 
 // Generates a simple puzzle based on level
 export const generatePuzzle = (level: number, retryCount: number = 0): MathPuzzle => {
-  const {a, b, c, op} = generateNumbers(level);
+    const config = getMathPuzzleConfig(level);
+    let finalCorrectBoard: Tile[] = [];
+    let solutionValue: number = 0;
 
-  // --- 1. Create the correct board as an array of Tiles ---
-  const finalCorrectBoard: Tile[] = [
-    ...toTiles(a, false),
-    ...toTiles(op, true),
-    ...toTiles(b, false),
-    ...toTiles('=', true),
-    ...toTiles(c, false),
-  ];
-
+    if (config.type === 'equation') {
+        const { equation, solution } = generateComplexPuzzle(level);
+        finalCorrectBoard = equation;
+        solutionValue = solution;
+    } else if (config.type === 'fill-blank') {
+        const { equation, solution } = generateFillBlankPuzzle(level);
+        // For fill-blank, we need to add the answer tile somewhere else on the board to be swapped in.
+        finalCorrectBoard = equation;
+        solutionValue = solution;
+        // Add the solution as a swappable tile at the end of the puzzle
+        finalCorrectBoard.push(...toTiles(toChars(solution), false));
+    } else {
+        const { equation, solution } = generateSimplePuzzle(level);
+        finalCorrectBoard = equation;
+        solutionValue = solution;
+    }
 
   // --- 2. Create the puzzle by swapping two number tiles ---
   const scrambledBoard: Tile[] = JSON.parse(JSON.stringify(finalCorrectBoard));
@@ -104,7 +196,7 @@ export const generatePuzzle = (level: number, retryCount: number = 0): MathPuzzl
   }
 
   // Swap the values at these indices to create the puzzle
-  [scrambledBoard[idx1].value, scrambledBoard[idx2].value] = [scrambledBoard[idx2].value, scrambledBoard[idx1].value];
+  [scrambledBoard[idx1], scrambledBoard[idx2]] = [scrambledBoard[idx2], scrambledBoard[idx1]];
   
   const correctSolutionValues = finalCorrectBoard.map(tile => tile.value);
 
@@ -129,5 +221,7 @@ export const getHint = (puzzle: MathPuzzle): string => {
 
     return hints[Math.floor(Math.random() * hints.length)];
 }
+
+    
 
     

@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth, useUser } from '@/firebase';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Landmark, Calculator } from 'lucide-react';
 import { levels } from '@/lib/levels';
 import type { Level } from '@/lib/levels';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -94,7 +94,7 @@ export default function Home() {
   }
 
   return (
-    <main className="flex h-screen flex-col items-center justify-center p-4 bg-background overflow-hidden">
+    <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-background overflow-hidden">
       <div className="absolute top-4 right-4 flex items-center gap-2">
         <SoundToggle />
         <ThemeToggle />
@@ -102,30 +102,51 @@ export default function Home() {
       <Card className="w-full max-w-md text-center border-border shadow-2xl bg-card">
         <CardHeader className="space-y-4">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary overflow-hidden">
-            <Image src="/logo.png" alt="Single Move Master Logo" width={64} height={64} />
+            <Image src="/logo.png" alt="One Move Puzzle Logo" width={64} height={64} />
           </div>
           <CardTitle className="text-3xl font-bold font-headline">One Move Puzzle</CardTitle>
           <CardDescription className="text-lg text-muted-foreground px-4">
-            A calm, educational puzzle game.
+            A collection of calm, educational puzzle games.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="text-left space-y-2 px-6">
-            <p className="flex items-start gap-3"><span className="mt-1 text-primary">✓</span><span>Solve a simple visual puzzle.</span></p>
-            <p className="flex items-start gap-3"><span className="mt-1 text-primary">✓</span><span>Discover famous landmarks.</span></p>
-            <p className="flex items-start gap-3"><span className="mt-1 text-primary">✓</span><span>Learn a few fun facts.</span></p>
-          </div>
-          <div className="flex flex-col space-y-3 px-6">
-            <Button size="lg" className="w-full font-headline" onClick={handleNewGame}>
-              New Game
-            </Button>
-            {showContinue && (
-              <Link href="/games/one-move-landmark" className="w-full">
-                <Button size="lg" variant="secondary" className="w-full font-headline" onClick={() => playSound("ui", isSoundOn)}>
-                  Continue (Level {highestLevel + 1})
+        <CardContent className="space-y-6 pt-6">
+          <div className="grid grid-cols-1 gap-4 px-6">
+
+            {/* Game 1: One Move Landmark */}
+            <Card className="p-4 flex flex-col sm:flex-row items-center gap-4">
+              <Landmark className="h-10 w-10 text-primary hidden sm:block" />
+              <div className="flex-grow text-center sm:text-left">
+                <h3 className="font-bold font-headline text-lg">Landmark Puzzle</h3>
+                <p className="text-sm text-muted-foreground">Guess the swapped tiles in famous landmark photos.</p>
+              </div>
+              <div className="flex flex-col space-y-2 w-full sm:w-auto">
+                <Button onClick={handleNewGame} className="w-full">New Game</Button>
+                {showContinue && (
+                  <Button asChild variant="secondary" className="w-full">
+                    <Link href="/games/one-move-landmark" onClick={() => playSound("ui", isSoundOn)}>
+                      Continue (Lvl {highestLevel + 1})
+                    </Link>
+                  </Button>
+                )}
+              </div>
+            </Card>
+
+            {/* Game 2: One Move Math */}
+            <Card className="p-4 flex flex-col sm:flex-row items-center gap-4 bg-secondary/50">
+              <Calculator className="h-10 w-10 text-primary hidden sm:block" />
+              <div className="flex-grow text-center sm:text-left">
+                <h3 className="font-bold font-headline text-lg">Math Puzzle</h3>
+                <p className="text-sm text-muted-foreground">Solve the math equation in just one move.</p>
+              </div>
+              <div className="flex flex-col space-y-2 w-full sm:w-auto">
+                <Button asChild>
+                  <Link href="/games/one-move-math" onClick={() => playSound("ui", isSoundOn)}>
+                    Play Now
+                  </Link>
                 </Button>
-              </Link>
-            )}
+              </div>
+            </Card>
+
           </div>
         </CardContent>
       </Card>

@@ -502,6 +502,16 @@ export default function GameContainer() {
             Skip Preview
           </Button>
         )}
+
+        {gameState === 'PLAYING' && (
+             <Button
+                asChild
+                variant="link"
+                className="text-muted-foreground"
+              >
+                <Link href="/">Back to Home</Link>
+              </Button>
+        )}
         
         {gameState === "FAILED" && (
            <div className="w-full text-center space-y-4">

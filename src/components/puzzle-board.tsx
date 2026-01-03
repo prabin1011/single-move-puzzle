@@ -139,7 +139,7 @@ export default function PuzzleBoard({
           );
         })}
       </div>
-       <div className="h-6 text-center">
+       <div className="h-6 text-center mt-2">
           {!isReadOnly && !showSolution && selectedIndices.length === 0 && <p className="text-sm text-muted-foreground">Select the first tile to swap.</p>}
           {!isReadOnly && !showSolution && selectedIndices.length === 1 && <p className="text-sm text-muted-foreground">Select the second tile to swap.</p>}
           {showSolution && <p className="text-sm text-yellow-400 animate-pulse">Showing correct swap...</p>}

@@ -70,6 +70,7 @@ export default function PuzzleBoard({
         (swappedIndices.includes(first) && swappedIndices.includes(second));
 
       if (isCorrectSwap) {
+        playSound("swap", isSoundOn);
         // Perform the final correct swap visually
         const newBoard = [...board];
         const [firstIndex, secondIndex] = selectedIndices;
@@ -86,7 +87,7 @@ export default function PuzzleBoard({
           onFail();
         }, 1500); 
       }
-  }, [selectedIndices, swappedIndices, onSuccess, onFail, board]);
+  }, [selectedIndices, swappedIndices, onSuccess, onFail, board, isSoundOn]);
 
   // Effect to handle the check logic
   useEffect(() => {

@@ -128,10 +128,11 @@ export default function GameContainer() {
   // Game timer logic
   useEffect(() => {
     if (gameState === 'PREVIEW' && time >= PREVIEW_TIME) {
+      playSound("preview_done", isSoundOn);
       stopTimer();
       setGameState('PLAYING');
     }
-  }, [time, gameState, stopTimer]);
+  }, [time, gameState, stopTimer, isSoundOn]);
 
   // Play a gentle chime whenever preview starts
   useEffect(() => {
@@ -183,7 +184,7 @@ export default function GameContainer() {
   };
 
   const resetForRetry = () => {
-    playSound("click", isSoundOn);
+    playSound("ui", isSoundOn);
     setMistakeCount(0); // Reset mistake count for the retry
     setRetryCount((prev) => prev + 1); // This will trigger puzzle regeneration via useMemo
     setGameState("PREVIEW"); // Go back to preview for another look
@@ -191,7 +192,7 @@ export default function GameContainer() {
   };
 
   const restartGame = () => {
-    playSound("click", isSoundOn);
+    playSound("ui", isSoundOn);
     // This is the new "Play Again" logic
     // 1. Increment game round for new images
     const currentRound = parseInt(localStorage.getItem('gameRound') || '0', 10);
@@ -214,7 +215,7 @@ export default function GameContainer() {
   }
 
   const nextLevel = () => {
-    playSound("click", isSoundOn);
+    playSound("ui", isSoundOn);
     const newIndex = (levelIndex + 1);
     setLevelIndex(newIndex);
     setGameState("READY");
@@ -224,13 +225,13 @@ export default function GameContainer() {
   };
   
   const handleStart = () => {
-    playSound("click", isSoundOn);
+    playSound("ui", isSoundOn);
     setGameState("PREVIEW");
     resetTimer();
   }
 
   const handleSkipPreview = () => {
-    playSound("click", isSoundOn);
+    playSound("ui", isSoundOn);
     setGameState("PLAYING");
   };
 
@@ -501,7 +502,7 @@ export default function GameContainer() {
               asChild
               variant="link"
               className="text-muted-foreground"
-              onClick={() => playSound("click", isSoundOn)}
+              onClick={() => playSound("ui", isSoundOn)}
             >
               <Link href="/">Back to Home</Link>
             </Button>
@@ -529,7 +530,7 @@ export default function GameContainer() {
                 asChild
                 variant="link"
                 className="text-muted-foreground"
-                onClick={() => playSound("click", isSoundOn)}
+                onClick={() => playSound("ui", isSoundOn)}
               >
                 <Link href="/">Back to Home</Link>
               </Button>
@@ -554,7 +555,7 @@ export default function GameContainer() {
               asChild
               variant="link"
               className="text-muted-foreground"
-              onClick={() => playSound("click", isSoundOn)}
+              onClick={() => playSound("ui", isSoundOn)}
             >
               <Link href="/">Back to Home</Link>
             </Button>
@@ -580,7 +581,7 @@ export default function GameContainer() {
               asChild
               variant="link"
               className="text-muted-foreground"
-              onClick={() => playSound("click", isSoundOn)}
+              onClick={() => playSound("ui", isSoundOn)}
             >
               <Link href="/">Back to Home</Link>
             </Button>

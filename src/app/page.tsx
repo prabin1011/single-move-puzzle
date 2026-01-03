@@ -46,6 +46,12 @@ export default function Home() {
   const { isSoundOn } = useSound();
 
   useEffect(() => {
+    if (isSoundOn) {
+      playSound("start", true);
+    }
+  }, [isSoundOn]);
+
+  useEffect(() => {
     const savedLevel = localStorage.getItem('highestLevel');
     if (savedLevel) {
       setHighestLevel(parseInt(savedLevel, 10));
@@ -61,7 +67,7 @@ export default function Home() {
   }, [isUserLoading, user, auth]);
 
   const handleNewGame = () => {
-    playSound("click", isSoundOn);
+    playSound("ui", isSoundOn);
     // Increment the game round for image variations
     const currentRound = parseInt(localStorage.getItem('gameRound') || '0', 10);
     localStorage.setItem('gameRound', (currentRound + 1).toString());
@@ -115,7 +121,7 @@ export default function Home() {
             </Button>
             {showContinue && (
               <Link href="/play" className="w-full">
-                <Button size="lg" variant="secondary" className="w-full font-headline" onClick={() => playSound("click", isSoundOn)}>
+                <Button size="lg" variant="secondary" className="w-full font-headline" onClick={() => playSound("ui", isSoundOn)}>
                   Continue (Level {highestLevel + 1})
                 </Button>
               </Link>

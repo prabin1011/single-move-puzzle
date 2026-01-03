@@ -12,7 +12,6 @@ interface PuzzleBoardProps {
   onSuccess: () => void;
   onFail: () => void;
   isReadOnly?: boolean;
-  showSolution?: boolean;
 }
 
 export default function PuzzleBoard({
@@ -20,14 +19,14 @@ export default function PuzzleBoard({
   onSuccess,
   onFail,
   isReadOnly = false,
-  showSolution = false,
 }: PuzzleBoardProps) {
   const [board, setBoard] = useState(puzzle.board);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
+  const [showIncorrect, setShowIncorrect] = useState(false);
   const { isSoundOn } = useSound();
   
   const handleTileClick = (index: number) => {
-    if (isReadOnly || board[index].isLocked || selectedIndices.length >= 2) {
+    if (isReadOnly || board[index].isLocked || selectedIndices.length >= 2 || showIncorrect) {
       return;
     }
 
@@ -50,14 +49,16 @@ export default function PuzzleBoard({
         const [firstIndex, secondIndex] = selectedIndices;
         [newBoard[firstIndex], newBoard[secondIndex]] = [newBoard[secondIndex], newBoard[firstIndex]];
         setBoard(newBoard);
-        setSelectedIndices([]); // Clear selection immediately to prevent re-triggering
-
+        setSelectedIndices([]); 
+        
         setTimeout(() => onSuccess(), 500);
       } else {
         // Incorrect swap
+        setShowIncorrect(true);
         setTimeout(() => {
           onFail();
-          setSelectedIndices([]); // Clear selection after failing
+          setSelectedIndices([]); 
+          setShowIncorrect(false);
         }, 800);
       }
   }, [selectedIndices, puzzle, onSuccess, onFail, board, isSoundOn]);
@@ -74,34 +75,42 @@ export default function PuzzleBoard({
     // Reset internal state if the puzzle changes (e.g., new level)
     setBoard(puzzle.board);
     setSelectedIndices([]);
+    setShowIncorrect(false);
   }, [puzzle.id]);
 
 
   return (
-    <div
-      className="flex justify-center items-center gap-1 sm:gap-2 rounded-lg bg-muted/50 p-2 sm:p-4 shadow-inner"
-    >
-      {board.map((tile, index) => {
-        const isSelected = selectedIndices.includes(index);
-        const shouldHighlight = showSolution && selectedIndices.includes(index);
+    <div className="flex flex-col items-center gap-4">
+      <div
+        className="flex justify-center items-center gap-1 sm:gap-2 rounded-lg bg-muted/50 p-2 sm:p-4 shadow-inner"
+      >
+        {board.map((tile, index) => {
+          const isSelected = selectedIndices.includes(index);
+          const shouldHighlight = showIncorrect && selectedIndices.includes(index);
 
-        return (
-          <div
-            key={index}
-            onClick={() => handleTileClick(index)}
-            className={cn(
-              'flex items-center justify-center rounded-lg w-14 h-20 sm:w-20 sm:h-24 text-4xl sm:text-5xl font-bold font-headline select-none transition-all duration-300 ease-in-out',
-              tile.isLocked ? 'bg-secondary text-secondary-foreground' : 'bg-card text-card-foreground shadow-sm border',
-              !isReadOnly && !tile.isLocked && 'cursor-pointer hover:scale-105 active:scale-100',
-              isSelected && 'z-10 scale-[1.08] tile-glow',
-              shouldHighlight && 'z-10 ring-4 ring-red-500 ring-offset-2 ring-offset-background animate-pulse',
-              isReadOnly && 'cursor-default'
-            )}
-          >
-            {tile.value}
-          </div>
-        );
-      })}
+          return (
+            <div
+              key={index}
+              onClick={() => handleTileClick(index)}
+              className={cn(
+                'flex items-center justify-center rounded-lg w-14 h-20 sm:w-20 sm:h-24 text-4xl sm:text-5xl font-bold font-headline select-none transition-all duration-300 ease-in-out',
+                tile.isLocked ? 'bg-secondary text-secondary-foreground' : 'bg-card text-card-foreground shadow-sm border',
+                !isReadOnly && !tile.isLocked && 'cursor-pointer hover:scale-105 active:scale-100',
+                isSelected && 'z-10 scale-[1.08] tile-glow',
+                shouldHighlight && 'z-10 ring-4 ring-red-500 ring-offset-2 ring-offset-background animate-pulse',
+                isReadOnly && !isSelected && 'cursor-default'
+              )}
+            >
+              {tile.value}
+            </div>
+          );
+        })}
+      </div>
+      <div className="h-6 text-center mt-2">
+          {!isReadOnly && !showIncorrect && selectedIndices.length === 0 && <p className="text-sm text-muted-foreground">Select the first number to swap.</p>}
+          {!isReadOnly && !showIncorrect && selectedIndices.length === 1 && <p className="text-sm text-muted-foreground">Select the second number to swap.</p>}
+          {isReadOnly && !showIncorrect && <p className="text-sm text-muted-foreground">&nbsp;</p>}
+       </div>
     </div>
   );
 }

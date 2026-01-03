@@ -16,9 +16,9 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import Link from 'next/link';
-import { generatePuzzle, getHint, type MathPuzzle } from '@/lib/math-puzzles';
+import { generatePuzzle, getHint, type MathPuzzle, getMathPuzzleConfig } from '@/lib/math-puzzles';
 import PuzzleBoard from './puzzle-board';
-import { Loader2, RefreshCw, CheckCircle, Info, Play, ArrowRight, PartyPopper } from 'lucide-react';
+import { Loader2, RefreshCw, CheckCircle, Info, Play, ArrowRight, PartyPopper, BrainCircuit } from 'lucide-react';
 import { useSound } from '@/contexts/sound-context';
 import { playSound } from '@/lib/sounds';
 import { cn } from '@/lib/utils';
@@ -72,7 +72,7 @@ export default function GameContainer() {
   }, [level, highestLevel, isLoading]);
   
   useEffect(() => {
-    if (level > 0 || retryCount > 0) { // Don't run on initial load
+    if (!isLoading && (level > 0 || retryCount > 0)) { // Don't run on initial load
         loadPuzzle(level, retryCount);
     }
   }, [level, retryCount]);
@@ -109,8 +109,9 @@ export default function GameContainer() {
   const handleTryAgain = () => {
     playSound('ui', isSoundOn);
     setMistakeCount(0);
-    setGameState('PLAYING');
-    setRetryCount(prev => prev + 1); // Trigger puzzle regeneration
+    // We don't change game state here, just the retry count
+    // which triggers a new puzzle generation while staying in 'PLAYING'
+    setRetryCount(prev => prev + 1);
   };
 
   const restartGame = () => {
@@ -139,6 +140,7 @@ export default function GameContainer() {
   }
   
   const hint = getHint(puzzle);
+  const puzzleConfig = getMathPuzzleConfig(level);
 
   return (
     <Card
@@ -150,21 +152,15 @@ export default function GameContainer() {
         "
     >
       <CardHeader className="text-center min-h-[160px] flex flex-col justify-center relative transition-all duration-300">
-        <div className={cn("transition-opacity duration-300", gameState === 'READY' ? 'opacity-100' : 'opacity-0 h-0 invisible')}>
-            <CardTitle className="text-3xl font-bold font-headline">One Move Math</CardTitle>
+        <div className={cn("transition-opacity duration-300 absolute inset-0 p-6 flex flex-col justify-center", gameState === 'READY' ? 'opacity-100' : 'opacity-0 invisible')}>
+            <BrainCircuit className="h-12 w-12 mx-auto text-primary" />
+            <CardTitle className="text-3xl font-bold font-headline mt-2">Level {level + 1}</CardTitle>
             <CardDescription
                 className="
-                mt-3 inline-flex items-center justify-center
-                rounded-full px-3 py-1
-                text-[11px] font-semibold uppercase tracking-wide
-                bg-blue-100 text-primary border border-blue-200
-                dark:bg-secondary/90 dark:border-transparent
+                mt-2 text-base text-muted-foreground
                 "
             >
-                Level {level + 1}
-            </CardDescription>
-            <CardDescription className="text-muted-foreground pt-3 px-4">
-                A calm math puzzle where every problem has a single, perfect move. Ready to solve it?
+                {puzzleConfig.description}
             </CardDescription>
         </div>
         
@@ -229,8 +225,7 @@ export default function GameContainer() {
               puzzle={puzzle}
               onSuccess={handleSuccess}
               onFail={handleFail}
-              isReadOnly={gameState !== 'PLAYING' && gameState !== 'FAILED'}
-              showSolution={gameState === 'FAILED'}
+              isReadOnly={gameState !== 'PLAYING'}
             />
         )}
          <AlertDialog open={gameState === 'SOLVED_COMPLETE'}>
@@ -262,9 +257,14 @@ export default function GameContainer() {
       </CardContent>
       <CardFooter className="flex flex-col items-center justify-center p-6 space-y-4 min-h-[110px]">
         {gameState === 'READY' && (
-             <Button onClick={handleStart} size="lg" className="w-full">
-                <Play className="mr-2" /> Start Puzzle
-            </Button>
+             <div className="w-full text-center space-y-4">
+                <Button onClick={handleStart} size="lg" className="w-full">
+                    <Play className="mr-2" /> Start Puzzle
+                </Button>
+                <Button asChild variant="link" className="text-muted-foreground" onClick={() => playSound("ui", isSoundOn)}>
+                    <Link href="/">Back to Main Menu</Link>
+                </Button>
+             </div>
         )}
 
         {(gameState === 'PLAYING' || gameState === 'SOLVED_VISUALIZING') && (
@@ -296,7 +296,7 @@ export default function GameContainer() {
           </div>
         )}
         
-        { (gameState === 'READY' || gameState === 'SOLVED_COMPLETE' ) && (
+        { (gameState === 'SOLVED_COMPLETE' ) && (
             <Button asChild variant="link" className="text-muted-foreground" onClick={() => playSound("ui", isSoundOn)}>
                 <Link href="/">Back to Main Menu</Link>
             </Button>

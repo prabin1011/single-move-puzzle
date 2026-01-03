@@ -26,12 +26,13 @@ interface PuzzleConfig {
  * @returns {PuzzleConfig} The configuration for that level.
  */
 export function getMathPuzzleConfig(level: number): PuzzleConfig {
-    if (level < 2) return { type: 'add', range: [1, 5], description: "Let's warm up with some simple addition." };
-    if (level < 10) return { type: 'add', range: [10, 50], description: "Time for some double-digit addition." };
-    if (level < 20) return { type: 'subtract', range: [5, 50], description: "Now, let's try some subtraction." };
-    if (level < 30) return { type: 'multiply', range: [2, 10], description: "Can you solve this multiplication puzzle?" };
+    if (level < 2) return { type: 'add', range: [1, 5], description: "Let's warm up. A simple addition." };
+    if (level < 10) return { type: 'add', range: [2, 9], description: "More addition practice." };
+    if (level < 20) return { type: 'add', range: [10, 50], description: "Time for some double-digit addition." };
+    if (level < 35) return { type: 'subtract', range: [5, 50], description: "Now, let's try some subtraction." };
+    if (level < 50) return { type: 'multiply', range: [2, 10], description: "Can you solve this multiplication puzzle?" };
     
-    // Default for higher levels
+    // Default for levels 50+
     return { type: 'multiply', range: [5, 12], description: "Getting tougher! Let's multiply." };
 }
 
@@ -50,7 +51,7 @@ const generateNumbers = (level: number): {a: number, b: number, c: number, op: '
             return { a, b, c, op: '-' };
         case 'multiply':
             a = getRandom(min, max);
-            b = getRandom(min, max);
+            b = getRandom(min, Math.min(max, 12)); // Keep multiplication reasonable
             c = a * b;
             return { a, b, c, op: '*' };
         case 'add':

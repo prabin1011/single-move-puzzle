@@ -1,18 +1,18 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { cn } from '@/lib/utils';
-import type { MathPuzzle, Tile } from '@/lib/math-puzzles';
+import type { MathPuzzle } from '@/lib/math-puzzles';
 import { playSound } from '@/lib/sounds';
 import { useSound } from '@/contexts/sound-context';
-import { Check } from 'lucide-react';
 
 interface PuzzleBoardProps {
   puzzle: MathPuzzle;
   onSuccess: () => void;
   onFail: () => void;
   isReadOnly?: boolean;
+  showSolution?: boolean;
 }
 
 export default function PuzzleBoard({
@@ -20,27 +20,26 @@ export default function PuzzleBoard({
   onSuccess,
   onFail,
   isReadOnly = false,
+  showSolution = false,
 }: PuzzleBoardProps) {
   const [board, setBoard] = useState(puzzle.board);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
   const { isSoundOn } = useSound();
   
   const handleTileClick = (index: number) => {
-    if (isReadOnly || board[index].isLocked) {
+    if (isReadOnly || board[index].isLocked || selectedIndices.length >= 2) {
       return;
     }
 
+    playSound('click', isSoundOn);
     if(selectedIndices.includes(index)) {
       setSelectedIndices(selectedIndices.filter(i => i !== index));
-      playSound('click', isSoundOn);
     } else {
-      playSound('click', isSoundOn);
       setSelectedIndices([...selectedIndices, index]);
     }
   };
-
-  useEffect(() => {
-    if (selectedIndices.length === 2) {
+  
+  const checkSolution = useCallback(() => {
       const sortedSelection = [...selectedIndices].sort((a,b) => a - b);
       const sortedSwapped = [...puzzle.swappedIndices].sort((a,b) => a-b);
       
@@ -55,11 +54,20 @@ export default function PuzzleBoard({
         setTimeout(() => onSuccess(), 500);
       } else {
         // Incorrect swap
-        onFail();
-        setSelectedIndices([]);
+        setTimeout(() => {
+          onFail();
+          setSelectedIndices([]); // Clear selection after failing
+        }, 800);
       }
-    }
   }, [selectedIndices, puzzle, onSuccess, onFail, board, isSoundOn]);
+
+
+  useEffect(() => {
+    if (selectedIndices.length === 2) {
+      const timer = setTimeout(checkSolution, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedIndices, checkSolution]);
 
   useEffect(() => {
     // Reset internal state if the puzzle changes (e.g., new level)
@@ -74,6 +82,8 @@ export default function PuzzleBoard({
     >
       {board.map((tile, index) => {
         const isSelected = selectedIndices.includes(index);
+        const shouldHighlight = showSolution && selectedIndices.includes(index);
+
         return (
           <div
             key={index}
@@ -83,8 +93,8 @@ export default function PuzzleBoard({
               tile.isLocked ? 'bg-secondary text-secondary-foreground' : 'bg-card text-card-foreground shadow-sm border',
               !isReadOnly && !tile.isLocked && 'cursor-pointer hover:scale-105',
               isSelected && 'z-10 scale-[1.08] tile-glow',
-              isReadOnly && 'cursor-default',
-              isReadOnly && puzzle.correctSolution[index] === tile.value && 'tile-glow'
+              shouldHighlight && 'z-10 ring-4 ring-red-500 ring-offset-2 ring-offset-background animate-pulse',
+              isReadOnly && 'cursor-default'
             )}
           >
             {tile.value}
@@ -94,3 +104,5 @@ export default function PuzzleBoard({
     </div>
   );
 }
+
+    

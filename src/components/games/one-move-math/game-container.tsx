@@ -13,6 +13,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import Link from 'next/link';
 import { generatePuzzle, getHint, type MathPuzzle, getMathPuzzleConfig } from '@/lib/math-puzzles';
@@ -40,11 +41,10 @@ export default function GameContainer() {
   const loadPuzzle = (currentLevel: number, retries: number) => {
     setIsLoading(true);
     // Adding a small delay to allow for smooth transitions, feels less jarring
-    setTimeout(() => {
-        const newPuzzle = generatePuzzle(currentLevel, retries);
-        setPuzzle(newPuzzle);
-        setIsLoading(false);
-    }, 200);
+    // Use a promise to handle async puzzle generation if it becomes async
+    const newPuzzle = generatePuzzle(currentLevel, retries);
+    setPuzzle(newPuzzle);
+    setIsLoading(false);
   };
   
   // Load progress on mount
@@ -314,6 +314,32 @@ export default function GameContainer() {
             </Button>
         )}
         
+        {gameState === "FAILED" && (
+           <div className="w-full text-center space-y-4">
+            <Button
+              onClick={handleTryAgain}
+              size="lg"
+              className="
+                w-full
+                bg-gradient-to-r from-[#FF9F0A] to-[#FF375F]
+                text-white shadow-md shadow-rose-200
+                hover:brightness-110 hover:shadow-lg
+                active:scale-[0.98] transition
+              "
+            >
+              <RefreshCw className="mr-2 h-4 w-4" /> Try Again
+            </Button>
+            <Button
+              asChild
+              variant="link"
+              className="text-muted-foreground"
+              onClick={() => playSound("ui", isSoundOn)}
+            >
+              <Link href="/">Back to Home</Link>
+            </Button>
+            </div>
+        )}
+
         {(gameState === "GAME_OVER" || gameState === "ALL_LEVELS_COMPLETE") && (
           <div className="w-full text-center space-y-4">
             <Button onClick={restartGame} size="lg" className="w-full">

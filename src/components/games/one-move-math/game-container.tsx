@@ -13,6 +13,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import Link from 'next/link';
 import { generatePuzzle, getHint, type MathPuzzle, getMathPuzzleConfig } from '@/lib/math-puzzles';
@@ -154,7 +155,7 @@ export default function GameContainer() {
   const solutionBoard = {
     ...puzzle,
     board: puzzle.correctSolution.map((val) => {
-      const isLocked = typeof val === 'string';
+      const isLocked = typeof val === 'string' && ['=','+','-','*','/'].includes(val);
       return { value: val, isLocked: isLocked };
     })
   };
@@ -357,3 +358,5 @@ export default function GameContainer() {
     </Card>
   );
 }
+
+    

@@ -13,7 +13,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import Link from 'next/link';
 import { generatePuzzle, getHint, type MathPuzzle, getMathPuzzleConfig } from '@/lib/math-puzzles';
@@ -24,7 +23,7 @@ import { playSound } from '@/lib/sounds';
 import { cn } from '@/lib/utils';
 import type { TileValue } from '@/lib/math-puzzles';
 
-type GameState = 'READY' | 'PLAYING' | 'SOLVED_VISUALIZING' | 'SOLVED_COMPLETE' | 'FAILED' | 'GAME_OVER';
+type GameState = 'READY' | 'PLAYING' | 'SOLVED_VISUALIZING' | 'SOLVED_COMPLETE' | 'FAILED' | 'GAME_OVER' | 'ALL_LEVELS_COMPLETE';
 
 const MAX_MISTAKES = 0; // Game over on first mistake
 
@@ -73,7 +72,8 @@ export default function GameContainer() {
   }, [level, highestLevel, isLoading]);
   
   useEffect(() => {
-    if (!isLoading && (level > 0 || retryCount > 0)) { // Don't run on initial load
+    // This effect now correctly handles level changes and retries
+    if (!isLoading) { // Only load if not already loading
         loadPuzzle(level, retryCount);
     }
   }, [level, retryCount]);
@@ -83,8 +83,11 @@ export default function GameContainer() {
     playSound('success', isSoundOn);
     setGameState('SOLVED_VISUALIZING');
     setTimeout(() => {
-        if (level >= 49) {
+        if (level >= 49) { // We have 50 levels (0-49)
+            playSound('win', isSoundOn);
             setGameState('ALL_LEVELS_COMPLETE');
+            localStorage.removeItem('mathCurrentLevel');
+            localStorage.removeItem('mathHighestLevel');
         } else {
             setGameState('SOLVED_COMPLETE');
         }
@@ -107,17 +110,14 @@ export default function GameContainer() {
   const handleNextLevel = () => {
     playSound('ui', isSoundOn);
     setMistakeCount(0);
-    if (level >= 49) {
-      restartGame(); // Or a "You finished all levels" state
-    } else {
-      setLevel(prev => prev + 1);
-      setGameState('READY');
-    }
+    setLevel(prev => prev + 1);
+    setGameState('READY');
   };
   
   const handleTryAgain = () => {
     playSound('ui', isSoundOn);
     setMistakeCount(0);
+    // Instead of just retrying, we now regenerate the puzzle for the same level
     setRetryCount(prev => prev + 1);
     setGameState('PLAYING');
   };
@@ -151,13 +151,15 @@ export default function GameContainer() {
   const hint = getHint(puzzle);
   const puzzleConfig = getMathPuzzleConfig(level);
 
+  // This creates a renderable board from the correct solution for the "Game Over" state
   const solutionBoard = {
     ...puzzle,
     board: puzzle.correctSolution.map((val, i) => {
-      const isLocked = typeof val === 'string';
+      const isLocked = typeof val === 'string' || val === null;
       return { value: val, isLocked: isLocked };
     })
   };
+
 
   return (
     <Card
@@ -230,7 +232,7 @@ export default function GameContainer() {
                 Game Over
               </CardTitle>
               <CardDescription className="text-muted-foreground px-4">
-                You reached level {level + 1}. Here's the solution.
+                Here is the correct solution.
               </CardDescription>
         </div>
         
@@ -248,7 +250,7 @@ export default function GameContainer() {
 
 
       </CardHeader>
-      <CardContent className={cn("flex items-center justify-center min-h-[128px] transition-opacity duration-500", (gameState === 'READY' || isLoading) ? 'opacity-0' : 'opacity-100')}>
+      <CardContent className={cn("flex items-center justify-center min-h-[128px] transition-opacity duration-500 px-4 sm:px-6", (gameState === 'READY' || isLoading) ? 'opacity-0' : 'opacity-100')}>
         { (gameState === 'PLAYING' || gameState === 'FAILED' || gameState === 'SOLVED_VISUALIZING') && (
             <PuzzleBoard
               key={puzzle.id}
@@ -306,24 +308,12 @@ export default function GameContainer() {
              </div>
         )}
 
-        {(gameState === 'PLAYING' || gameState === 'SOLVED_VISUALIZING') && (
+        {(gameState === 'PLAYING' || gameState === 'SOLVED_VISUALIZING' || gameState === 'FAILED') && (
             <Button asChild variant="link" className="text-muted-foreground" onClick={() => playSound("ui", isSoundOn)}>
                 <Link href="/">Back to Home</Link>
             </Button>
         )}
         
-        {gameState === 'FAILED' && (
-           <div className="w-full text-center space-y-4">
-            <Button onClick={handleTryAgain} size="lg" className="w-full">
-                <RefreshCw className="mr-2 h-4 w-4"/>
-                Try Again
-            </Button>
-            <Button asChild variant="link" className="text-muted-foreground" onClick={() => playSound("ui", isSoundOn)}>
-                <Link href="/">Back to Home</Link>
-            </Button>
-            </div>
-        )}
-
         {(gameState === "GAME_OVER" || gameState === "ALL_LEVELS_COMPLETE") && (
           <div className="w-full text-center space-y-4">
             <Button onClick={restartGame} size="lg" className="w-full">

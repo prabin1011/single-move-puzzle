@@ -1,5 +1,4 @@
 
-
 export type TileValue = number | '+' | '-' | '*' | '/' | '=' | null;
 
 export interface Tile {
@@ -16,7 +15,8 @@ export interface MathPuzzle {
 
 interface PuzzleConfig {
     type: 'add' | 'subtract' | 'multiply';
-    range: [number, number];
+    rangeA: [number, number];
+    rangeB: [number, number];
     description: string;
 }
 
@@ -26,73 +26,78 @@ interface PuzzleConfig {
  * @returns {PuzzleConfig} The configuration for that level.
  */
 export function getMathPuzzleConfig(level: number): PuzzleConfig {
-    if (level < 2) return { type: 'add', range: [1, 5], description: "Let's warm up. A simple addition." };
-    if (level < 10) return { type: 'add', range: [2, 9], description: "More addition practice." };
-    if (level < 20) return { type: 'add', range: [10, 50], description: "Time for some double-digit addition." };
-    if (level < 35) return { type: 'subtract', range: [5, 50], description: "Now, let's try some subtraction." };
-    if (level < 50) return { type: 'multiply', range: [2, 10], description: "Can you solve this multiplication puzzle?" };
+    if (level < 2) return { type: 'add', rangeA: [1, 5], rangeB: [1, 5], description: "Let's warm up. A simple addition." };
+    if (level < 10) return { type: 'add', rangeA: [1, 9], rangeB: [1, 9], description: "More addition practice." };
+    if (level < 20) return { type: 'add', rangeA: [10, 20], rangeB: [10, 20], description: "Time for some double-digit addition." };
+    if (level < 35) return { type: 'subtract', rangeA: [10, 50], rangeB: [1, 20], description: "Now, let's try some subtraction." };
+    if (level < 50) return { type: 'multiply', rangeA: [2, 9], rangeB: [2, 9], description: "Can you solve this multiplication puzzle?" };
     
     // Default for levels 50+
-    return { type: 'multiply', range: [5, 12], description: "Getting tougher! Let's multiply." };
+    return { type: 'multiply', rangeA: [5, 12], rangeB: [5, 12], description: "Getting tougher! Let's multiply." };
 }
 
 const generateNumbers = (level: number): {a: number, b: number, c: number, op: '+' | '-' | '*'} => {
     const config = getMathPuzzleConfig(level);
     let a = 0, b = 0, c = 0;
-    const [min, max] = config.range;
 
     const getRandom = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
 
     switch(config.type) {
         case 'subtract':
-            a = getRandom(min + 1, max);
-            b = getRandom(min, a - 1);
+            a = getRandom(config.rangeA[0], config.rangeA[1]);
+            b = getRandom(config.rangeB[0], Math.min(a - 1, config.rangeB[1])); // Ensure b is smaller than a
             c = a - b;
             return { a, b, c, op: '-' };
         case 'multiply':
-            a = getRandom(min, max);
-            b = getRandom(min, Math.min(max, 12)); // Keep multiplication reasonable
+            a = getRandom(config.rangeA[0], config.rangeA[1]);
+            b = getRandom(config.rangeB[0], config.rangeB[1]);
             c = a * b;
             return { a, b, c, op: '*' };
         case 'add':
         default:
-            a = getRandom(min, max);
-            b = getRandom(min, max);
+            a = getRandom(config.rangeA[0], config.rangeA[1]);
+            b = getRandom(config.rangeB[0], config.rangeB[1]);
             c = a + b;
             return { a, b, c, op: '+' };
     }
 }
+
+// Helper function to convert a number or operator into an array of Tiles
+const toTiles = (value: number | string, isLocked: boolean): Tile[] => {
+    return String(value).split('').map(char => ({
+        value: isNaN(Number(char)) ? (char as TileValue) : Number(char),
+        isLocked,
+    }));
+};
 
 
 // Generates a simple puzzle based on level
 export const generatePuzzle = (level: number, retryCount: number = 0): MathPuzzle => {
   const {a, b, c, op} = generateNumbers(level);
 
-  // --- 1. Create the correct board ---
-  const finalCorrectBoard: Tile[] = [];
-  const strA = a.toString();
-  for (let i = 0; i < strA.length; i++) finalCorrectBoard.push({ value: parseInt(strA[i]), isLocked: false });
-  
-  finalCorrectBoard.push({ value: op, isLocked: true });
-  
-  const strB = b.toString();
-  for (let i = 0; i < strB.length; i++) finalCorrectBoard.push({ value: parseInt(strB[i]), isLocked: false });
-  
-  finalCorrectBoard.push({ value: '=', isLocked: true });
-  
-  const strC = c.toString();
-  for (let i = 0; i < strC.length; i++) finalCorrectBoard.push({ value: parseInt(strC[i]), isLocked: false });
+  // --- 1. Create the correct board as an array of Tiles ---
+  const finalCorrectBoard: Tile[] = [
+    ...toTiles(a, false),
+    ...toTiles(op, true),
+    ...toTiles(b, false),
+    ...toTiles('=', true),
+    ...toTiles(c, false),
+  ];
 
 
-  // --- 2. Create the puzzle by swapping two numbers ---
-  const scrambledBoard = JSON.parse(JSON.stringify(finalCorrectBoard));
-  const numberIndices = finalCorrectBoard.map((tile, i) => !tile.isLocked ? i : -1).filter(i => i !== -1);
+  // --- 2. Create the puzzle by swapping two number tiles ---
+  const scrambledBoard: Tile[] = JSON.parse(JSON.stringify(finalCorrectBoard));
+  
+  // Get indices of all tiles that are numbers (not locked)
+  const numberIndices = finalCorrectBoard
+    .map((tile, i) => !tile.isLocked ? i : -1)
+    .filter(i => i !== -1);
 
   // Pick two distinct random indices from the available number positions
   let idx1 = numberIndices[Math.floor(Math.random() * numberIndices.length)];
   let idx2 = numberIndices[Math.floor(Math.random() * numberIndices.length)];
   
-  // Ensure the swapped numbers are different to make a solvable puzzle
+  // Ensure the swapped numbers are different and indices are different to make a solvable puzzle
   while (idx1 === idx2 || scrambledBoard[idx1].value === scrambledBoard[idx2].value) {
     idx1 = numberIndices[Math.floor(Math.random() * numberIndices.length)];
     idx2 = numberIndices[Math.floor(Math.random() * numberIndices.length)];

@@ -2,9 +2,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AppLogo } from '@/components/icons';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth, useUser } from '@/firebase';
@@ -101,8 +101,8 @@ export default function Home() {
       </div>
       <Card className="w-full max-w-md text-center border-border shadow-2xl bg-card">
         <CardHeader className="space-y-4">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground">
-            <AppLogo className="h-8 w-8" />
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary overflow-hidden">
+            <Image src="/logo.png" alt="Single Move Master Logo" width={64} height={64} />
           </div>
           <CardTitle className="text-3xl font-bold font-headline">One Move Puzzle</CardTitle>
           <CardDescription className="text-lg text-muted-foreground px-4">

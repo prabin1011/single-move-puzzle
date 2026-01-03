@@ -359,8 +359,8 @@ export default function GameContainer() {
         
         {gameState === "GAME_OVER" && (
             <>
-              <div className="flex justify-center">
-                <Image src="/logo.png" alt="Game Over" width={64} height={64} />
+              <div className="flex justify-center w-16 h-16">
+                <Image src="/logo.png" alt="Game Over" width={64} height={64} className="object-contain"/>
               </div>
               <CardTitle className="text-3xl font-bold pt-4 font-headline">
                 Game Over

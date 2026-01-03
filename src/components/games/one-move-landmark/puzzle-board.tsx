@@ -126,10 +126,16 @@ export default function PuzzleBoard({
               key={boardIndex}
               onClick={() => handleTileClick(boardIndex)}
               className={cn(
-                'relative overflow-hidden rounded-sm transition-all duration-300',
+                // smooth transform-only animation (no layout thrash)
+                'relative overflow-hidden rounded-sm transition-all duration-300 ease-out',
                 !isReadOnly && !showSolution && 'cursor-pointer',
+              
+                // VERY visible green glow + slight scale
                 isSelected && 'z-10 scale-[1.06] tile-glow',
-                shouldHighlight && 'z-10 ring-4 ring-red-500 ring-offset-2 ring-offset-background animate-pulse'
+              
+                // wrong tiles when showing the solution
+                shouldHighlight &&
+                  'z-10 ring-4 ring-red-500 ring-offset-2 ring-offset-background animate-pulse'
               )}
               style={{
                 width: `${TILE_SIZE}px`,
@@ -145,7 +151,7 @@ export default function PuzzleBoard({
        <div className="h-6 text-center mt-2">
           {!isReadOnly && !showSolution && selectedIndices.length === 0 && <p className="text-sm text-muted-foreground">Select the first tile to swap.</p>}
           {!isReadOnly && !showSolution && selectedIndices.length === 1 && <p className="text-sm text-muted-foreground">Select the second tile to swap.</p>}
-          {showSolution && <p className="text-sm text-error animate-pulse">Showing correct swap...</p>}
+          {showSolution && <p className="text-sm text-error animate-pulse">That wasn't it. Showing correct swap...</p>}
           {isReadOnly && !showSolution && <p className="text-sm text-muted-foreground">&nbsp;</p>}
        </div>
     </div>

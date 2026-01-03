@@ -1,4 +1,4 @@
-import GameContainer from '@/components/game-container';
+import GameContainer from '@/components/games/one-move-landmark/game-container';
 
 export default function PlayPage() {
   return (

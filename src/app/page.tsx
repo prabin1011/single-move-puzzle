@@ -79,7 +79,7 @@ export default function Home() {
     // Create and save a new shuffled list for the new game
     const newShuffledLevels = shuffle(levels);
     localStorage.setItem('shuffledLevels', JSON.stringify(newShuffledLevels));
-    router.push('/play');
+    router.push('/games/one-move-landmark');
   };
   
   const showContinue = !isLoading && highestLevel > 0;
@@ -120,7 +120,7 @@ export default function Home() {
               New Game
             </Button>
             {showContinue && (
-              <Link href="/play" className="w-full">
+              <Link href="/games/one-move-landmark" className="w-full">
                 <Button size="lg" variant="secondary" className="w-full font-headline" onClick={() => playSound("ui", isSoundOn)}>
                   Continue (Level {highestLevel + 1})
                 </Button>

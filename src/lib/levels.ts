@@ -298,7 +298,7 @@ const allLevels: Level[] = [
     ],
     category: 'architecture',
     visualComplexity: 'high',
-    imageId: 'acropolis',
+    imageId: 'acropolis-of-athens',
     variations: 4,
   },
   {
@@ -628,19 +628,6 @@ const allLevels: Level[] = [
   },
   {
     id: 'lvl_048',
-    place: "St. Peter's Basilica",
-    country: 'Vatican City',
-    facts: [
-        ['It is the largest church in the world.', 'Designed by architects including Michelangelo and Bernini.', "St. Peter's tomb is said to be directly below the high altar of the Basilica."],
-        ["The basilica is a UNESCO World Heritage Site.", "The basilica is one of the most renowned works of Renaissance architecture.", "The basilica is a major pilgrimage site."]
-    ],
-    category: 'architecture',
-    visualComplexity: 'high',
-    imageId: 'st-peters-basilica',
-    variations: 4,
-  },
-  {
-    id: 'lvl_049',
     place: 'Hollywood Sign',
     country: 'USA',
     facts: [

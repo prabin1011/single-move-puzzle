@@ -26,7 +26,7 @@ export const PlaceHolderImages: PlaceholderImage[] = [
   { id: 'angkor-wat', imageHint: 'cambodia temple' },
   { id: 'london-eye', imageHint: 'london uk' },
   { id: 'hagia-sophia', imageHint: 'istanbul turkey' },
-  { id: 'acropolis', imageHint: 'athens greece' },
+  { id: 'acropolis-of-athens', imageHint: 'athens greece' },
   { id: 'golden-gate-bridge', imageHint: 'san-francisco usa' },
   { id: 'sagrada-familia', imageHint: 'barcelona spain' },
   { id: 'hallgrimskirkja', imageHint: 'reykjavik iceland' },
@@ -52,6 +52,5 @@ export const PlaceHolderImages: PlaceholderImage[] = [
   { id: 'buckingham-palace', imageHint: 'london uk' },
   { id: 'forbidden-city', imageHint: 'beijing china' },
   { id: 'brandenburg-gate', imageHint: 'berlin germany' },
-  { id: 'st-peters-basilica', imageHint: 'vatican city' },
   { id: 'hollywood-sign', imageHint: 'los-angeles usa' },
 ];

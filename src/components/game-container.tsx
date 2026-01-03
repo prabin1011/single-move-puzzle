@@ -219,7 +219,7 @@ export default function GameContainer() {
   const puzzleKey = `${currentLevelData.id}-${retryCount}`;
 
   return (
-    <Card className="w-full max-w-sm bg-card border shadow-2xl transition-all duration-500">
+    <Card className="w-full max-w-sm bg-card border shadow-2xl rounded-2xl transition-all duration-500">
       <CardHeader className="text-center min-h-[160px] flex flex-col justify-center relative">
         {gameState === "READY" && (
             <>
@@ -390,7 +390,7 @@ export default function GameContainer() {
             </AlertDialogHeader>
             <div
               className={cn(
-                "transition-opacity duration-500 w-full pt-4",
+                "transition-opacity duration-500 w-full pt-4 max-h-64 overflow-y-auto",
                 showFacts ? "opacity-100" : "opacity-0"
               )}
             >

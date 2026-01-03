@@ -1,18 +1,18 @@
 
 import type { Metadata } from 'next';
-import { Poppins, Inter } from 'next/font/google';
+import { Baloo_2, Inter } from 'next/font/google';
 import './globals.css';
 import ClientLayout from './client-layout';
 
-const poppins = Poppins({
+const bodyFont = Inter({
   subsets: ['latin'],
-  weight: ['600', '700'],
-  variable: '--font-poppins',
+  variable: '--font-sans',
 });
 
-const inter = Inter({ 
+const headlineFont = Baloo_2({
   subsets: ['latin'],
-  variable: '--font-inter',
+  weight: ['600', '700', '800'],
+  variable: '--font-headline',
 });
 
 export const metadata: Metadata = {
@@ -27,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${poppins.variable} ${inter.variable} font-sans antialiased`}>
+      <body className={`${bodyFont.variable} ${headlineFont.variable} font-sans antialiased`}>
         <ClientLayout>{children}</ClientLayout>
       </body>
     </html>

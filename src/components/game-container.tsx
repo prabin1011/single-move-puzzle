@@ -28,7 +28,6 @@ import { getLevelConfig } from "@/lib/game-config";
 import {
   CheckCircle,
   ArrowRight,
-  HeartCrack,
   Info,
   Play,
   Loader2,
@@ -360,8 +359,8 @@ export default function GameContainer() {
         
         {gameState === "GAME_OVER" && (
             <>
-              <div className="flex justify-center text-error">
-                <HeartCrack className="h-16 w-16" />
+              <div className="flex justify-center opacity-30">
+                <Image src="/logo.png" alt="Game Over" width={64} height={64} />
               </div>
               <CardTitle className="text-3xl font-bold pt-4 font-headline">
                 Game Over

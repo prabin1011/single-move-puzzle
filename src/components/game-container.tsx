@@ -219,18 +219,32 @@ export default function GameContainer() {
   const puzzleKey = `${currentLevelData.id}-${retryCount}`;
 
   return (
-    <Card className="w-full max-w-sm bg-card border shadow-2xl rounded-2xl transition-all duration-500">
+    <Card
+      className="
+        w-full max-w-sm border shadow-2xl rounded-2xl transition-all duration-500
+        bg-card
+        bg-[radial-gradient(circle_at_top,_#FFF9DB,_#FFE0F7_45%,_#E0F2FF_85%)]
+        dark:bg-[radial-gradient(circle_at_top,_#1F2933,_#111827_55%,_#020617_100%)]
+      "
+    >
       <CardHeader className="text-center min-h-[160px] flex flex-col justify-center relative">
         {gameState === "READY" && (
             <>
                 <CardTitle className="text-3xl font-bold font-headline">
-                {currentLevelData.place}
+                  {currentLevelData.place}
                 </CardTitle>
-                <CardDescription className="text-muted-foreground">
-                Level {levelIndex + 1} &bull; {currentGridSize}x{currentGridSize} Grid
+                <CardDescription
+                  className="
+                    mt-3 inline-flex items-center justify-center
+                    rounded-full px-3 py-1
+                    text-[11px] font-semibold uppercase tracking-wide
+                    bg-secondary/90 text-primary
+                  "
+                >
+                  Level {levelIndex + 1} • {currentGridSize}x{currentGridSize} Grid
                 </CardDescription>
-                <CardDescription className="text-muted-foreground pt-2">
-                 Click Start to memorize the image.
+                <CardDescription className="text-muted-foreground pt-3">
+                  Click Start to memorize the image.
                 </CardDescription>
             </>
         )}
@@ -267,8 +281,15 @@ export default function GameContainer() {
             <CardTitle className="text-3xl font-bold font-headline">
               Memorize!
             </CardTitle>
-            <CardDescription className="text-muted-foreground">
-              Level {levelIndex + 1} &bull; {currentGridSize}x{currentGridSize} Grid
+            <CardDescription
+              className="
+                mt-2 inline-flex items-center justify-center
+                rounded-full px-3 py-1
+                text-[11px] font-semibold uppercase tracking-wide
+                bg-secondary/90 text-primary
+              "
+            >
+              Level {levelIndex + 1} • {currentGridSize}x{currentGridSize} Grid
             </CardDescription>
             <CardDescription className="text-muted-foreground pt-2">
               The timer has started. Memorize the image.
@@ -294,7 +315,7 @@ export default function GameContainer() {
                   <AlertDialogHeader>
                     <AlertDialogTitle className="font-headline">Hint for {currentLevelData.place}</AlertDialogTitle>
                     <AlertDialogDescription asChild>
-                       <div className="text-left text-lg p-4 bg-secondary rounded-lg mt-2">
+                       <div className="text-left text-base p-4 rounded-lg mt-2 bg-yellow-100/70 dark:bg-yellow-900/40 border border-yellow-200/70 dark:border-yellow-700/60">
                          {hint}
                        </div>
                     </AlertDialogDescription>
@@ -407,8 +428,18 @@ export default function GameContainer() {
               </ul>
             </div>
             <AlertDialogFooter className="pt-4">
-                <Button onClick={nextLevel} size="lg" className="w-full">
-                Next Puzzle <ArrowRight className="ml-2" />
+                <Button
+                  onClick={nextLevel}
+                  size="lg"
+                  className="
+                    w-full
+                    bg-gradient-to-r from-[#0A84FF] via-[#2F6BFF] to-[#9B5CFF]
+                    text-white shadow-md shadow-blue-200
+                    hover:brightness-110 hover:shadow-lg
+                    active:scale-[0.98] transition
+                  "
+                >
+                  Next Puzzle <ArrowRight className="ml-2" />
                 </Button>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -433,8 +464,18 @@ export default function GameContainer() {
       <CardFooter className="flex flex-col items-center justify-center p-6 space-y-4 min-h-[110px] relative">
         {gameState === "READY" && (
           <div className="w-full text-center space-y-4">
-            <Button onClick={handleStart} size="lg" className="w-full">
-                <Play className="mr-2" /> Start Puzzle
+            <Button
+              onClick={handleStart}
+              size="lg"
+              className="
+                w-full
+                bg-gradient-to-r from-[#FFD447] via-[#FF8A3D] to-[#FF4EC7]
+                text-white shadow-lg shadow-orange-200
+                hover:brightness-110 hover:shadow-xl
+                active:scale-[0.98] transition
+              "
+            >
+              <Play className="mr-2" /> Start Puzzle
             </Button>
             <Button
               asChild
@@ -450,8 +491,13 @@ export default function GameContainer() {
           <Button
             onClick={() => setGameState("PLAYING")}
             size="lg"
-            className="w-full"
-            variant="secondary"
+            className="
+              w-full
+              bg-gradient-to-r from-[#34C759] to-[#0A84FF]
+              text-white shadow-md shadow-sky-200
+              hover:brightness-110 hover:shadow-lg
+              active:scale-[0.98] transition
+            "
           >
             Skip Preview
           </Button>
@@ -459,8 +505,18 @@ export default function GameContainer() {
         
         {gameState === "FAILED" && (
            <div className="w-full text-center space-y-4">
-            <Button onClick={resetForRetry} size="lg" className="w-full">
-                Try Again
+            <Button
+              onClick={resetForRetry}
+              size="lg"
+              className="
+                w-full
+                bg-gradient-to-r from-[#FF9F0A] to-[#FF375F]
+                text-white shadow-md shadow-rose-200
+                hover:brightness-110 hover:shadow-lg
+                active:scale-[0.98] transition
+              "
+            >
+              Try Again
             </Button>
             <Button
               asChild
@@ -474,8 +530,18 @@ export default function GameContainer() {
 
         {(gameState === "GAME_OVER" || gameState === "ALL_LEVELS_COMPLETE") && (
           <div className="w-full text-center space-y-4">
-            <Button onClick={restartGame} size="lg" className="w-full">
-                Play Again
+            <Button
+              onClick={restartGame}
+              size="lg"
+              className="
+                w-full
+                bg-gradient-to-r from-[#34C759] to-[#0A84FF]
+                text-white shadow-md shadow-emerald-200
+                hover:brightness-110 hover:shadow-lg
+                active:scale-[0.98] transition
+              "
+            >
+              Play Again
             </Button>
             <Button
               asChild

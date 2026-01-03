@@ -87,6 +87,10 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    background-image:
+    radial-gradient(circle at top left, rgba(255, 212, 71, 0.18), transparent 55%),
+    radial-gradient(circle at top right, rgba(10, 132, 255, 0.18), transparent 55%),
+    radial-gradient(circle at bottom, rgba(255, 71, 178, 0.16), transparent 55%);
   }
 }
 

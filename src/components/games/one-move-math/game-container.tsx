@@ -158,7 +158,7 @@ export default function GameContainer() {
     board: puzzle.correctSolution.map((val) => {
       // In the solution board, only the equals sign is locked.
       const isLocked = val === '=';
-      return { value: val, isLocked: isLocked };
+      return { value: val, isLocked: isLocked, isPartOfSwap: false };
     })
   };
 
@@ -360,3 +360,5 @@ export default function GameContainer() {
     </Card>
   );
 }
+
+    

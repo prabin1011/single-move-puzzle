@@ -48,7 +48,7 @@ export default function PuzzleBoard({
         playSound('swap', isSoundOn);
         const newBoard = [...board];
         const [firstIndex, secondIndex] = selectedIndices;
-        [newBoard[firstIndex].value, newBoard[secondIndex].value] = [newBoard[secondIndex].value, newBoard[firstIndex].value];
+        [newBoard[firstIndex], newBoard[secondIndex]] = [newBoard[secondIndex], newBoard[firstIndex]];
         setBoard(newBoard);
         setSelectedIndices([]); 
         
@@ -136,3 +136,5 @@ export default function PuzzleBoard({
     </div>
   );
 }
+
+    

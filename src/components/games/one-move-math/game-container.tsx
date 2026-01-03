@@ -21,6 +21,7 @@ import PuzzleBoard from './puzzle-board';
 import { Loader2, RefreshCw, CheckCircle, Info, Play, ArrowRight, PartyPopper } from 'lucide-react';
 import { useSound } from '@/contexts/sound-context';
 import { playSound } from '@/lib/sounds';
+import { cn } from '@/lib/utils';
 
 type GameState = 'READY' | 'PLAYING' | 'SOLVED_VISUALIZING' | 'SOLVED_COMPLETE' | 'FAILED' | 'GAME_OVER';
 
@@ -38,9 +39,12 @@ export default function GameContainer() {
 
   const loadPuzzle = (currentLevel: number, retries: number) => {
     setIsLoading(true);
-    const newPuzzle = generatePuzzle(currentLevel, retries);
-    setPuzzle(newPuzzle);
-    setIsLoading(false);
+    // Adding a small delay to allow for smooth transitions, feels less jarring
+    setTimeout(() => {
+        const newPuzzle = generatePuzzle(currentLevel, retries);
+        setPuzzle(newPuzzle);
+        setIsLoading(false);
+    }, 200);
   };
   
   // Load progress on mount
@@ -68,7 +72,9 @@ export default function GameContainer() {
   }, [level, highestLevel, isLoading]);
   
   useEffect(() => {
-    loadPuzzle(level, retryCount);
+    if (level > 0 || retryCount > 0) { // Don't run on initial load
+        loadPuzzle(level, retryCount);
+    }
   }, [level, retryCount]);
 
 
@@ -103,8 +109,8 @@ export default function GameContainer() {
   const handleTryAgain = () => {
     playSound('ui', isSoundOn);
     setMistakeCount(0);
-    setRetryCount(prev => prev + 1); // Trigger puzzle regeneration
     setGameState('PLAYING');
+    setRetryCount(prev => prev + 1); // Trigger puzzle regeneration
   };
 
   const restartGame = () => {
@@ -143,29 +149,26 @@ export default function GameContainer() {
             dark:bg-[radial-gradient(circle_at_top,_#1F2933,_#111827_55%,_#020617_100%)]
         "
     >
-      <CardHeader className="text-center min-h-[160px] flex flex-col justify-center relative">
-        {gameState === 'READY' && (
-            <>
-                <CardTitle className="text-3xl font-bold font-headline">One Move Math</CardTitle>
-                <CardDescription
-                  className="
-                    mt-3 inline-flex items-center justify-center
-                    rounded-full px-3 py-1
-                    text-[11px] font-semibold uppercase tracking-wide
-                    bg-blue-100 text-primary border border-blue-200
-                    dark:bg-secondary/90 dark:border-transparent
-                  "
-                >
-                  Level {level + 1}
-                </CardDescription>
-                <CardDescription className="text-muted-foreground pt-3">
-                  Find the one move that solves the equation.
-                </CardDescription>
-            </>
-        )}
+      <CardHeader className="text-center min-h-[160px] flex flex-col justify-center relative transition-all duration-300">
+        <div className={cn("transition-opacity duration-300", gameState === 'READY' ? 'opacity-100' : 'opacity-0 h-0 invisible')}>
+            <CardTitle className="text-3xl font-bold font-headline">One Move Math</CardTitle>
+            <CardDescription
+                className="
+                mt-3 inline-flex items-center justify-center
+                rounded-full px-3 py-1
+                text-[11px] font-semibold uppercase tracking-wide
+                bg-blue-100 text-primary border border-blue-200
+                dark:bg-secondary/90 dark:border-transparent
+                "
+            >
+                Level {level + 1}
+            </CardDescription>
+            <CardDescription className="text-muted-foreground pt-3 px-4">
+                A calm math puzzle where every problem has a single, perfect move. Ready to solve it?
+            </CardDescription>
+        </div>
         
-        {(gameState === "PLAYING" || gameState === "FAILED") && (
-          <>
+        <div className={cn("transition-opacity duration-300 absolute inset-0 p-6 flex flex-col justify-center", (gameState === "PLAYING" || gameState === "FAILED") ? 'opacity-100' : 'opacity-0 invisible')}>
             <CardTitle className="text-2xl font-semibold font-headline">
               Swap two numbers to solve the equation.
             </CardTitle>
@@ -193,11 +196,9 @@ export default function GameContainer() {
               </AlertDialog>
             )}
             {gameState === 'FAILED' && <p className="text-error animate-pulse pt-2">Not quite! That wasn't the correct swap.</p>}
-          </>
-        )}
+        </div>
         
-        {(gameState === "SOLVED_VISUALIZING" || gameState === "SOLVED_COMPLETE") && (
-          <>
+        <div className={cn("transition-opacity duration-300 absolute inset-0 p-6 flex flex-col justify-center", (gameState === "SOLVED_VISUALIZING" || gameState === "SOLVED_COMPLETE") ? 'opacity-100' : 'opacity-0 invisible')}>
             <div className="flex justify-center text-success">
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary overflow-hidden">
                 <Image src="/logo.png" alt="Puzzle Solved" width={64} height={64} />
@@ -206,12 +207,10 @@ export default function GameContainer() {
             <CardTitle className="text-3xl font-bold pt-4 font-headline">
               Puzzle Solved!
             </CardTitle>
-          </>
-        )}
+        </div>
 
-        {gameState === 'GAME_OVER' && (
-            <>
-              <div className="flex justify-center w-16 h-16">
+        <div className={cn("transition-opacity duration-300 absolute inset-0 p-6 flex flex-col justify-center", gameState === 'GAME_OVER' ? 'opacity-100' : 'opacity-0 invisible')}>
+            <div className="flex justify-center w-16 h-16 mx-auto">
                 <Image src="/logo.png" alt="Game Over" width={64} height={64} className="object-contain"/>
               </div>
               <CardTitle className="text-3xl font-bold pt-4 font-headline">
@@ -220,18 +219,17 @@ export default function GameContainer() {
               <CardDescription className="text-muted-foreground px-4">
                 You reached level {level + 1}. Keep practicing!
               </CardDescription>
-            </>
-        )}
+        </div>
 
       </CardHeader>
-      <CardContent className="flex items-center justify-center min-h-[128px]">
+      <CardContent className={cn("flex items-center justify-center min-h-[128px] transition-opacity duration-500", gameState === 'READY' ? 'opacity-0' : 'opacity-100')}>
         { (gameState === 'PLAYING' || gameState === 'FAILED' || gameState === 'SOLVED_VISUALIZING') && (
             <PuzzleBoard
               key={puzzle.id}
               puzzle={puzzle}
               onSuccess={handleSuccess}
               onFail={handleFail}
-              isReadOnly={gameState !== 'PLAYING'}
+              isReadOnly={gameState !== 'PLAYING' && gameState !== 'FAILED'}
               showSolution={gameState === 'FAILED'}
             />
         )}

@@ -64,11 +64,11 @@ export default function PuzzleBoard({
 
 
   useEffect(() => {
-    if (selectedIndices.length === 2) {
+    if (selectedIndices.length === 2 && !isReadOnly) {
       const timer = setTimeout(checkSolution, 300);
       return () => clearTimeout(timer);
     }
-  }, [selectedIndices, checkSolution]);
+  }, [selectedIndices, checkSolution, isReadOnly]);
 
   useEffect(() => {
     // Reset internal state if the puzzle changes (e.g., new level)
@@ -79,7 +79,7 @@ export default function PuzzleBoard({
 
   return (
     <div
-      className="flex justify-center items-center gap-3 rounded-lg bg-muted/50 p-4 shadow-inner"
+      className="flex justify-center items-center gap-1 sm:gap-2 rounded-lg bg-muted/50 p-2 sm:p-4 shadow-inner"
     >
       {board.map((tile, index) => {
         const isSelected = selectedIndices.includes(index);
@@ -90,9 +90,9 @@ export default function PuzzleBoard({
             key={index}
             onClick={() => handleTileClick(index)}
             className={cn(
-              'flex items-center justify-center rounded-lg w-20 h-24 text-5xl font-bold font-headline select-none transition-all duration-300',
+              'flex items-center justify-center rounded-lg w-14 h-20 sm:w-20 sm:h-24 text-4xl sm:text-5xl font-bold font-headline select-none transition-all duration-300 ease-in-out',
               tile.isLocked ? 'bg-secondary text-secondary-foreground' : 'bg-card text-card-foreground shadow-sm border',
-              !isReadOnly && !tile.isLocked && 'cursor-pointer hover:scale-105',
+              !isReadOnly && !tile.isLocked && 'cursor-pointer hover:scale-105 active:scale-100',
               isSelected && 'z-10 scale-[1.08] tile-glow',
               shouldHighlight && 'z-10 ring-4 ring-red-500 ring-offset-2 ring-offset-background animate-pulse',
               isReadOnly && 'cursor-default'

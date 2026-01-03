@@ -60,14 +60,19 @@ const toTiles = (equation: string): Tile[] => {
  */
 const createScrambledEquation = (correctEquation: string, swapPair: [string, string]): string => {
     const [val1, val2] = swapPair;
+
+    // Helper to escape special regex characters
+    function escapeRegExp(string: string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+    }
     
     // Use a placeholder to avoid issues where val1/val2 are substrings of each other.
     const tempPlaceholder = '___TEMP___';
     let scrambled = correctEquation;
 
     // This regex ensures we only replace whole "words"
-    const regex1 = new RegExp(`\\b${val1}\\b`);
-    const regex2 = new RegExp(`\\b${val2}\\b`);
+    const regex1 = new RegExp(`\\b${escapeRegExp(val1)}\\b`);
+    const regex2 = new RegExp(`\\b${escapeRegExp(val2)}\\b`);
 
     if (regex1.test(scrambled) && regex2.test(scrambled)) {
         scrambled = scrambled.replace(regex1, tempPlaceholder);
@@ -81,16 +86,40 @@ const createScrambledEquation = (correctEquation: string, swapPair: [string, str
     return scrambled;
 };
 
+const templateToCorrectEquation = (template: string, swap: [string, string]): string => {
+    const [val1, val2] = swap;
+    let correct = template;
+    
+    const tempPlaceholder = '___TEMP_CORRECT___';
+    const regex1 = new RegExp(`\\b${val1}\\b`);
+    const regex2 = new RegExp(`\\b${val2}\\b`);
+
+    if (regex1.test(correct) && regex2.test(correct)) {
+        correct = correct.replace(regex1, tempPlaceholder);
+        correct = correct.replace(regex2, val1);
+        correct = correct.replace(tempPlaceholder, val2);
+    } else {
+        console.error(`Could not form correct equation from template "${template}" with swap [${val1}, ${val2}]`);
+    }
+
+    return correct;
+};
+
 
 /**
  * Compares the initial (incorrect) board with the solved board to find the two swapped indices.
  * This is a robust way to identify the swappable tiles.
  */
-const findSwapIndices = (incorrectBoard: Tile[], correctBoard: Tile[]): [number, number] => {
+const findSwapIndices = (equation: string, swap: [string, string]): [number, number] => {
+    
+    // Let's generate the correct and incorrect boards, and find the two differing tiles.
+    const correctEq = templateToCorrectEquation(equation, swap);
+    const correctTiles = toTiles(correctEq).map(t => t.value);
+    const incorrectTiles = toTiles(equation).map(t => t.value);
+    
     const diffIndices: number[] = [];
-    for (let i = 0; i < incorrectBoard.length; i++) {
-        // This should always work as long as the boards have the same length
-        if (i >= correctBoard.length || incorrectBoard[i].value !== correctBoard[i].value) {
+    for (let i = 0; i < incorrectTiles.length; i++) {
+        if (i >= correctTiles.length || incorrectTiles[i] !== correctTiles[i]) {
             diffIndices.push(i);
         }
     }
@@ -98,14 +127,17 @@ const findSwapIndices = (incorrectBoard: Tile[], correctBoard: Tile[]): [number,
     if (diffIndices.length === 2) {
         return [diffIndices[0], diffIndices[1]];
     }
-
+    
     // This case should not be reached with well-formed puzzle templates.
     // It's a safeguard against crashes.
     console.error("Could not find exactly two differing indices. Check puzzle template.", {
-        incorrect: incorrectBoard.map(t => t.value),
-        correct: correctBoard.map(t => t.value)
+        incorrect: incorrectTiles,
+        correct: correctTiles,
+        equation,
+        swap,
     });
     // Return a default, non-crashing value.
+    const incorrectBoard = toTiles(equation);
     const unlocked = incorrectBoard.map((t, i) => !t.isLocked ? i : -1).filter(i => i !== -1);
     return [unlocked[0] ?? 0, unlocked[1] ?? 1];
 };
@@ -624,7 +656,7 @@ export const mathLevels: MathLevel[] = [
 ];
 
 export function getMathPuzzleConfig(level: number): MathLevel {
-    const adjustedLevel = Math.max(0, Math.min(level, mathLevels[mathLevels.length - 1].level - 1));
+    const adjustedLevel = Math.max(0, Math.min(level, mathLevels.length - 1));
     const config = mathLevels.find(l => l.level === adjustedLevel + 1);
     if (!config) {
         // Fallback to the last level if something goes wrong
@@ -640,14 +672,14 @@ export function generatePuzzle(level: number, retryCount: number): MathPuzzle {
     const variationIndex = (level + retryCount) % config.variations.length;
     const puzzleTemplate = config.variations[variationIndex];
     
-    const { equation: correctEquation, swap: swapPair } = puzzleTemplate;
+    const { equation, swap } = puzzleTemplate;
 
-    const scrambledEquation = createScrambledEquation(correctEquation, swapPair);
+    const scrambledEquation = createScrambledEquation(equation, swap);
 
-    const correctTiles = toTiles(correctEquation);
+    const correctTiles = toTiles(templateToCorrectEquation(equation, swap));
     const scrambledTiles = toTiles(scrambledEquation);
 
-    const swappedIndices = findSwapIndices(scrambledTiles, correctTiles);
+    const swappedIndices = findSwapIndices(scrambledEquation, swap);
 
     return {
         id: `${config.level}-${variationIndex}`,

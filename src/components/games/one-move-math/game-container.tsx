@@ -109,9 +109,8 @@ export default function GameContainer() {
   const handleTryAgain = () => {
     playSound('ui', isSoundOn);
     setMistakeCount(0);
-    // We don't change game state here, just the retry count
-    // which triggers a new puzzle generation while staying in 'PLAYING'
     setRetryCount(prev => prev + 1);
+    setGameState('PLAYING');
   };
 
   const restartGame = () => {
@@ -195,7 +194,7 @@ export default function GameContainer() {
         </div>
         
         <div className={cn("transition-opacity duration-300 absolute inset-0 p-6 flex flex-col justify-center", (gameState === "SOLVED_VISUALIZING" || gameState === "SOLVED_COMPLETE") ? 'opacity-100' : 'opacity-0 invisible')}>
-            <div className="flex justify-center text-success">
+            <div className="flex justify-center">
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary overflow-hidden">
                 <Image src="/logo.png" alt="Puzzle Solved" width={64} height={64} />
               </div>
@@ -213,12 +212,12 @@ export default function GameContainer() {
                 Game Over
               </CardTitle>
               <CardDescription className="text-muted-foreground px-4">
-                You reached level {level + 1}. Keep practicing!
+                You reached level {level + 1}. Here's the solution.
               </CardDescription>
         </div>
 
       </CardHeader>
-      <CardContent className={cn("flex items-center justify-center min-h-[128px] transition-opacity duration-500", gameState === 'READY' ? 'opacity-0' : 'opacity-100')}>
+      <CardContent className={cn("flex items-center justify-center min-h-[128px] transition-opacity duration-500", (gameState === 'READY' || isLoading) ? 'opacity-0' : 'opacity-100')}>
         { (gameState === 'PLAYING' || gameState === 'FAILED' || gameState === 'SOLVED_VISUALIZING') && (
             <PuzzleBoard
               key={puzzle.id}
@@ -228,10 +227,19 @@ export default function GameContainer() {
               isReadOnly={gameState !== 'PLAYING'}
             />
         )}
+        {gameState === 'GAME_OVER' && (
+            <PuzzleBoard
+                key={`${puzzle.id}-solution`}
+                puzzle={{ ...puzzle, board: puzzle.correctSolution.map((val, i) => ({ value: isNaN(Number(val)) ? val as TileValue : Number(val), isLocked: puzzle.board[i].isLocked })) }}
+                onSuccess={() => {}}
+                onFail={() => {}}
+                isReadOnly={true}
+            />
+        )}
          <AlertDialog open={gameState === 'SOLVED_COMPLETE'}>
           <AlertDialogContent>
             <AlertDialogHeader className="items-center text-center">
-              <div className="flex justify-center text-success pb-4">
+              <div className="flex justify-center pb-4">
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary overflow-hidden">
                     <Image src="/logo.png" alt="Puzzle Solved" width={64} height={64} />
                 </div>

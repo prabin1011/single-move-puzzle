@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { cn } from '@/lib/utils';
-import type { MathPuzzle } from '@/lib/math-puzzles';
+import type { MathPuzzle, TileValue } from '@/lib/math-puzzles';
 import { playSound } from '@/lib/sounds';
 import { useSound } from '@/contexts/sound-context';
 import { X } from 'lucide-react'; // Using X for multiplication
@@ -73,7 +73,7 @@ export default function PuzzleBoard({
   }, [selectedIndices, checkSolution, isReadOnly]);
 
   useEffect(() => {
-    // Reset internal state if the puzzle changes (e.g., new level)
+    // Reset internal state if the puzzle changes (e.g., new level or retry)
     setBoard(puzzle.board);
     setSelectedIndices([]);
     setShowIncorrect(false);
@@ -114,7 +114,7 @@ export default function PuzzleBoard({
                 // State-based styles
                 isSelected && 'z-10 scale-[1.08] tile-glow',
                 shouldHighlight && 'z-10 ring-4 ring-red-500 ring-offset-2 ring-offset-background animate-pulse',
-                isReadOnly && !isSelected && 'cursor-default'
+                isReadOnly && 'cursor-default'
               )}
             >
               {tile.value === '*' ? <X className="h-1/2 w-1/2" /> : tile.value}

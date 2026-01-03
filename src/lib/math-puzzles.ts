@@ -11,7 +11,7 @@ export interface MathPuzzle {
   id: string;
   board: Tile[];
   swappedIndices: [number, number];
-  correctSolution: (number | string)[]; 
+  correctSolution: (TileValue)[]; 
 }
 
 interface PuzzleConfig {
@@ -106,7 +106,7 @@ export const generatePuzzle = (level: number, retryCount: number = 0): MathPuzzl
     id: `math-lvl-${level}-${retryCount}-${new Date().getTime()}`,
     board: scrambledBoard,
     swappedIndices: [idx1, idx2].sort((a,b) => a - b) as [number, number],
-    correctSolution: correctSolutionValues.map(v => (v === null ? '' : String(v))),
+    correctSolution: correctSolutionValues,
   };
 };
 

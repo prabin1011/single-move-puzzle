@@ -123,7 +123,7 @@ export default function PuzzleBoard({
               key={boardIndex}
               onClick={() => handleTileClick(boardIndex)}
               className={cn(
-                'relative overflow-hidden rounded-sm transition-transform duration-300 ease-in-out',
+                'relative overflow-hidden rounded-sm transition-all duration-300 ease-in-out',
                 !isReadOnly && !showSolution && 'cursor-pointer',
                 isSelected && 'z-10 scale-[1.06] tile-glow',
                 shouldHighlight && 'z-10 ring-4 ring-red-500 ring-offset-2 ring-offset-background animate-pulse'

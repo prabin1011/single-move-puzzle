@@ -56,7 +56,8 @@ export default function GameContainer() {
 
     setLevel(initialLevel);
     setHighestLevel(initialHighest);
-    loadPuzzle(initialLevel, retryCount);
+    // Use a fresh retry count on initial load.
+    loadPuzzle(initialLevel, 0); 
   }, []); // Only runs on initial mount
 
   // Save progress whenever level changes
@@ -155,7 +156,8 @@ export default function GameContainer() {
   const solutionBoard = {
     ...puzzle,
     board: puzzle.correctSolution.map((val) => {
-      const isLocked = typeof val === 'string' && ['=','+','-','*','/'].includes(val);
+      // In the solution board, only the equals sign is locked.
+      const isLocked = val === '=';
       return { value: val, isLocked: isLocked };
     })
   };
@@ -358,5 +360,3 @@ export default function GameContainer() {
     </Card>
   );
 }
-
-    

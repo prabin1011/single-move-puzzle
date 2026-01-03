@@ -91,7 +91,7 @@ export default function PuzzleBoard({
 
           const isOperator = ['+', '-', '*', '/'].includes(tile.value as string);
           const isEquals = tile.value === '=';
-          const isNumber = typeof tile.value === 'number';
+          const isNumber = typeof tile.value === 'number' || (typeof tile.value === 'string' && !isNaN(parseInt(tile.value)));
           const isBlank = tile.value === '_';
 
 
@@ -119,10 +119,11 @@ export default function PuzzleBoard({
                 // State-based styles
                 isSelected && 'z-10 scale-[1.08] tile-glow',
                 shouldHighlight && 'z-10 ring-4 ring-red-500 ring-offset-2 ring-offset-background animate-pulse',
-                isReadOnly && 'cursor-default'
+                isReadOnly && 'cursor-default',
+                tile.isLocked && 'cursor-not-allowed'
               )}
             >
-              {tile.value === '*' ? <X className="h-1/2 w-1/2" /> : (isBlank ? <span className="text-muted-foreground">_</span> : tile.value)}
+              {tile.value === '*' ? <X className="h-1/2 w-1/2" /> : (isBlank ? <span className="text-muted-foreground">_</span> : String(tile.value))}
             </div>
           );
         })}

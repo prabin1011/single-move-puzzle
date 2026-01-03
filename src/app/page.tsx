@@ -14,6 +14,8 @@ import { levels } from '@/lib/levels';
 import type { Level } from '@/lib/levels';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { SoundToggle } from '@/components/sound-toggle';
+import { useSound } from "@/contexts/sound-context";
+import { playSound } from "@/lib/sounds";
 
 function shuffle<T>(array: T[]): T[] {
   let currentIndex = array.length,
@@ -41,6 +43,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
+  const { isSoundOn } = useSound();
 
   useEffect(() => {
     const savedLevel = localStorage.getItem('highestLevel');
@@ -58,6 +61,7 @@ export default function Home() {
   }, [isUserLoading, user, auth]);
 
   const handleNewGame = () => {
+    playSound("click", isSoundOn);
     // Increment the game round for image variations
     const currentRound = parseInt(localStorage.getItem('gameRound') || '0', 10);
     localStorage.setItem('gameRound', (currentRound + 1).toString());
@@ -111,7 +115,7 @@ export default function Home() {
             </Button>
             {showContinue && (
               <Link href="/play" className="w-full">
-                <Button size="lg" variant="secondary" className="w-full font-headline">
+                <Button size="lg" variant="secondary" className="w-full font-headline" onClick={() => playSound("click", isSoundOn)}>
                   Continue (Level {highestLevel + 1})
                 </Button>
               </Link>

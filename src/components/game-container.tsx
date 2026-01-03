@@ -133,6 +133,13 @@ export default function GameContainer() {
     }
   }, [time, gameState, stopTimer]);
 
+  // Play a gentle chime whenever preview starts
+  useEffect(() => {
+    if (gameState === "PREVIEW") {
+      playSound("success", isSoundOn); // soft “preview started” chime
+    }
+  }, [gameState, isSoundOn]);
+
 
   if (isComponentLoading || !currentLevelData || !currentPuzzle) {
     return (
@@ -176,6 +183,7 @@ export default function GameContainer() {
   };
 
   const resetForRetry = () => {
+    playSound("click", isSoundOn);
     setMistakeCount(0); // Reset mistake count for the retry
     setRetryCount((prev) => prev + 1); // This will trigger puzzle regeneration via useMemo
     setGameState("PREVIEW"); // Go back to preview for another look
@@ -183,6 +191,7 @@ export default function GameContainer() {
   };
 
   const restartGame = () => {
+    playSound("click", isSoundOn);
     // This is the new "Play Again" logic
     // 1. Increment game round for new images
     const currentRound = parseInt(localStorage.getItem('gameRound') || '0', 10);
@@ -205,6 +214,7 @@ export default function GameContainer() {
   }
 
   const nextLevel = () => {
+    playSound("click", isSoundOn);
     const newIndex = (levelIndex + 1);
     setLevelIndex(newIndex);
     setGameState("READY");
@@ -214,9 +224,15 @@ export default function GameContainer() {
   };
   
   const handleStart = () => {
+    playSound("click", isSoundOn);
     setGameState("PREVIEW");
     resetTimer();
   }
+
+  const handleSkipPreview = () => {
+    playSound("click", isSoundOn);
+    setGameState("PLAYING");
+  };
 
   const puzzleKey = `${currentLevelData.id}-${retryCount}`;
 
@@ -485,6 +501,7 @@ export default function GameContainer() {
               asChild
               variant="link"
               className="text-muted-foreground"
+              onClick={() => playSound("click", isSoundOn)}
             >
               <Link href="/">Back to Home</Link>
             </Button>
@@ -493,7 +510,7 @@ export default function GameContainer() {
         
         {gameState === "PREVIEW" && (
           <Button
-            onClick={() => setGameState("PLAYING")}
+            onClick={handleSkipPreview}
             size="lg"
             className="
               w-full
@@ -512,6 +529,7 @@ export default function GameContainer() {
                 asChild
                 variant="link"
                 className="text-muted-foreground"
+                onClick={() => playSound("click", isSoundOn)}
               >
                 <Link href="/">Back to Home</Link>
               </Button>
@@ -536,6 +554,7 @@ export default function GameContainer() {
               asChild
               variant="link"
               className="text-muted-foreground"
+              onClick={() => playSound("click", isSoundOn)}
             >
               <Link href="/">Back to Home</Link>
             </Button>
@@ -561,6 +580,7 @@ export default function GameContainer() {
               asChild
               variant="link"
               className="text-muted-foreground"
+              onClick={() => playSound("click", isSoundOn)}
             >
               <Link href="/">Back to Home</Link>
             </Button>

@@ -33,6 +33,7 @@ const toTiles = (equation: string): Tile[] => {
         if (['+', '-', '*', '/', '=', '_'].includes(part)) {
             tiles.push({ value: part, isLocked: ['=', '+', '-', '*', '/'].includes(part) });
         } else {
+            // Handle multi-digit numbers by splitting them into individual character tiles
             for (const char of part) {
                 if (char === '_') {
                     tiles.push({ value: '_', isLocked: false });
@@ -46,98 +47,85 @@ const toTiles = (equation: string): Tile[] => {
 };
 
 const findSwapIndices = (board: Tile[], swapPair: [string, string], equation: string): [number, number] => {
-    const [val1Str, val2Str] = swapPair;
-    
-    // This logic attempts to find the two tiles on the board that, when swapped, create a valid equation.
+    const [val1, val2] = swapPair;
+
+    // Find the index of the first value that needs to be swapped out.
+    // This tile is PART of the original, incorrect equation string.
+    let idx1 = -1;
     for (let i = 0; i < board.length; i++) {
-        if (board[i].isLocked) continue;
-        for (let j = i + 1; j < board.length; j++) {
-            if (board[j].isLocked) continue;
-
-            const tempBoard = [...board];
-            [tempBoard[i], tempBoard[j]] = [tempBoard[j], tempBoard[i]];
-            
-            const equationParts: string[] = [];
-            let currentNumber = '';
-
-            for (const tile of tempBoard) {
-                if (typeof tile.value === 'number') {
-                    currentNumber += tile.value;
-                } else {
-                    if (currentNumber) {
-                        equationParts.push(currentNumber);
-                        currentNumber = '';
-                    }
-                    equationParts.push(tile.value as string);
-                }
-            }
-            if (currentNumber) {
-                equationParts.push(currentNumber);
-            }
-
-            const equationStr = equationParts.join(' ');
-            
-            try {
-                 const toEval = equationStr.replace(/=/g, '==').replace(/×/g, '*').replace(/÷/g, '/');
-                 const sides = toEval.split('==');
-                 if (sides.length !== 2) continue;
-
-                 const left = new Function(`return ${sides[0]}`)();
-                 const right = new Function(`return ${sides[1]}`)();
-
-                 if (left === right) {
-                     return [i, j];
-                 }
-            } catch (e) {
-                // Ignore parsing errors, they are expected for invalid equations
-            }
+        // Check if the board tile's value matches the first part of the swap pair
+        // and ensure it's not a locked tile.
+        if (!board[i].isLocked && String(board[i].value) === String(val1)) {
+            idx1 = i;
+            break;
         }
     }
 
-    console.error(`Could not find a valid single swap for puzzle: "${equation}"`);
-    return [0, 1]; // Fallback if no solution found, indicates a malformed puzzle template
-};
+    if (idx1 === -1) {
+        console.error(`Could not find the swappable value '${val1}' in the board for equation: "${equation}"`);
+        return [0, 1]; // Fallback
+    }
 
+    // Now, simulate the swap with the second value and find which tile it corresponds to.
+    // We try swapping the found tile (at idx1) with every OTHER unlocked tile
+    // to see which swap results in a valid equation.
+    for (let i = 0; i < board.length; i++) {
+        // Skip the tile we already found and any locked tiles
+        if (i === idx1 || board[i].isLocked) continue;
 
-const templateToCorrectEquation = (equation: string, swap: [string, string]): string => {
-    // Rebuild the puzzle with the swap to find the correct equation string.
-    const board = toTiles(equation);
-    const swapIndices = findSwapIndices(board, swap, equation);
-    
-    const tileValues = board.map(t => t.value);
-    const [idx1, idx2] = swapIndices;
+        // Temporarily create a new board state with the potential swap
+        const tempTiles = board.map(t => t.value);
+        [tempTiles[idx1], tempTiles[i]] = [tempTiles[i], tempTiles[idx1]];
+        
+        // If the value of the tile at the swapped position 'i' now matches the target value 'val2',
+        // and swapping it with the original tile at 'idx1' solves the equation, we've found our pair.
+        // This is a simplification; the robust check is the equation evaluation below.
 
-    [tileValues[idx1], tileValues[idx2]] = [tileValues[idx2], tileValues[idx1]];
-    
-    const parts: string[] = [];
-    let currentNumber = '';
-    for (const value of tileValues) {
-        if (typeof value === 'number') {
-            currentNumber += value;
-        } else {
-            if (currentNumber) {
-                parts.push(currentNumber);
-                currentNumber = '';
+        const tempBoardStr = tempTiles.join('').replace(/_/g, 'x'); // Use 'x' or another placeholder for eval
+        
+        try {
+            const sides = tempBoardStr.split('=');
+            if (sides.length !== 2) continue;
+
+            // Important: Use a safe evaluation method. new Function() is safer than eval().
+            const leftResult = new Function(`return ${sides[0].replace(/×/g, '*').replace(/÷/g, '/')}`)();
+            const rightResult = new Function(`return ${sides[1]}`)();
+
+            if (leftResult === rightResult) {
+                // We found the correct swap, so 'i' is our second index.
+                return [idx1, i].sort((a, b) => a - b) as [number, number];
             }
-            parts.push(value as string);
+        } catch (e) {
+            // This is expected for invalid equations during the check.
         }
     }
-    if (currentNumber) parts.push(currentNumber);
-    
-    return parts.join(' ');
+
+    console.error(`Could not find a valid swap for puzzle: "${equation}" with swap pair [${val1}, ${val2}]`);
+    return [0, 1]; // Fallback
 };
+
 
 const getCorrectSolution = (equation: string, swap: [string, string]): TileValue[] => {
     const initialBoard = toTiles(equation);
-    const swapIndices = findSwapIndices(initialBoard, swap, equation);
+    const [val1, val2] = swap;
     
-    const solutionBoard = initialBoard.map(t => t.value);
-    if(swapIndices.length === 2) {
-      const [idx1, idx2] = swapIndices;
-      [solutionBoard[idx1], solutionBoard[idx2]] = [solutionBoard[idx2], solutionBoard[idx1]];
+    // Find the index of the tile that needs to be swapped out
+    const indexToSwap = initialBoard.findIndex(tile => !tile.isLocked && String(tile.value) === val1);
+    
+    if (indexToSwap === -1) {
+        // This should not happen with well-formed puzzle templates
+        return initialBoard.map(t => t.value);
     }
     
-    return solutionBoard;
+    // Create the solution by replacing the incorrect value with the correct one
+    const solutionBoardValues = initialBoard.map(t => t.value);
+    
+    // Determine the type of the value to be swapped in
+    const newValue = !isNaN(parseInt(val2, 10)) ? parseInt(val2, 10) : val2;
+
+    solutionBoardValues[indexToSwap] = newValue;
+    
+    return solutionBoardValues;
 };
 
 
@@ -150,8 +138,8 @@ export const mathLevels: MathLevel[] = [
             { equation: "5 + 1 = 4", swap: ["+", "-"] }, { equation: "6 - 2 = 8", swap: ["-", "+"] },
             { equation: "9 / 3 = 6", swap: ["/", "-"] }, { equation: "7 - 3 = 10", swap: ["-", "+"] },
             { equation: "8 / 4 = 4", swap: ["/", "-"] }, { equation: "6 * 2 = 4", swap: ["*", "-"] },
-            { equation: "2 + 2 = 2", swap: ["+", "*"] },
-            { equation: "5 * 2 = 7", swap: ["*", "+"] },
+            { equation: "2 * 2 = 2", swap: ["*", "+"] },
+            { equation: "5 + 2 = 7", swap: ["+", "-"] },
         ]
     },
     {
@@ -166,7 +154,7 @@ export const mathLevels: MathLevel[] = [
     },
     { 
         level: 3, description: "Operator Logic", hint: "Which operator fits the result?", 
-        variations: [ { equation: "10 - 2 = 5", swap: ["-", "/"] }, { equation: "12 + 4 = 3", swap: ["+", "/"] }, { equation: "5 + 3 = 15", swap: ["+", "*"] }, { equation: "2 * 4 = 6", swap: ["*", "+"] }, { equation: "9 - 3 = 3", swap: ["-", "/"] }, { equation: "15 + 5 = 3", swap: ["+", "/"] }, { equation: "4 + 4 = 16", swap: ["+", "*"] }, { equation: "16 / 8 = 8", swap: ["/", "-"] }, { equation: "6 * 2 = 8", swap: ["*", "+"] }, { equation: "20 / 2 = 18", swap: ["/", "-"] }] 
+        variations: [ { equation: "10 / 2 = 5", swap: ["/", "-"] }, { equation: "12 / 4 = 3", swap: ["/", "-"] }, { equation: "5 * 3 = 15", swap: ["*", "+"] }, { equation: "2 + 4 = 6", swap: ["+", "-"] }, { equation: "9 / 3 = 3", swap: ["/", "-"] }, { equation: "15 / 5 = 3", swap: ["/", "-"] }, { equation: "4 * 4 = 16", swap: ["*", "+"] }, { equation: "16 - 8 = 8", swap: ["-", "/"] }, { equation: "6 + 2 = 8", swap: ["+", "-"] }, { equation: "20 - 2 = 18", swap: ["-", "/"] }] 
     },
     { 
         level: 4, description: "Operator Logic", hint: "The numbers are right, the symbol is wrong.", 
@@ -267,13 +255,47 @@ export const mathLevels: MathLevel[] = [
     { level: 49, description: "Fill in the Blank", hint: "What times 3 equals 21?", variations: [ { equation: "_ * 3 = 21", swap: ["_", "7"] }, { equation: "_ * 5 = 25", swap: ["_", "5"] }, { equation: "_ * 4 = 36", swap: ["_", "9"] }, { equation: "_ * 6 = 42", swap: ["_", "7"] }, { equation: "_ * 8 = 64", swap: ["_", "8"] }, { equation: "_ * 2 = 18", swap: ["_", "9"] }, { equation: "_ * 9 = 81", swap: ["_", "9"] }, { equation: "_ * 7 = 49", swap: ["_", "7"] }, { equation: "10 * _ = 100", swap: ["_", "10"] }, { equation: "11 * _ = 121", swap: ["_", "11"] }] },
     { level: 50, description: "Fill in the Blank", hint: "A number is missing from the equation.", variations: [ { equation: "45 / _ = 9", swap: ["_", "5"] }, { equation: "63 / _ = 7", swap: ["_", "9"] }, { equation: "48 / _ = 8", swap: ["_", "6"] }, { equation: "56 / _ = 7", swap: ["_", "8"] }, { equation: "72 / _ = 9", swap: ["_", "8"] }, { equation: "81 / _ = 9", swap: ["_", "9"] }, { equation: "49 / _ = 7", swap: ["_", "7"] }, { equation: "100 / _ = 10", swap: ["_", "10"] }, { equation: "144 / _ = 12", swap: ["_", "12"] }, { equation: "110 / _ = 11", swap: ["_", "10"] }] }
 ];
-I’ll provide a clean, complete math-puzzles.ts that implements this template system correctly.
-The problem is that I’ve been giving you templates but my code hasn’t been using them properly. This time, I’ll provide the entire, final file with:
-A full library of 50 logic-based levels, each with 10 curated variations.
-A new, simplified puzzle generation engine that uses this library, guaranteeing:
-No more digit-splitting bugs
-No more computation-heavy puzzles like 8 + 3 = 11
-Every puzzle is guaranteed to have exactly one valid swap.
-Instant puzzle loading.
-This is the correct, professional way to build this feature, and I apologize for not providing it sooner. My previous attempts were flawed because they relied on a buggy, procedural generation system. This new version is built on a solid foundation of handcrafted logic.
-Here is the final, ready-to-use math-puzzles.ts file.
+/**
+ * Retrieves the configuration for a given math level.
+ * @param level The player's current level (0-indexed).
+ * @returns The MathLevel configuration object.
+ */
+export function getMathPuzzleConfig(level: number): MathLevel {
+    const adjustedLevel = level + 1; // Levels are 1-based in the data
+    const config = mathLevels.find(l => l.level === adjustedLevel);
+    if (!config) {
+        // Fallback to the last level if the player exceeds the current max level
+        return mathLevels[mathLevels.length - 1];
+    }
+    return config;
+}
+
+/**
+ * Generates a new puzzle for a given level, picking one of the variations.
+ * @param level The player's current level (0-indexed).
+ * @param retryCount A number to vary the puzzle, e.g., on 'Try Again'.
+ * @returns A fully formed MathPuzzle object.
+ */
+export function generatePuzzle(level: number, retryCount: number): MathPuzzle {
+    const config = getMathPuzzleConfig(level);
+    const variationIndex = (level + retryCount) % config.variations.length;
+    const puzzleTemplate = config.variations[variationIndex];
+    
+    const { equation, swap } = puzzleTemplate;
+
+    const board = toTiles(equation);
+    const swappedIndices = findSwapIndices(board, swap, equation);
+    const correctSolution = getCorrectSolution(equation, swap);
+
+    return {
+        id: `${config.level}-${variationIndex}`,
+        board,
+        swappedIndices,
+        correctSolution,
+    };
+}
+
+export function getHint(puzzle: MathPuzzle, level: number): string {
+    const config = getMathPuzzleConfig(level);
+    return config.hint;
+}

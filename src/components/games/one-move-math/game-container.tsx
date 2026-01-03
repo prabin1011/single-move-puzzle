@@ -2,12 +2,13 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import Link from 'next/link';
 import { generatePuzzle, type MathPuzzle } from '@/lib/math-puzzles';
 import PuzzleBoard from './puzzle-board';
-import { CheckCircle, Loader2, PartyPopper, RefreshCw } from 'lucide-react';
+import { Loader2, RefreshCw } from 'lucide-react';
 import { useSound } from '@/contexts/sound-context';
 import { playSound } from '@/lib/sounds';
 
@@ -66,7 +67,7 @@ export default function GameContainer() {
   }
 
   return (
-    <Card className="w-full max-w-xs text-center border shadow-2xl rounded-2xl bg-card">
+    <Card className="w-full max-w-md text-center border shadow-2xl rounded-2xl bg-card">
       <CardHeader>
         <CardTitle className="text-3xl font-bold font-headline">One Move Math</CardTitle>
         <CardDescription>Level {level + 1}</CardDescription>
@@ -75,7 +76,7 @@ export default function GameContainer() {
         {gameState === 'FAILED' && <p className="text-error animate-pulse pt-2">Not quite! Try again.</p>}
         {gameState === 'SOLVED' && (
              <div className="flex flex-col items-center gap-2 pt-2">
-                <CheckCircle className="h-12 w-12 text-success" />
+                <Image src="/logo.png" alt="Correct!" width={64} height={64} className="opacity-90"/>
                 <p className="text-lg font-semibold text-success">Correct!</p>
             </div>
         )}

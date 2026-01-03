@@ -70,7 +70,7 @@ export default function PuzzleBoard({
 
   return (
     <div
-      className="flex justify-center items-center gap-2 rounded-lg bg-muted/50 p-4 shadow-inner"
+      className="flex justify-center items-center gap-3 rounded-lg bg-muted/50 p-4 shadow-inner"
     >
       {board.map((tile, index) => {
         const isSelected = selectedIndices.includes(index);
@@ -79,11 +79,12 @@ export default function PuzzleBoard({
             key={index}
             onClick={() => handleTileClick(index)}
             className={cn(
-              'flex items-center justify-center rounded-md w-16 h-20 text-4xl font-bold font-headline select-none transition-all duration-300',
+              'flex items-center justify-center rounded-lg w-20 h-24 text-5xl font-bold font-headline select-none transition-all duration-300',
               tile.isLocked ? 'bg-secondary text-secondary-foreground' : 'bg-card text-card-foreground shadow-sm border',
-              !isReadOnly && !tile.isLocked && 'cursor-pointer',
+              !isReadOnly && !tile.isLocked && 'cursor-pointer hover:scale-105',
               isSelected && 'z-10 scale-[1.08] tile-glow',
-              isReadOnly && puzzle.swappedIndices.includes(index) && 'bg-success/20'
+              isReadOnly && 'cursor-default',
+              isReadOnly && puzzle.correctSolution[index] === tile.value && 'tile-glow'
             )}
           >
             {tile.value}

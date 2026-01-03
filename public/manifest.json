@@ -1,0 +1,22 @@
+
+{
+  "name": "One Move Puzzle",
+  "short_name": "One Move",
+  "description": "A calm, educational puzzle game about famous landmarks. Can you solve the puzzle in just one move?",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFBF7",
+  "theme_color": "#3B82F6",
+  "icons": [
+    {
+      "src": "/logo-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

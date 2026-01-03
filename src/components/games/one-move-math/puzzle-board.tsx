@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import type { MathPuzzle } from '@/lib/math-puzzles';
 import { playSound } from '@/lib/sounds';
 import { useSound } from '@/contexts/sound-context';
+import { X } from 'lucide-react'; // Using X for multiplication
 
 interface PuzzleBoardProps {
   puzzle: MathPuzzle;
@@ -80,28 +81,43 @@ export default function PuzzleBoard({
 
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center gap-4 w-full px-2">
       <div
-        className="flex justify-center items-center gap-1 sm:gap-2 rounded-lg bg-muted/50 p-2 sm:p-4 shadow-inner"
+        className="flex justify-center items-center gap-1 sm:gap-2 rounded-lg bg-muted/50 p-1 sm:p-2 shadow-inner w-full"
       >
         {board.map((tile, index) => {
           const isSelected = selectedIndices.includes(index);
           const shouldHighlight = showIncorrect && selectedIndices.includes(index);
+
+          const isOperator = ['+', '-', '*', '/'].includes(tile.value as string);
+          const isEquals = tile.value === '=';
+          const isNumber = typeof tile.value === 'number';
 
           return (
             <div
               key={index}
               onClick={() => handleTileClick(index)}
               className={cn(
-                'flex items-center justify-center rounded-lg w-14 h-20 sm:w-20 sm:h-24 text-4xl sm:text-5xl font-bold font-headline select-none transition-all duration-300 ease-in-out',
-                tile.isLocked ? 'bg-secondary text-secondary-foreground' : 'bg-card text-card-foreground shadow-sm border',
+                'flex items-center justify-center rounded-md aspect-square select-none transition-all duration-300 ease-in-out font-bold font-headline',
+                // Base styles for all tiles
+                'w-full h-full text-2xl sm:text-4xl md:text-5xl',
+                
+                // Styles for number tiles
+                isNumber && 'bg-card text-card-foreground shadow-sm border',
+
+                // Styles for operator/equals tiles
+                (isOperator || isEquals) && 'bg-secondary text-secondary-foreground text-3xl md:text-4xl',
+
+                // Interaction styles for non-locked tiles
                 !isReadOnly && !tile.isLocked && 'cursor-pointer hover:scale-105 active:scale-100',
+                
+                // State-based styles
                 isSelected && 'z-10 scale-[1.08] tile-glow',
                 shouldHighlight && 'z-10 ring-4 ring-red-500 ring-offset-2 ring-offset-background animate-pulse',
                 isReadOnly && !isSelected && 'cursor-default'
               )}
             >
-              {tile.value}
+              {tile.value === '*' ? <X className="h-1/2 w-1/2" /> : tile.value}
             </div>
           );
         })}

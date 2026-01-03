@@ -22,6 +22,7 @@ import { Loader2, RefreshCw, CheckCircle, Info, Play, ArrowRight, PartyPopper, B
 import { useSound } from '@/contexts/sound-context';
 import { playSound } from '@/lib/sounds';
 import { cn } from '@/lib/utils';
+import type { TileValue } from '@/lib/math-puzzles';
 
 type GameState = 'READY' | 'PLAYING' | 'SOLVED_VISUALIZING' | 'SOLVED_COMPLETE' | 'FAILED' | 'GAME_OVER';
 
@@ -141,6 +142,19 @@ export default function GameContainer() {
   const hint = getHint(puzzle);
   const puzzleConfig = getMathPuzzleConfig(level);
 
+  const solutionBoard = {
+    ...puzzle,
+    board: puzzle.correctSolution.map((val, i) => {
+      const originalTile = puzzle.board.find((t, ti) => solutionValuesMatch(t.value, val) && t.isLocked) || puzzle.board[i];
+      return { value: val, isLocked: originalTile.isLocked };
+    })
+  };
+
+  function solutionValuesMatch(a: TileValue, b: TileValue) {
+    if (a === null || b === null) return false;
+    return a === b;
+  }
+
   return (
     <Card
         className="
@@ -230,7 +244,7 @@ export default function GameContainer() {
         {gameState === 'GAME_OVER' && (
             <PuzzleBoard
                 key={`${puzzle.id}-solution`}
-                puzzle={{ ...puzzle, board: puzzle.correctSolution.map((val, i) => ({ value: isNaN(Number(val)) ? val as TileValue : Number(val), isLocked: puzzle.board[i].isLocked })) }}
+                puzzle={solutionBoard}
                 onSuccess={() => {}}
                 onFail={() => {}}
                 isReadOnly={true}

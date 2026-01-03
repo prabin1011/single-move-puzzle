@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import { levels } from '@/lib/levels';
 import { getImageUrl } from '@/lib/levels';
 import { ThemeProvider } from '@/components/theme-provider';
+import { SoundProvider } from '@/contexts/sound-context';
 
 
 // This is our "silent agent" for image pre-caching.
@@ -77,11 +78,13 @@ export default function ClientLayout({
       enableSystem
       disableTransitionOnChange
     >
-      <ImageCacheAgent />
-      <FirebaseClientProvider>
-        {children}
-      </FirebaseClientProvider>
-      <Toaster />
+      <SoundProvider>
+        <ImageCacheAgent />
+        <FirebaseClientProvider>
+          {children}
+        </FirebaseClientProvider>
+        <Toaster />
+      </SoundProvider>
     </ThemeProvider>
   );
 }

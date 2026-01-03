@@ -40,6 +40,7 @@ import Link from "next/link";
 import { useGameTimer } from "@/hooks/use-game-timer";
 import { usePrefetchNextImages } from "@/hooks/use-prefetch-images";
 import { playSound } from "@/lib/sounds";
+import { useSound } from "@/contexts/sound-context";
 
 function shuffle<T>(array: T[]): T[] {
   let currentIndex = array.length,
@@ -65,6 +66,7 @@ export default function GameContainer() {
   const [mistakeCount, setMistakeCount] = useState(0);
   const [isComponentLoading, setIsComponentLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
+  const { isSoundOn } = useSound();
 
   const [gameState, setGameState] = useState<
     "READY" | "PREVIEW" | "PLAYING" | "SOLVED_VISUALIZING" | "SOLVED_COMPLETE" | "FAILED" | "GAME_OVER" | "ALL_LEVELS_COMPLETE"
@@ -145,11 +147,11 @@ export default function GameContainer() {
   const { scrambledBoard, swapped } = currentPuzzle;
 
   const handleSuccess = async () => {
-    playSound('success');
+    playSound('success', isSoundOn);
     setGameState("SOLVED_VISUALIZING");
     setTimeout(() => {
       if (levelIndex === levels.length - 1) {
-        playSound('win');
+        playSound('win', isSoundOn);
         setGameState("ALL_LEVELS_COMPLETE");
         localStorage.removeItem('currentLevelIndex');
         localStorage.removeItem('highestLevel');
@@ -161,7 +163,7 @@ export default function GameContainer() {
   };
 
   const handleFail = () => {
-    playSound('fail');
+    playSound('fail', isSoundOn);
     const newMistakeCount = mistakeCount + 1;
     setMistakeCount(newMistakeCount);
     if (newMistakeCount > MAX_MISTAKES) {
@@ -569,5 +571,3 @@ export default function GameContainer() {
     </Card>
   );
 }
-
-    

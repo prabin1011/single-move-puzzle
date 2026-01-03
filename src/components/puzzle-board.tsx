@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { playSound } from '@/lib/sounds';
+import { useSound } from '@/contexts/sound-context';
 
 interface PuzzleBoardProps {
   imageUrl: string;
@@ -27,6 +28,7 @@ export default function PuzzleBoard({
   const [board, setBoard] = useState(boardState);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
   const [showSolution, setShowSolution] = useState(false);
+  const { isSoundOn } = useSound();
   
   // Use a state for puzzle size to make it adaptable if needed in future
   const [puzzleSize, setPuzzleSize] = useState(300);
@@ -52,7 +54,7 @@ export default function PuzzleBoard({
       return;
     }
     
-    playSound('click');
+    playSound('click', isSoundOn);
     // If the clicked tile is already selected, deselect it
     if (selectedIndices.includes(boardIndex)) {
       setSelectedIndices(selectedIndices.filter(i => i !== boardIndex));
@@ -148,5 +150,3 @@ export default function PuzzleBoard({
     </div>
   );
 }
-
-    

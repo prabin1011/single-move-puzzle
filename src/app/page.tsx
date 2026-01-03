@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -12,6 +13,7 @@ import { Loader2 } from 'lucide-react';
 import { levels } from '@/lib/levels';
 import type { Level } from '@/lib/levels';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { SoundToggle } from '@/components/sound-toggle';
 
 function shuffle<T>(array: T[]): T[] {
   let currentIndex = array.length,
@@ -83,7 +85,8 @@ export default function Home() {
 
   return (
     <main className="flex h-screen flex-col items-center justify-center p-4 bg-background overflow-hidden">
-      <div className="absolute top-4 right-4">
+      <div className="absolute top-4 right-4 flex items-center gap-2">
+        <SoundToggle />
         <ThemeToggle />
       </div>
       <Card className="w-full max-w-md text-center border-border shadow-2xl bg-card">

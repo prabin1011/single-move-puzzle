@@ -50,6 +50,7 @@ export default function PuzzleBoard({
         const [firstIndex, secondIndex] = selectedIndices;
         [newBoard[firstIndex], newBoard[secondIndex]] = [newBoard[secondIndex], newBoard[firstIndex]];
         setBoard(newBoard);
+        setSelectedIndices([]); // Clear selection immediately to prevent re-triggering
 
         setTimeout(() => onSuccess(), 500);
       } else {
@@ -104,5 +105,3 @@ export default function PuzzleBoard({
     </div>
   );
 }
-
-    

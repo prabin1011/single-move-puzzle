@@ -159,7 +159,7 @@ export default function GameContainer() {
                   Level {level + 1}
                 </CardDescription>
                 <CardDescription className="text-muted-foreground pt-3">
-                  Click Start to solve the puzzle.
+                  Find the one move that solves the equation.
                 </CardDescription>
             </>
         )}
@@ -199,7 +199,9 @@ export default function GameContainer() {
         {(gameState === "SOLVED_VISUALIZING" || gameState === "SOLVED_COMPLETE") && (
           <>
             <div className="flex justify-center text-success">
-              <CheckCircle className="h-16 w-16" />
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary overflow-hidden">
+                <Image src="/logo.png" alt="Puzzle Solved" width={64} height={64} />
+              </div>
             </div>
             <CardTitle className="text-3xl font-bold pt-4 font-headline">
               Puzzle Solved!
@@ -222,20 +224,24 @@ export default function GameContainer() {
         )}
 
       </CardHeader>
-      <CardContent>
-        <PuzzleBoard
-          key={puzzle.id}
-          puzzle={puzzle}
-          onSuccess={handleSuccess}
-          onFail={handleFail}
-          isReadOnly={gameState !== 'PLAYING'}
-          showSolution={gameState === 'FAILED'}
-        />
+      <CardContent className="flex items-center justify-center min-h-[128px]">
+        { (gameState === 'PLAYING' || gameState === 'FAILED' || gameState === 'SOLVED_VISUALIZING') && (
+            <PuzzleBoard
+              key={puzzle.id}
+              puzzle={puzzle}
+              onSuccess={handleSuccess}
+              onFail={handleFail}
+              isReadOnly={gameState !== 'PLAYING'}
+              showSolution={gameState === 'FAILED'}
+            />
+        )}
          <AlertDialog open={gameState === 'SOLVED_COMPLETE'}>
           <AlertDialogContent>
             <AlertDialogHeader className="items-center text-center">
               <div className="flex justify-center text-success pb-4">
-                <CheckCircle className="h-16 w-16" />
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary overflow-hidden">
+                    <Image src="/logo.png" alt="Puzzle Solved" width={64} height={64} />
+                </div>
               </div>
               <AlertDialogTitle className="text-3xl font-bold font-headline">
                 Level {level + 1} Complete!
@@ -292,12 +298,12 @@ export default function GameContainer() {
           </div>
         )}
         
-        <Button asChild variant="link" className="text-muted-foreground" onClick={() => playSound("ui", isSoundOn)}>
-            <Link href="/">Back to Main Menu</Link>
-        </Button>
+        { (gameState === 'READY' || gameState === 'SOLVED_COMPLETE' ) && (
+            <Button asChild variant="link" className="text-muted-foreground" onClick={() => playSound("ui", isSoundOn)}>
+                <Link href="/">Back to Main Menu</Link>
+            </Button>
+        )}
       </CardFooter>
     </Card>
   );
 }
-
-    

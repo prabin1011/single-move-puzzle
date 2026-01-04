@@ -18,7 +18,7 @@ import {
 import Link from 'next/link';
 import { generatePuzzle, getHint, type MathPuzzle, getMathPuzzleConfig } from '@/lib/math-puzzles';
 import PuzzleBoard from './puzzle-board';
-import { Loader2, RefreshCw, CheckCircle, Info, Play, ArrowRight, PartyPopper, BrainCircuit, Plus, Minus, X, Divide } from 'lucide-react';
+import { Loader2, RefreshCw, Info, Play, ArrowRight, PartyPopper, BrainCircuit, Plus, Minus, X, Divide } from 'lucide-react';
 import { useSound } from '@/contexts/sound-context';
 import { playSound } from '@/lib/sounds';
 import { cn } from '@/lib/utils';
@@ -371,3 +371,4 @@ export default function GameContainer() {
     
 
     
+

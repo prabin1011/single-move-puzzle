@@ -145,10 +145,7 @@ export default function GameContainer() {
   
   const puzzleConfig = getPatternPuzzleConfig(level);
   
-  const solvedGrid = copyGrid(puzzle.grid);
-  const [index1, index2] = puzzle.solution.indices;
-  [solvedGrid[index1], solvedGrid[index2]] = [solvedGrid[index2], solvedGrid[index1]];
-
+  const solvedGrid = puzzle.correctGrid;
 
   return (
     <Card
@@ -197,8 +194,8 @@ export default function GameContainer() {
         </div>
         
         <div className={cn("transition-opacity duration-300 absolute inset-0 p-6 flex flex-col justify-center", (gameState === "SOLVED_VISUALIZING") ? 'opacity-100' : 'opacity-0 invisible')}>
-            <div className="flex justify-center text-success">
-              <CheckCircle className="h-16 w-16" />
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary overflow-hidden">
+                <Image src="/logo.png" alt="Pattern Restored" width={64} height={64} />
             </div>
             <CardTitle className="text-3xl font-bold pt-4 font-headline">
               Pattern Restored!
@@ -228,10 +225,14 @@ export default function GameContainer() {
 
       <CardContent className={cn("flex items-center justify-center min-h-[256px] transition-opacity duration-500 px-2 sm:px-4")}>
         { gameState === 'READY' && (
-            <div className="flex items-center justify-center gap-4 text-muted-foreground/30">
-              <Square className="h-20 w-20" strokeWidth={1} />
-              <Triangle className="h-20 w-20" strokeWidth={1} />
-              <Circle className="h-20 w-20" strokeWidth={1} />
+             <div className="w-full max-w-[256px] scale-90 opacity-50">
+                <PuzzleBoard
+                    key={`${puzzle.id}-preview`}
+                    puzzle={{...puzzle, grid: solvedGrid }}
+                    onSuccess={() => {}}
+                    onFail={() => {}}
+                    isReadOnly={true}
+                />
             </div>
         )}
         { (gameState === 'PLAYING' || gameState === 'FAILED' || gameState === 'SOLVED_VISUALIZING') && (
@@ -255,8 +256,8 @@ export default function GameContainer() {
          <AlertDialog open={gameState === 'SOLVED_COMPLETE'}>
           <AlertDialogContent>
             <AlertDialogHeader className="items-center text-center">
-               <div className="flex justify-center text-success pb-4">
-                <CheckCircle className="h-16 w-16" />
+               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary overflow-hidden mb-4">
+                  <Image src="/logo.png" alt="Level Complete" width={64} height={64} />
               </div>
               <AlertDialogTitle className="text-3xl font-bold font-headline">
                 Level {level + 1} Complete!
@@ -326,10 +327,3 @@ export default function GameContainer() {
     </Card>
   );
 }
-
-// Helper to create a deep copy of a grid
-function copyGrid(grid: any[]): any[] {
-  return grid.map(tile => ({ ...tile }));
-}
-
-    

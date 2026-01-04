@@ -160,10 +160,10 @@ export default function GameContainer() {
         "
     >
       <CardHeader className="text-center min-h-[160px] flex flex-col justify-center relative transition-all duration-300">
-        <div className={cn("transition-opacity duration-300 space-y-4", gameState === 'READY' ? 'opacity-100' : 'opacity-0 invisible absolute inset-0 p-6 flex flex-col justify-center')}>
+        <div className={cn("transition-opacity duration-300 absolute inset-0 p-6 flex flex-col justify-center space-y-2", gameState === 'READY' ? 'opacity-100' : 'opacity-0 invisible')}>
             <Shapes className="h-12 w-12 mx-auto text-primary" />
             <CardTitle className="text-3xl font-bold font-headline mt-2">Level {level + 1}: {puzzleConfig.concept}</CardTitle>
-            <CardDescription className="mt-2 text-base text-muted-foreground">
+            <CardDescription className="mt-1 text-base text-muted-foreground">
                 Find the one broken rule. Fix it in one move.
             </CardDescription>
         </div>
@@ -196,7 +196,7 @@ export default function GameContainer() {
             {gameState === 'FAILED' && <p className="text-error animate-pulse pt-2">Not quite! That wasn't the correct swap.</p>}
         </div>
         
-        <div className={cn("transition-opacity duration-300 absolute inset-0 p-6 flex flex-col justify-center", (gameState === "SOLVED_VISUALIZING" || gameState === "SOLVED_COMPLETE") ? 'opacity-100' : 'opacity-0 invisible')}>
+        <div className={cn("transition-opacity duration-300 absolute inset-0 p-6 flex flex-col justify-center", (gameState === "SOLVED_VISUALIZING") ? 'opacity-100' : 'opacity-0 invisible')}>
             <div className="flex justify-center text-success">
               <CheckCircle className="h-16 w-16" />
             </div>
@@ -335,3 +335,5 @@ export default function GameContainer() {
 function copyGrid(grid: any[]): any[] {
   return grid.map(tile => ({ ...tile }));
 }
+
+    

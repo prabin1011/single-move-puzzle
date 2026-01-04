@@ -1,3 +1,4 @@
+
 'use client';
 
 // A tile can have a color and a shape.
@@ -105,6 +106,22 @@ const getVariationSequence = <T>(
   const rotated = [...arr.slice(offset), ...arr.slice(0, offset)];
   return reversed ? rotated.reverse() : rotated;
 };
+
+/**
+ * Creates a sequence by cycling through the base array.
+ * This is useful for grids larger than the number of available items.
+ */
+const getCycledSequence = <T>(
+  base: T[],
+  length: number,
+  offset: number
+): T[] => {
+  return Array.from({ length }, (_, i) => {
+    const idx = (i + offset) % base.length;
+    return base[idx];
+  });
+};
+
 
 // --------------------------------------------------------
 // PATTERN GENERATORS
@@ -289,27 +306,28 @@ const generateMixedPattern = (
 
   const center = Math.floor(size / 2);
 
+  // Colors: we have 5 colors, so this is fine
   const rowColors = getVariationSequence(COLORS, size, variation);
-  const colShapes = getVariationSequence(SHAPES, size, variation + 2);
 
-  const centerRowShapes = getVariationSequence(SHAPES, size, variation + 6);
+  // Shapes: cycle through SHAPES to always get `size` items (works for 5×5)
+  const colShapes = getCycledSequence(SHAPES, size, (variation + 2) % SHAPES.length);
+  const centerRowShapes = getCycledSequence(SHAPES, size, (variation + 6) % SHAPES.length);
   const centerColColors = getVariationSequence(COLORS, size, variation + 7);
 
   for (let row = 0; row < size; row++) {
     for (let col = 0; col < size; col++) {
       const idx = row * size + col;
 
-      // middle row – special shape sequence
       if (row === center) {
+        // Special middle row – shape sequence across the row
         grid[idx].shape = centerRowShapes[col];
         grid[idx].color = rowColors[row];
-      }
-      // middle column – special color sequence
-      else if (col === center) {
+      } else if (col === center) {
+        // Special middle column – color sequence down the column
         grid[idx].color = centerColColors[row];
         grid[idx].shape = colShapes[col];
       } else {
-        // normal: rowColor + colShape
+        // Normal tiles: row color + column shape
         grid[idx].color = rowColors[row];
         grid[idx].shape = colShapes[col];
       }
@@ -328,6 +346,7 @@ const generateMixedPattern = (
     solution: { type: 'swap', indices: solution },
   };
 };
+
 
 // --------------------------------------------------------
 // LEVEL DEFINITIONS – 50 LEVELS

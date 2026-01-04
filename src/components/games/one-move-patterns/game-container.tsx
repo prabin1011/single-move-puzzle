@@ -16,7 +16,7 @@ import {
 import Link from 'next/link';
 import { generatePatternPuzzle, getPatternPuzzleConfig, type PatternPuzzle } from '@/lib/pattern-puzzles';
 import PuzzleBoard from './puzzle-board';
-import { Loader2, RefreshCw, CheckCircle, Info, Play, ArrowRight, PartyPopper, BrainCircuit, Shapes } from 'lucide-react';
+import { Loader2, RefreshCw, CheckCircle, Info, Play, ArrowRight, PartyPopper, Shapes } from 'lucide-react';
 import { useSound } from '@/contexts/sound-context';
 import { playSound } from '@/lib/sounds';
 import { cn } from '@/lib/utils';
@@ -151,7 +151,7 @@ export default function GameContainer() {
   return (
     <Card
         className="
-            w-full max-w-lg border shadow-2xl rounded-2xl transition-all duration-500
+            w-full max-w-sm border shadow-2xl rounded-2xl transition-all duration-500
             bg-card
             bg-[radial-gradient(circle_at_top,_#DBE9FFF,_#E0F2FF_45%,_#FFE0F7_85%)]
             dark:bg-[radial-gradient(circle_at_top,_#1F2933,_#020617_55%,_#111827_100%)]
@@ -224,7 +224,7 @@ export default function GameContainer() {
         </div>
       </CardHeader>
 
-      <CardContent className={cn("flex items-center justify-center min-h-[128px] transition-opacity duration-500 px-2 sm:px-4", (gameState === 'READY' || isLoading) ? 'opacity-0' : 'opacity-100')}>
+      <CardContent className={cn("flex items-center justify-center min-h-[256px] transition-opacity duration-500 px-2 sm:px-4", (gameState === 'READY' || isLoading) ? 'opacity-0' : 'opacity-100')}>
         { (gameState === 'PLAYING' || gameState === 'FAILED' || gameState === 'SOLVED_VISUALIZING') && (
             <PuzzleBoard
               key={puzzle.id}
@@ -280,7 +280,7 @@ export default function GameContainer() {
              </div>
         )}
 
-        {(gameState === 'PLAYING' || gameState === 'SOLVED_VISUALIZING' || gameState === 'FAILED') && (
+        {(gameState === 'PLAYING' || gameState === 'SOLVED_VISUALIZING') && (
             <Button asChild variant="link" className="text-muted-foreground" onClick={() => playSound("ui", isSoundOn)}>
                 <Link href="/">Back to Home</Link>
             </Button>

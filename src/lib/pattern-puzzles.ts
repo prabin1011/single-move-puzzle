@@ -18,6 +18,7 @@ export interface PatternPuzzle {
     indices: [number, number]; // board indices that must be selected
   };
   grid: Tile[]; // scrambled grid shown to the player
+  correctGrid: Tile[]; // the solved grid for preview
 }
 
 // Level template – concept + generator.
@@ -138,7 +139,7 @@ const generateRowColorColShape = (
   variation: number
 ): PatternPuzzle => {
   const size = gridSize;
-  const grid = createGrid(size);
+  const correctGrid = createGrid(size);
 
   const rowColors = getVariationSequence(COLORS, size, variation);
   const colShapes = getVariationSequence(SHAPES, size, variation + 1);
@@ -146,13 +147,13 @@ const generateRowColorColShape = (
   for (let row = 0; row < size; row++) {
     for (let col = 0; col < size; col++) {
       const idx = row * size + col;
-      grid[idx].color = rowColors[row];
-      grid[idx].shape = colShapes[col];
+      correctGrid[idx].color = rowColors[row];
+      correctGrid[idx].shape = colShapes[col];
     }
   }
 
   const { incorrectGrid, solution } = applySwapFlaw(
-    grid,
+    correctGrid,
     levelIndex,
     variation
   );
@@ -160,6 +161,7 @@ const generateRowColorColShape = (
   return {
     id: `L${levelIndex + 1}-V${variation}`,
     grid: incorrectGrid,
+    correctGrid: correctGrid,
     solution: { type: 'swap', indices: solution },
   };
 };
@@ -175,7 +177,7 @@ const generateRowShapeColColor = (
   variation: number
 ): PatternPuzzle => {
   const size = gridSize;
-  const grid = createGrid(size);
+  const correctGrid = createGrid(size);
 
   const rowShapes = getVariationSequence(SHAPES, size, variation);
   const colColors = getVariationSequence(COLORS, size, variation + 3);
@@ -183,13 +185,13 @@ const generateRowShapeColColor = (
   for (let row = 0; row < size; row++) {
     for (let col = 0; col < size; col++) {
       const idx = row * size + col;
-      grid[idx].shape = rowShapes[row];
-      grid[idx].color = colColors[col];
+      correctGrid[idx].shape = rowShapes[row];
+      correctGrid[idx].color = colColors[col];
     }
   }
 
   const { incorrectGrid, solution } = applySwapFlaw(
-    grid,
+    correctGrid,
     levelIndex,
     variation
   );
@@ -197,6 +199,7 @@ const generateRowShapeColColor = (
   return {
     id: `L${levelIndex + 1}-V${variation}`,
     grid: incorrectGrid,
+    correctGrid: correctGrid,
     solution: { type: 'swap', indices: solution },
   };
 };
@@ -211,7 +214,7 @@ const generateDiagonalPlusRowCol = (
   variation: number
 ): PatternPuzzle => {
   const size = gridSize;
-  const grid = createGrid(size);
+  const correctGrid = createGrid(size);
 
   const diagColor = COLORS[(variation + 1) % COLORS.length];
   const diagShape = SHAPES[(variation + 2) % SHAPES.length];
@@ -223,17 +226,17 @@ const generateDiagonalPlusRowCol = (
     for (let col = 0; col < size; col++) {
       const idx = row * size + col;
       if (row === col) {
-        grid[idx].color = diagColor;
-        grid[idx].shape = diagShape;
+        correctGrid[idx].color = diagColor;
+        correctGrid[idx].shape = diagShape;
       } else {
-        grid[idx].color = rowColors[row];
-        grid[idx].shape = colShapes[col];
+        correctGrid[idx].color = rowColors[row];
+        correctGrid[idx].shape = colShapes[col];
       }
     }
   }
 
   const { incorrectGrid, solution } = applySwapFlaw(
-    grid,
+    correctGrid,
     levelIndex,
     variation
   );
@@ -241,6 +244,7 @@ const generateDiagonalPlusRowCol = (
   return {
     id: `L${levelIndex + 1}-V${variation}`,
     grid: incorrectGrid,
+    correctGrid: correctGrid,
     solution: { type: 'swap', indices: solution },
   };
 };
@@ -256,7 +260,7 @@ const generateBlockPattern = (
   variation: number
 ): PatternPuzzle => {
   const size = gridSize;
-  const grid = createGrid(size);
+  const correctGrid = createGrid(size);
 
   const colors = getVariationSequence(COLORS, 4, variation);
   const shapes = getVariationSequence(SHAPES, 4, variation + 5);
@@ -273,13 +277,13 @@ const generateBlockPattern = (
       const colBand = col < colSplit ? 0 : 1;
 
       // choose color by row band, shape by col band
-      grid[idx].color = colors[rowBand * 2 + colBand];
-      grid[idx].shape = shapes[rowBand * 2 + colBand];
+      correctGrid[idx].color = colors[rowBand * 2 + colBand];
+      correctGrid[idx].shape = shapes[rowBand * 2 + colBand];
     }
   }
 
   const { incorrectGrid, solution } = applySwapFlaw(
-    grid,
+    correctGrid,
     levelIndex,
     variation
   );
@@ -287,6 +291,7 @@ const generateBlockPattern = (
   return {
     id: `L${levelIndex + 1}-V${variation}`,
     grid: incorrectGrid,
+    correctGrid: correctGrid,
     solution: { type: 'swap', indices: solution },
   };
 };
@@ -302,7 +307,7 @@ const generateMixedPattern = (
   variation: number
 ): PatternPuzzle => {
   const size = gridSize;
-  const grid = createGrid(size);
+  const correctGrid = createGrid(size);
 
   const center = Math.floor(size / 2);
 
@@ -320,22 +325,22 @@ const generateMixedPattern = (
 
       if (row === center) {
         // Special middle row – shape sequence across the row
-        grid[idx].shape = centerRowShapes[col];
-        grid[idx].color = rowColors[row];
+        correctGrid[idx].shape = centerRowShapes[col];
+        correctGrid[idx].color = rowColors[row];
       } else if (col === center) {
         // Special middle column – color sequence down the column
-        grid[idx].color = centerColColors[row];
-        grid[idx].shape = colShapes[col];
+        correctGrid[idx].color = centerColColors[row];
+        correctGrid[idx].shape = colShapes[col];
       } else {
         // Normal tiles: row color + column shape
-        grid[idx].color = rowColors[row];
-        grid[idx].shape = colShapes[col];
+        correctGrid[idx].color = rowColors[row];
+        correctGrid[idx].shape = colShapes[col];
       }
     }
   }
 
   const { incorrectGrid, solution } = applySwapFlaw(
-    grid,
+    correctGrid,
     levelIndex,
     variation
   );
@@ -343,6 +348,7 @@ const generateMixedPattern = (
   return {
     id: `L${levelIndex + 1}-V${variation}`,
     grid: incorrectGrid,
+    correctGrid: correctGrid,
     solution: { type: 'swap', indices: solution },
   };
 };

@@ -160,7 +160,7 @@ export default function GameContainer() {
         "
     >
       <CardHeader className="text-center min-h-[160px] flex flex-col justify-center relative transition-all duration-300">
-        <div className={cn("transition-opacity duration-300 absolute inset-0 p-6 flex flex-col justify-center", gameState === 'READY' ? 'opacity-100' : 'opacity-0 invisible')}>
+        <div className={cn("transition-opacity duration-300 space-y-4", gameState === 'READY' ? 'opacity-100' : 'opacity-0 invisible absolute inset-0 p-6 flex flex-col justify-center')}>
             <Shapes className="h-12 w-12 mx-auto text-primary" />
             <CardTitle className="text-3xl font-bold font-headline mt-2">Level {level + 1}: {puzzleConfig.concept}</CardTitle>
             <CardDescription className="mt-2 text-base text-muted-foreground">
@@ -226,7 +226,18 @@ export default function GameContainer() {
         </div>
       </CardHeader>
 
-      <CardContent className={cn("flex items-center justify-center min-h-[256px] transition-opacity duration-500 px-2 sm:px-4", (gameState === 'READY' || isLoading) ? 'opacity-0' : 'opacity-100')}>
+      <CardContent className={cn("flex items-center justify-center min-h-[256px] transition-opacity duration-500 px-2 sm:px-4")}>
+        { gameState === 'READY' && (
+             <div className="transform scale-75 opacity-70">
+                <PuzzleBoard
+                    key={`${puzzle.id}-preview`}
+                    puzzle={{ ...puzzle, grid: puzzle.correctGrid }}
+                    isReadOnly={true}
+                    onSuccess={() => {}}
+                    onFail={() => {}}
+                />
+             </div>
+        )}
         { (gameState === 'PLAYING' || gameState === 'FAILED' || gameState === 'SOLVED_VISUALIZING') && (
             <PuzzleBoard
               key={puzzle.id}
@@ -324,5 +335,3 @@ export default function GameContainer() {
 function copyGrid(grid: any[]): any[] {
   return grid.map(tile => ({ ...tile }));
 }
-
-    

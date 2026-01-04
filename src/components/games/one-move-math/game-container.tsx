@@ -174,12 +174,6 @@ export default function GameContainer() {
     >
       <CardHeader className="text-center min-h-[160px] flex flex-col justify-center relative transition-all duration-300">
         <div className={cn("transition-opacity duration-300 absolute inset-0 p-6 flex flex-col justify-center", gameState === 'READY' ? 'opacity-100' : 'opacity-0 invisible')}>
-            <div className="flex justify-center items-center gap-4 text-primary/50">
-              <Plus className="h-8 w-8" />
-              <Minus className="h-8 w-8" />
-              <X className="h-8 w-8" />
-              <Divide className="h-8 w-8" />
-            </div>
             <CardTitle className="text-3xl font-bold font-headline mt-4">Level {level + 1}: {puzzleConfig.description}</CardTitle>
             <CardDescription
                 className="
@@ -255,7 +249,7 @@ export default function GameContainer() {
 
 
       </CardHeader>
-      <CardContent className={cn("flex items-center justify-center min-h-[128px] transition-opacity duration-500 px-2 sm:px-4", (gameState === 'READY' || isLoading) ? 'opacity-0' : 'opacity-100')}>
+      <CardContent className={cn("flex items-center justify-center min-h-[128px] transition-opacity duration-500 px-2 sm:px-4")}>
         { (gameState === 'PLAYING' || gameState === 'FAILED' || gameState === 'SOLVED_VISUALIZING') && (
             <PuzzleBoard
               key={puzzle.id}
@@ -273,6 +267,14 @@ export default function GameContainer() {
                 onFail={() => {}}
                 isReadOnly={true}
             />
+        )}
+        { gameState === 'READY' && (
+            <div className="flex justify-center items-center gap-4 text-primary/50">
+              <Plus className="h-8 w-8" />
+              <Minus className="h-8 w-8" />
+              <X className="h-8 w-8" />
+              <Divide className="h-8 w-8" />
+            </div>
         )}
          <AlertDialog open={gameState === 'SOLVED_COMPLETE'}>
           <AlertDialogContent>

@@ -18,7 +18,7 @@ import {
 import Link from 'next/link';
 import { generatePatternPuzzle, getPatternPuzzleConfig, type PatternPuzzle } from '@/lib/pattern-puzzles';
 import PuzzleBoard from './puzzle-board';
-import { Loader2, RefreshCw, CheckCircle, Info, Play, ArrowRight, PartyPopper, Shapes } from 'lucide-react';
+import { Loader2, RefreshCw, CheckCircle, Info, Play, ArrowRight, PartyPopper, Shapes, Square, Circle, Triangle } from 'lucide-react';
 import { useSound } from '@/contexts/sound-context';
 import { playSound } from '@/lib/sounds';
 import { cn } from '@/lib/utils';
@@ -228,15 +228,11 @@ export default function GameContainer() {
 
       <CardContent className={cn("flex items-center justify-center min-h-[256px] transition-opacity duration-500 px-2 sm:px-4")}>
         { gameState === 'READY' && (
-             <div className="transform scale-75 opacity-70">
-                <PuzzleBoard
-                    key={`${puzzle.id}-preview`}
-                    puzzle={{ ...puzzle, grid: puzzle.correctGrid }}
-                    isReadOnly={true}
-                    onSuccess={() => {}}
-                    onFail={() => {}}
-                />
-             </div>
+            <div className="flex items-center justify-center gap-4 text-muted-foreground/30">
+              <Square className="h-20 w-20" strokeWidth={1} />
+              <Triangle className="h-20 w-20" strokeWidth={1} />
+              <Circle className="h-20 w-20" strokeWidth={1} />
+            </div>
         )}
         { (gameState === 'PLAYING' || gameState === 'FAILED' || gameState === 'SOLVED_VISUALIZING') && (
             <PuzzleBoard

@@ -80,7 +80,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${bodyFont.variable} ${headlineFont.variable} font-sans antialiased`}>
+      <body className={`${bodyFont.variable} ${headlineFont.variable} font-sans antialiased`} suppressHydrationWarning>
         <ClientLayout>{children}</ClientLayout>
       </body>
     </html>

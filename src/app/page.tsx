@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth, useUser } from '@/firebase';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
-import { Loader2, Landmark, Calculator } from 'lucide-react';
+import { Loader2, Landmark, Calculator, Shapes } from 'lucide-react';
 import { levels } from '@/lib/levels';
 import type { Level } from '@/lib/levels';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -141,6 +141,22 @@ export default function Home() {
               <div className="flex flex-col space-y-2 w-full sm:w-auto">
                 <Button asChild>
                   <Link href="/games/one-move-math" onClick={() => playSound("ui", isSoundOn)}>
+                    Play Now
+                  </Link>
+                </Button>
+              </div>
+            </Card>
+
+            {/* Game 3: One Move Patterns */}
+            <Card className="p-4 flex flex-col sm:flex-row items-center gap-4 bg-secondary/50">
+              <Shapes className="h-10 w-10 text-primary hidden sm:block" />
+              <div className="flex-grow text-center sm:text-left">
+                <h3 className="font-bold font-headline text-lg">Patterns Puzzle</h3>
+                <p className="text-sm text-muted-foreground">Fix the broken pattern in just one move.</p>
+              </div>
+              <div className="flex flex-col space-y-2 w-full sm:w-auto">
+                <Button asChild>
+                  <Link href="/games/one-move-patterns" onClick={() => playSound("ui", isSoundOn)}>
                     Play Now
                   </Link>
                 </Button>

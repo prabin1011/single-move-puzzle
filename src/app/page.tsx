@@ -39,7 +39,9 @@ function shuffle<T>(array: T[]): T[] {
 
 export default function Home() {
   const router = useRouter();
-  const [highestLevel, setHighestLevel] = useState(0);
+  const [landmarkHighestLevel, setLandmarkHighestLevel] = useState(0);
+  const [mathHighestLevel, setMathHighestLevel] = useState(0);
+  const [patternsHighestLevel, setPatternsHighestLevel] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
@@ -52,10 +54,21 @@ export default function Home() {
   }, [isSoundOn]);
 
   useEffect(() => {
-    const savedLevel = localStorage.getItem('highestLevel');
-    if (savedLevel) {
-      setHighestLevel(parseInt(savedLevel, 10));
+    const savedLandmarkLevel = localStorage.getItem('highestLevel');
+    if (savedLandmarkLevel) {
+      setLandmarkHighestLevel(parseInt(savedLandmarkLevel, 10));
     }
+
+    const savedMathLevel = localStorage.getItem('mathHighestLevel');
+    if (savedMathLevel) {
+        setMathHighestLevel(parseInt(savedMathLevel, 10));
+    }
+
+    const savedPatternLevel = localStorage.getItem('patternHighestLevel');
+    if (savedPatternLevel) {
+        setPatternsHighestLevel(parseInt(savedPatternLevel, 10));
+    }
+
     setIsLoading(false);
   }, []);
 
@@ -66,23 +79,31 @@ export default function Home() {
     }
   }, [isUserLoading, user, auth]);
 
-  const handleNewGame = () => {
+  const handleNewGame = (game: 'landmark' | 'math' | 'patterns') => {
     playSound("ui", isSoundOn);
-    // Increment the game round for image variations
-    const currentRound = parseInt(localStorage.getItem('gameRound') || '0', 10);
-    localStorage.setItem('gameRound', (currentRound + 1).toString());
 
-    // Reset progress for the new game
-    localStorage.removeItem('currentLevelIndex');
-    localStorage.removeItem('highestLevel');
-
-    // Create and save a new shuffled list for the new game
-    const newShuffledLevels = shuffle(levels);
-    localStorage.setItem('shuffledLevels', JSON.stringify(newShuffledLevels));
-    router.push('/games/one-move-landmark');
+    if (game === 'landmark') {
+        const currentRound = parseInt(localStorage.getItem('gameRound') || '0', 10);
+        localStorage.setItem('gameRound', (currentRound + 1).toString());
+        localStorage.removeItem('currentLevelIndex');
+        localStorage.removeItem('highestLevel');
+        const newShuffledLevels = shuffle(levels);
+        localStorage.setItem('shuffledLevels', JSON.stringify(newShuffledLevels));
+        router.push('/games/one-move-landmark');
+    } else if (game === 'math') {
+        localStorage.removeItem('mathCurrentLevel');
+        localStorage.removeItem('mathHighestLevel');
+        router.push('/games/one-move-math');
+    } else if (game === 'patterns') {
+        localStorage.removeItem('patternCurrentLevel');
+        localStorage.removeItem('patternHighestLevel');
+        router.push('/games/one-move-patterns');
+    }
   };
   
-  const showContinue = !isLoading && highestLevel > 0;
+  const showLandmarkContinue = !isLoading && landmarkHighestLevel > 0;
+  const showMathContinue = !isLoading && mathHighestLevel > 0;
+  const showPatternsContinue = !isLoading && patternsHighestLevel > 0;
 
   if (isUserLoading || !auth) {
     return (
@@ -114,17 +135,17 @@ export default function Home() {
 
             {/* Game 1: One Move Landmark */}
             <Card className="p-4 flex flex-col sm:flex-row items-center gap-4">
-              <Landmark className="h-10 w-10 text-primary hidden sm:block" />
+              <Landmark className="h-10 w-10 text-primary shrink-0" />
               <div className="flex-grow text-center sm:text-left">
                 <h3 className="font-bold font-headline text-lg">Landmark Puzzle</h3>
                 <p className="text-sm text-muted-foreground">Guess the swapped tiles in famous landmark photos.</p>
               </div>
               <div className="flex flex-col space-y-2 w-full sm:w-auto">
-                <Button onClick={handleNewGame} className="w-full">New Game</Button>
-                {showContinue && (
+                <Button onClick={() => handleNewGame('landmark')} className="w-full">New Game</Button>
+                {showLandmarkContinue && (
                   <Button asChild variant="secondary" className="w-full">
                     <Link href="/games/one-move-landmark" onClick={() => playSound("ui", isSoundOn)}>
-                      Continue (Lvl {highestLevel + 1})
+                      Continue (Lvl {landmarkHighestLevel + 1})
                     </Link>
                   </Button>
                 )}
@@ -133,33 +154,39 @@ export default function Home() {
 
             {/* Game 2: One Move Math */}
             <Card className="p-4 flex flex-col sm:flex-row items-center gap-4 bg-secondary/50">
-              <Calculator className="h-10 w-10 text-primary hidden sm:block" />
+              <Calculator className="h-10 w-10 text-primary shrink-0" />
               <div className="flex-grow text-center sm:text-left">
                 <h3 className="font-bold font-headline text-lg">Math Puzzle</h3>
                 <p className="text-sm text-muted-foreground">Solve the math equation in just one move.</p>
               </div>
               <div className="flex flex-col space-y-2 w-full sm:w-auto">
-                <Button asChild>
-                  <Link href="/games/one-move-math" onClick={() => playSound("ui", isSoundOn)}>
-                    Play Now
-                  </Link>
-                </Button>
+                <Button onClick={() => handleNewGame('math')} className="w-full">New Game</Button>
+                {showMathContinue && (
+                  <Button asChild variant="secondary">
+                    <Link href="/games/one-move-math" onClick={() => playSound("ui", isSoundOn)}>
+                      Continue (Lvl {mathHighestLevel + 1})
+                    </Link>
+                  </Button>
+                )}
               </div>
             </Card>
 
             {/* Game 3: One Move Patterns */}
             <Card className="p-4 flex flex-col sm:flex-row items-center gap-4 bg-secondary/50">
-              <Shapes className="h-10 w-10 text-primary hidden sm:block" />
+              <Shapes className="h-10 w-10 text-primary shrink-0" />
               <div className="flex-grow text-center sm:text-left">
                 <h3 className="font-bold font-headline text-lg">Patterns Puzzle</h3>
                 <p className="text-sm text-muted-foreground">Fix the broken pattern in just one move.</p>
               </div>
               <div className="flex flex-col space-y-2 w-full sm:w-auto">
-                <Button asChild>
-                  <Link href="/games/one-move-patterns" onClick={() => playSound("ui", isSoundOn)}>
-                    Play Now
-                  </Link>
-                </Button>
+                <Button onClick={() => handleNewGame('patterns')} className="w-full">New Game</Button>
+                 {showPatternsContinue && (
+                  <Button asChild variant="secondary">
+                    <Link href="/games/one-move-patterns" onClick={() => playSound("ui", isSoundOn)}>
+                      Continue (Lvl {patternsHighestLevel + 1})
+                    </Link>
+                  </Button>
+                )}
               </div>
             </Card>
 
@@ -169,3 +196,5 @@ export default function Home() {
     </main>
   );
 }
+
+    

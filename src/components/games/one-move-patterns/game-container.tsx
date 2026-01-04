@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -12,6 +13,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import Link from 'next/link';
 import { generatePatternPuzzle, getPatternPuzzleConfig, type PatternPuzzle } from '@/lib/pattern-puzzles';
@@ -322,3 +324,5 @@ export default function GameContainer() {
 function copyGrid(grid: any[]): any[] {
   return grid.map(tile => ({ ...tile }));
 }
+
+    

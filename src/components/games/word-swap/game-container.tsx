@@ -13,6 +13,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import Link from 'next/link';
 import { generatePuzzle, getWordSwapLevelConfig, type WordSwapPuzzle } from '@/lib/word-swap-puzzles';

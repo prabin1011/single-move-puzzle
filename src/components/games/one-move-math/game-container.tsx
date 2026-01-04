@@ -18,7 +18,7 @@ import {
 import Link from 'next/link';
 import { generatePuzzle, getHint, type MathPuzzle, getMathPuzzleConfig } from '@/lib/math-puzzles';
 import PuzzleBoard from './puzzle-board';
-import { Loader2, RefreshCw, CheckCircle, Info, Play, ArrowRight, PartyPopper, BrainCircuit } from 'lucide-react';
+import { Loader2, RefreshCw, CheckCircle, Info, Play, ArrowRight, PartyPopper, BrainCircuit, Plus, Minus, X, Divide } from 'lucide-react';
 import { useSound } from '@/contexts/sound-context';
 import { playSound } from '@/lib/sounds';
 import { cn } from '@/lib/utils';
@@ -174,8 +174,13 @@ export default function GameContainer() {
     >
       <CardHeader className="text-center min-h-[160px] flex flex-col justify-center relative transition-all duration-300">
         <div className={cn("transition-opacity duration-300 absolute inset-0 p-6 flex flex-col justify-center", gameState === 'READY' ? 'opacity-100' : 'opacity-0 invisible')}>
-            <BrainCircuit className="h-12 w-12 mx-auto text-primary" />
-            <CardTitle className="text-3xl font-bold font-headline mt-2">Level {level + 1}: {puzzleConfig.description}</CardTitle>
+            <div className="flex justify-center items-center gap-4 text-primary/50">
+              <Plus className="h-8 w-8" />
+              <Minus className="h-8 w-8" />
+              <X className="h-8 w-8" />
+              <Divide className="h-8 w-8" />
+            </div>
+            <CardTitle className="text-3xl font-bold font-headline mt-4">Level {level + 1}: {puzzleConfig.description}</CardTitle>
             <CardDescription
                 className="
                 mt-2 text-base text-muted-foreground
@@ -360,5 +365,7 @@ export default function GameContainer() {
     </Card>
   );
 }
+
+    
 
     

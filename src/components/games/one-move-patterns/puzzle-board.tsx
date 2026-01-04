@@ -15,12 +15,12 @@ interface PuzzleBoardProps {
 }
 
 const colorMap = {
-  blue: 'bg-blue-500',
-  red: 'bg-red-500',
-  green: 'bg-green-500',
-  yellow: 'bg-yellow-400',
-  purple: 'bg-purple-500',
-  empty: 'bg-muted/50',
+  blue: 'text-blue-500',
+  red: 'text-red-500',
+  green: 'text-green-500',
+  yellow: 'text-yellow-400',
+  purple: 'text-purple-500',
+  empty: 'text-transparent',
 };
 
 const shapeMap = {
@@ -121,16 +121,17 @@ export default function PuzzleBoard({
               key={tile.id}
               onClick={() => handleTileClick(index)}
               className={cn(
-                'flex items-center justify-center rounded-md aspect-square select-none transition-all duration-300 ease-in-out',
-                colorMap[tile.color],
+                'flex items-center justify-center rounded-md aspect-square select-none transition-all duration-300 ease-in-out bg-card border',
                 !isReadOnly && 'cursor-pointer hover:scale-105 active:scale-100',
                 isSelected && 'z-10 scale-[1.08] tile-glow',
                 shouldHighlight && 'z-10 ring-4 ring-red-500 ring-offset-2 ring-offset-background animate-pulse',
                 isReadOnly && 'cursor-default'
               )}
             >
-              {ShapeComponent && <ShapeComponent className="h-2/3 w-2/3 text-white/80" strokeWidth={3} />}
-              {DirectionComponent && <DirectionComponent className="h-2/3 w-2/3 text-white/80" strokeWidth={3} />}
+              <div className={cn('h-2/3 w-2/3', colorMap[tile.color])}>
+                {ShapeComponent && <ShapeComponent className="h-full w-full" strokeWidth={3} />}
+                {DirectionComponent && <DirectionComponent className="h-full w-full" strokeWidth={3} />}
+              </div>
             </div>
           );
         })}

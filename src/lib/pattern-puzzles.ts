@@ -51,186 +51,218 @@ const copyGrid = (grid: Tile[]): Tile[] => {
   return grid.map(tile => ({ ...tile }));
 };
 
-// --- PUZZLE GENERATION LOGIC ---
-
-// --- PILLAR 1: COLOR PATTERNS ---
-
-const generateCheckerboard = (level: number, seed: number): PatternPuzzle => {
-    const size = level < 11 ? 3 : 4;
-    const colors: ['blue' | 'red', 'green' | 'yellow', 'purple' | 'blue'] = [['blue', 'red'], ['green', 'yellow'], ['purple', 'blue']];
-    const [c1, c2] = colors[seed % colors.length];
-
-    const grid = createGrid(size);
-    for (let i = 0; i < grid.length; i++) {
-        const row = Math.floor(i / size);
-        const col = i % size;
-        grid[i].color = (row + col) % 2 === 0 ? c1 : c2;
-    }
-    
-    // Introduce a flaw
+/**
+ * Applies a flaw to a grid by swapping two tiles.
+ */
+const applySwapFlaw = (grid: Tile[], seed: number): { incorrectGrid: Tile[], solution: [number, number] } => {
+    const size = Math.sqrt(grid.length);
     const incorrectGrid = copyGrid(grid);
     const index1 = (seed + 3) % (size * size);
     let index2 = (seed + 7) % (size * size);
     if (index1 === index2) index2 = (index2 + 1) % (size * size);
 
     [incorrectGrid[index1], incorrectGrid[index2]] = [incorrectGrid[index2], incorrectGrid[index1]];
+    return { incorrectGrid, solution: [index1, index2] };
+}
 
-    return {
-        id: `level-${level}-var-${seed}`,
-        grid: incorrectGrid,
-        solution: { type: 'swap', indices: [index1, index2] },
-    };
-};
 
-const generateRowColumn = (level: number, seed: number): PatternPuzzle => {
-    const size = level < 11 ? 3 : 4;
-    const colors: ['blue' | 'red', 'green' | 'yellow'] = [['blue', 'red'], ['green', 'yellow']];
-    const [c1, c2] = colors[seed % colors.length];
+// --- PUZZLE GENERATION LOGIC ---
 
-    const grid = createGrid(size);
-    const byRow = seed % 2 === 0;
+// --- PILLAR 1: SHAPE SEQUENCES ---
 
-    for (let i = 0; i < grid.length; i++) {
-        const row = Math.floor(i / size);
-        const col = i % size;
-        const determinant = byRow ? row : col;
-        grid[i].color = determinant % 2 === 0 ? c1 : c2;
-    }
-
-    const incorrectGrid = copyGrid(grid);
-    const index1 = (seed + 1) % (size * size);
-    let index2 = (seed + 5) % (size * size);
-    if (index1 === index2) index2 = (index2 + 1) % (size * size);
-    [incorrectGrid[index1], incorrectGrid[index2]] = [incorrectGrid[index2], incorrectGrid[index1]];
-
-    return {
-        id: `level-${level}-var-${seed}`,
-        grid: incorrectGrid,
-        solution: { type: 'swap', indices: [index1, index2] },
-    };
-};
-
-// --- PILLAR 2: SHAPE PATTERNS ---
-
-const generateShapeDiagonals = (level: number, seed: number): PatternPuzzle => {
-    const size = level < 26 ? 4 : 5;
-    const shapes: ['circle' | 'square', 'triangle' | 'diamond'] = [['circle', 'square'], ['triangle', 'diamond']];
-    const [s1, s2] = shapes[seed % shapes.length];
-
-    const grid = createGrid(size);
-    for (let i = 0; i < grid.length; i++) {
-        const row = Math.floor(i / size);
-        const col = i % size;
-        grid[i].shape = row === col ? s1 : s2;
-    }
+const generateRowShapeSequence = (level: number, seed: number): PatternPuzzle => {
+    const size = level < 6 ? 3 : 4;
+    const shapes: ('circle' | 'square' | 'triangle')[] = ['circle', 'square', 'triangle'];
     
-    const incorrectGrid = copyGrid(grid);
-    const index1 = (seed) % (size * size);
-    let index2 = (seed + size + 1) % (size * size);
-     if (index1 === index2) index2 = (index2 + 1) % (size * size);
-    [incorrectGrid[index1], incorrectGrid[index2]] = [incorrectGrid[index2], incorrectGrid[index1]];
+    const grid = createGrid(size);
+    for (let i = 0; i < grid.length; i++) {
+        const col = i % size;
+        grid[i].shape = shapes[(col + seed) % shapes.length];
+        grid[i].color = 'blue';
+    }
+
+    const { incorrectGrid, solution } = applySwapFlaw(grid, seed);
     
     return {
         id: `level-${level}-var-${seed}`,
         grid: incorrectGrid,
-        solution: { type: 'swap', indices: [index1, index2] },
+        solution: { type: 'swap', indices: solution },
     };
 };
 
-// --- PILLAR 3: DIRECTION PATTERNS ---
+const generateColumnShapeSequence = (level: number, seed: number): PatternPuzzle => {
+    const size = level < 6 ? 3 : 4;
+    const shapes: ('diamond' | 'square' | 'triangle')[] = ['diamond', 'square', 'triangle'];
 
-const generateDirectionFlow = (level: number, seed: number): PatternPuzzle => {
-    const size = level < 36 ? 4 : 5;
+    const grid = createGrid(size);
+    for (let i = 0; i < grid.length; i++) {
+        const row = Math.floor(i / size);
+        grid[i].shape = shapes[(row + seed) % shapes.length];
+        grid[i].color = 'green';
+    }
+
+    const { incorrectGrid, solution } = applySwapFlaw(grid, seed);
+
+    return {
+        id: `level-${level}-var-${seed}`,
+        grid: incorrectGrid,
+        solution: { type: 'swap', indices: solution },
+    };
+};
+
+// --- PILLAR 2: GRID LOGIC (MATRIX REASONING) ---
+
+const generateShapeSudoku = (level: number, seed: number): PatternPuzzle => {
+    const size = 3; // Keep it 3x3 for simplicity
+    const shapes: ('circle' | 'square' | 'triangle')[] = ['circle', 'square', 'triangle'];
+    const grid = createGrid(size);
+
+    // Create a valid Latin Square (Sudoku basis)
+    for (let i = 0; i < size; i++) {
+        for (let j = 0; j < size; j++) {
+            const index = i * size + j;
+            grid[index].shape = shapes[(i + j + seed) % size];
+            grid[index].color = 'red';
+        }
+    }
+    
+    const { incorrectGrid, solution } = applySwapFlaw(grid, seed);
+
+    return {
+        id: `level-${level}-var-${seed}`,
+        grid: incorrectGrid,
+        solution: { type: 'swap', indices: solution },
+    };
+};
+
+// --- PILLAR 3: DIRECTIONAL PATTERNS ---
+
+const generateDirectionalFlow = (level: number, seed: number): PatternPuzzle => {
+    const size = level < 36 ? 3 : 4;
     const isVertical = seed % 2 === 0;
 
     const grid = createGrid(size);
     for (let i = 0; i < grid.length; i++) {
         const row = Math.floor(i / size);
         const col = i % size;
+        grid[i].shape = 'empty';
+        grid[i].color = 'purple';
         if (isVertical) {
             grid[i].direction = row % 2 === 0 ? 'down' : 'up';
         } else {
             grid[i].direction = col % 2 === 0 ? 'right' : 'left';
         }
     }
-
-    const incorrectGrid = copyGrid(grid);
-    const index1 = (seed + 2) % (size * size);
-    let index2 = (seed + size) % (size * size);
-    if (index1 === index2) index2 = (index2 + 1) % (size * size);
-    [incorrectGrid[index1], incorrectGrid[index2]] = [incorrectGrid[index2], incorrectGrid[index1]];
+    
+    const { incorrectGrid, solution } = applySwapFlaw(grid, seed);
 
     return {
         id: `level-${level}-var-${seed}`,
         grid: incorrectGrid,
-        solution: { type: 'swap', indices: [index1, index2] },
+        solution: { type: 'swap', indices: solution },
+    };
+};
+
+const generateRotationalSymmetry = (level: number, seed: number): PatternPuzzle => {
+    const size = 4;
+    const grid = createGrid(size);
+    const center1 = (size / 2 - 1) * size + (size / 2 - 1);
+    const center2 = center1 + 1;
+    const center3 = center1 + size;
+    const center4 = center1 + size + 1;
+
+    // Define a rotational pattern for the center 2x2
+    grid[center1].direction = 'up';
+    grid[center2].direction = 'right';
+    grid[center3].direction = 'left';
+    grid[center4].direction = 'down';
+
+    // Fill the rest of the grid
+     for (let i = 0; i < grid.length; i++) {
+        if(grid[i].direction === 'empty') grid[i].direction = 'up';
+        grid[i].color = 'yellow';
+    }
+    
+    const { incorrectGrid, solution } = applySwapFlaw(grid, seed);
+
+    return {
+        id: `level-${level}-var-${seed}`,
+        grid: incorrectGrid,
+        solution: { type: 'swap', indices: solution },
     };
 };
 
 // --- PILLAR 4: MIXED LOGIC ---
 
-const generateMixedColorShape = (level: number, seed: number): PatternPuzzle => {
-    const size = 5;
+const generateShapeDeterminesDirection = (level: number, seed: number): PatternPuzzle => {
+    const size = 4;
     const grid = createGrid(size);
-    // Rule: Circles are blue, Squares are red. One tile violates this.
+
+    // Rule: Circles point up, Squares point right.
     for (let i = 0; i < grid.length; i++) {
-        grid[i].shape = i % 2 === 0 ? 'circle' : 'square';
-        grid[i].color = i % 2 === 0 ? 'blue' : 'red';
+        const shape = (i + seed) % 2 === 0 ? 'circle' : 'square';
+        grid[i].shape = shape;
+        grid[i].direction = shape === 'circle' ? 'up' : 'right';
+        grid[i].color = shape === 'circle' ? 'blue' : 'red';
     }
 
-    const incorrectGrid = copyGrid(grid);
-    // Find a circle and a square to swap colors
-    const circleIdx = incorrectGrid.findIndex(t => t.shape === 'circle');
-    const squareIdx = incorrectGrid.findIndex(t => t.shape === 'square');
+    const { incorrectGrid, solution } = applySwapFlaw(grid, seed);
     
-    if (circleIdx !== -1 && squareIdx !== -1) {
-        // Swap the colors, creating two flawed tiles to be swapped back
-        [incorrectGrid[circleIdx].color, incorrectGrid[squareIdx].color] = [incorrectGrid[squareIdx].color, incorrectGrid[circleIdx].color];
-         return {
-            id: `level-${level}-var-${seed}`,
-            grid: incorrectGrid,
-            solution: { type: 'swap', indices: [circleIdx, squareIdx] },
-        };
-    }
-    // Fallback if something goes wrong
-    return generateCheckerboard(level, seed);
+    return {
+        id: `level-${level}-var-${seed}`,
+        grid: incorrectGrid,
+        solution: { type: 'swap', indices: solution },
+    };
 };
-
 
 // --- LEVEL DEFINITIONS ---
 
 export const patternLevels: LevelTemplate[] = [
-    // Levels 1-10: Color Patterns
-    ...Array.from({ length: 10 }, (_, i) => ({
+    // Levels 1-10: Shape Sequences
+    ...Array.from({ length: 5 }, (_, i) => ({
         level: i + 1,
-        concept: i < 5 ? "Checkerboard Colors" : "Row & Column Colors",
+        concept: "Row Shape Sequence",
         gridSize: 3 as 3,
-        hint: i < 5 ? "Look for the tile that breaks the alternating color pattern." : "Does the color pattern follow the rows or the columns?",
-        generate: i < 5 ? generateCheckerboard : generateRowColumn,
+        hint: "The shapes in each row follow a repeating pattern.",
+        generate: generateRowShapeSequence,
     })),
-    // Levels 11-25: Shape Patterns
-    ...Array.from({ length: 15 }, (_, i) => ({
-        level: i + 11,
-        concept: "Shape Patterns",
-        gridSize: 4 as 4,
-        hint: "One shape is out of place. Look at the diagonals and lines.",
-        generate: generateShapeDiagonals,
+    ...Array.from({ length: 5 }, (_, i) => ({
+        level: i + 6,
+        concept: "Column Shape Sequence",
+        gridSize: 3 as 3,
+        hint: "The shapes in each column follow a repeating pattern.",
+        generate: generateColumnShapeSequence,
     })),
-    // Levels 26-40: Directional Flow
-    ...Array.from({ length: 15 }, (_, i) => ({
-        level: i + 26,
-        concept: "Directional Flow",
-        gridSize: 4 as 4,
-        hint: "All arrows should follow a simple flow. Which one is going the wrong way?",
-        generate: generateDirectionFlow,
-    })),
-    // Levels 41-50: Mixed Logic
+    // Levels 11-20: Grid Logic (Matrix Reasoning)
     ...Array.from({ length: 10 }, (_, i) => ({
-        level: i + 41,
+        level: i + 11,
+        concept: "Shape Sudoku",
+        gridSize: 3 as 3,
+        hint: "Each row and column must contain one of each shape.",
+        generate: generateShapeSudoku,
+    })),
+    // Levels 21-35: Directional Patterns
+    ...Array.from({ length: 10 }, (_, i) => ({
+        level: i + 21,
+        concept: "Directional Flow",
+        gridSize: 3 as 3,
+        hint: "The arrows should all flow in a consistent direction for each row or column.",
+        generate: generateDirectionalFlow,
+    })),
+     ...Array.from({ length: 5 }, (_, i) => ({
+        level: i + 31,
+        concept: "Rotational Symmetry",
+        gridSize: 4 as 4,
+        hint: "Look for a pattern of rotation, maybe in the center.",
+        generate: generateRotationalSymmetry,
+    })),
+    // Levels 36-50: Mixed Logic
+    ...Array.from({ length: 15 }, (_, i) => ({
+        level: i + 36,
         concept: "Mixed Logic",
-        gridSize: 5 as 5,
-        hint: "There's a rule connecting color and shape. Find the tile that breaks it.",
-        generate: generateMixedColorShape,
+        gridSize: 4 as 4,
+        hint: "There's a rule connecting a tile's shape to its direction. Find the tile that breaks the rule.",
+        generate: generateShapeDeterminesDirection,
     })),
 ];
 

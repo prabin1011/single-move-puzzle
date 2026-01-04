@@ -15,23 +15,15 @@ export interface MathPuzzle {
   correctSolution: TileValue[];
 }
 
-interface PuzzleVariation {
-  equation: string;        // correct equation
-  swap: [string, string];  // tokens to swap to create the puzzle
-}
-
 export interface MathLevel {
   level: number;
   description: string;
   hint: string;
-  variations: PuzzleVariation[];
+  generate: (levelIndex: number, variation: number) => MathPuzzle;
 }
 
-/**
- * Tokenise an equation string into tile values.
- * Every token must be separated by spaces: "10 + 5 = 15".
- * Multi-digit numbers stay as a single tile.
- */
+/* ---------- helpers: basic token building ---------- */
+
 const toValues = (equation: string): TileValue[] => {
   const parts = equation.split(' ').filter(p => p.trim() !== '');
   return parts.map(part => {
@@ -43,15 +35,12 @@ const toValues = (equation: string): TileValue[] => {
   });
 };
 
-/**
- * Convert values into tiles. Only '=' is locked.
- */
-const toTiles = (values: TileValue[]): Tile[] => {
-  return values.map(value => ({
+const toTiles = (values: TileValue[]): Tile[] =>
+  values.map((value) => ({
     value,
-    isLocked: value === '=', // everything else (numbers & operators) is swappable
+    // ⛔ lock ONLY the equals sign
+    isLocked: value === '=',
   }));
-};
 
 /**
  * Find the indices where scrambled and correct boards differ.
@@ -84,6 +73,7 @@ const findSwapIndices = (
   return [0, 1];
 };
 
+
 /**
  * Swap the first occurrence of val1 and val2 *as tokens* in the equation string.
  * Equation must be space-separated.
@@ -109,220 +99,267 @@ const createScrambledEquation = (
   return parts.join(' ');
 };
 
-// -----------------------------------------------------------------------------
-// PUZZLE VARIATION GENERATORS
-// -----------------------------------------------------------------------------
 
-/**
- * Levels 1–10 – Basic one-step equations (add/sub) with single-digit numbers.
- */
-const makeAddSubVariations = (seed: number): PuzzleVariation[] => {
-  return Array.from({ length: 10 }, (_, i) => {
-    const a = 2 + ((seed + i) % 8);          // 2..9
-    const b = 1 + ((seed * 2 + i) % 8);      // 1..8
+/* ---------- helpers: swap choice & puzzle creation ---------- */
 
-    if (i % 2 === 0) {
-      // a + b = result, swap a <-> result
-      const result = a + b;
-      return {
-        equation: `${a} + ${b} = ${result}`,
-        swap: [`${a}`, `${result}`],
-      };
-    } else {
-      // (a + b) - b = a, swap (a+b) <-> a
-      const sum = a + b;
-      return {
-        equation: `${sum} - ${b} = ${a}`,
-        swap: [`${sum}`, `${a}`],
-      };
-    }
-  });
+const createPuzzleFromTokens = (
+  tokens: TileValue[],
+  scrambled: TileValue[],
+  swappedIndices: [number, number],
+  levelIndex: number,
+  variation: number
+): MathPuzzle => {
+  return {
+    id: `L${levelIndex + 1}-V${variation}`,
+    board: toTiles(scrambled),
+    swappedIndices,
+    correctSolution: tokens,
+  };
 };
 
-/**
- * Levels 11–20 – Two-digit practice (add & sub).
- */
-const makeMultiDigitVariations = (seed: number): PuzzleVariation[] => {
-  return Array.from({ length: 10 }, (_, i) => {
-    let a = 10 + ((seed * 3 + i * 2) % 40);  // ~10..49
-    let b = 5 + ((seed + i) % 15);          // ~5..19
+/* ---------- generators for difficulty bands ---------- */
 
-    if (i % 2 === 0) {
-      // a + b = result, swap b <-> result
-      const result = a + b;
-      return {
-        equation: `${a} + ${b} = ${result}`,
-        swap: [`${b}`, `${result}`],
-      };
-    } else {
-      // a - b = result, ensure non-negative
-      if (a - b < 0) {
-        // simple fix: use (a + b) - a = b
-        const sum = a + b;
-        return {
-          equation: `${sum} - ${a} = ${b}`,
-          swap: [`${sum}`, `${b}`],
-        };
-      }
-      const result = a - b;
-      return {
-        equation: `${a} - ${b} = ${result}`,
-        swap: [`${a}`, `${result}`],
-      };
-    }
-  });
-};
+const makeAddSubGenerator = (
+  min: number,
+  max: number,
+  allowSubtract: boolean
+): ((levelIndex: number, variation: number) => MathPuzzle) => {
+    const span = max - min + 1;
+    return (levelIndex, variation) => {
+        const seed = levelIndex * 17 + variation * 13;
 
-/**
- * Levels 21–30 – Multiplication focus.
- */
-const makeMultiplicationVariations = (seed: number): PuzzleVariation[] => {
-  return Array.from({ length: 10 }, (_, i) => {
-    const a = 2 + ((seed + i) % 8);         // 2..9
-    const b = 2 + ((seed * 2 + i) % 8);     // 2..9
-    const product = a * b;
+        let a = min + ((seed * 3) % span);
+        let b = min + ((seed * 7 + 1) % span);
 
-    // swap left operand with result
-    return {
-      equation: `${a} * ${b} = ${product}`,
-      swap: [`${a}`, `${product}`],
+        let op: '+' | '-' = '+';
+        if (allowSubtract && variation % 2 === 1) {
+            op = '-';
+            if (a < b) [a, b] = [b, a]; // Ensure positive result
+        }
+
+        const correctEq = `${a} ${op} ${b} = ${op === '+' ? a + b : a - b}`;
+        const correctTokens = toValues(correctEq);
+
+        // Swap first operand with result
+        const swap: [string, string] = [`${a}`, `${op === '+' ? a + b : a - b}`];
+        const scrambledEq = createScrambledEquation(correctEq, swap);
+        const scrambledTokens = toValues(scrambledEq);
+        const swappedIndices = findSwapIndices(scrambledTokens, correctTokens);
+
+        return createPuzzleFromTokens(correctTokens, scrambledTokens, swappedIndices, levelIndex, variation);
     };
-  });
 };
 
-/**
- * Levels 31–40 – Division and inverse relationships.
- */
-const makeDivisionVariations = (seed: number): PuzzleVariation[] => {
-  return Array.from({ length: 10 }, (_, i) => {
-    const a = 2 + ((seed + i) % 9);         // 2..10
-    const b = 2 + ((seed * 3 + i) % 8);     // 2..9
-    const dividend = a * b;
+const makeMultiplicationGenerator = (
+  minA: number,
+  maxA: number,
+  minB: number,
+  maxB: number
+): ((levelIndex: number, variation: number) => MathPuzzle) => {
+    const spanA = maxA - minA + 1;
+    const spanB = maxB - minB + 1;
+    return (levelIndex, variation) => {
+        const seed = levelIndex * 23 + variation * 19;
+        const a = minA + (seed % spanA);
+        const b = minB + ((seed * 3 + 1) % spanB);
+        const correctEq = `${a} * ${b} = ${a * b}`;
+        const correctTokens = toValues(correctEq);
+        
+        // Swap one factor with the result
+        const swap: [string, string] = variation % 2 === 0 ? [`${a}`, `${a*b}`] : [`${b}`, `${a*b}`];
+        const scrambledEq = createScrambledEquation(correctEq, swap);
+        const scrambledTokens = toValues(scrambledEq);
+        const swappedIndices = findSwapIndices(scrambledTokens, correctTokens);
 
-    // dividend / b = a, swap dividend <-> a
-    return {
-      equation: `${dividend} / ${b} = ${a}`,
-      swap: [`${dividend}`, `${a}`],
+        return createPuzzleFromTokens(correctTokens, scrambledTokens, swappedIndices, levelIndex, variation);
     };
-  });
 };
 
-/**
- * Levels 41–50 – Mixed operations & order-of-operations with operator swaps.
- * Equation form: a + b * c = a + b*c; we swap the first operand and the '+'.
- * This forces at least one operator tile to be part of the swap.
- */
-const makeMixedVariations = (seed: number): PuzzleVariation[] => {
-  return Array.from({ length: 10 }, (_, i) => {
-    const a = 5 + ((seed + i) % 10);        // 5..14
-    const b = 2 + ((seed * 2 + i) % 8);     // 2..9
-    const c = 2 + ((seed * 3 + i) % 8);     // 2..9
-    const result = a + b * c;
+const makeDivisionGenerator = (
+  minQuotient: number,
+  maxQuotient: number,
+  minDivisor: number,
+  maxDivisor: number
+): ((levelIndex: number, variation: number) => MathPuzzle) => {
+    const spanQ = maxQuotient - minQuotient + 1;
+    const spanD = maxDivisor - minDivisor + 1;
+    return (levelIndex, variation) => {
+        const seed = levelIndex * 29 + variation * 31;
+        const q = minQuotient + (seed % spanQ);
+        const d = minDivisor + ((seed * 5 + 1) % spanD);
+        const dividend = q * d;
+        const correctEq = `${dividend} / ${d} = ${q}`;
+        const correctTokens = toValues(correctEq);
 
-    return {
-      equation: `${a} + ${b} * ${c} = ${result}`,
-      // swap the first operand with '+', so one of the tiles is an operator
-      swap: ['+', `${a}`],
+        // Swap quotient with dividend
+        const swap: [string, string] = [`${dividend}`, `${q}`];
+        const scrambledEq = createScrambledEquation(correctEq, swap);
+        const scrambledTokens = toValues(scrambledEq);
+        const swappedIndices = findSwapIndices(scrambledTokens, correctTokens);
+        
+        return createPuzzleFromTokens(correctTokens, scrambledTokens, swappedIndices, levelIndex, variation);
     };
-  });
 };
 
-// -----------------------------------------------------------------------------
-// BUILD 50 LEVELS × 10 VARIATIONS
-// -----------------------------------------------------------------------------
+const makeMixedGenerator = (
+  aRange: [number, number],
+  bRange: [number, number],
+  cRange: [number, number]
+): ((levelIndex: number, variation: number) => MathPuzzle) => {
+    const [aMin, aMax] = aRange;
+    const [bMin, bMax] = bRange;
+    const [cMin, cMax] = cRange;
 
-const buildMathLevels = (): MathLevel[] => {
+    const spanA = aMax - aMin + 1;
+    const spanB = bMax - bMin + 1;
+    const spanC = cMax - cMin + 1;
+
+    return (levelIndex, variation) => {
+        const seed = levelIndex * 37 + variation * 41;
+        let a = aMin + (seed % spanA);
+        const b = bMin + ((seed * 3) % spanB);
+        const c = cMin + ((seed * 5) % spanC);
+        
+        const op1: '+' | '-' = variation % 3 === 0 ? '-' : '+';
+        if (op1 === '-' && a < (b*c)) {
+            a += (b*c); // Ensure positive result
+        }
+        
+        const result = op1 === '+' ? a + (b * c) : a - (b * c);
+        const correctEq = `${a} ${op1} ${b} * ${c} = ${result}`;
+        const correctTokens = toValues(correctEq);
+        
+        // Swap an operator with a number
+        const swap: [string, string] = variation % 2 === 0 ? [op1, `${c}`] : ['*', `${a}`];
+        const scrambledEq = createScrambledEquation(correctEq, swap);
+        const scrambledTokens = toValues(scrambledEq);
+        const swappedIndices = findSwapIndices(scrambledTokens, correctTokens);
+
+        return createPuzzleFromTokens(correctTokens, scrambledTokens, swappedIndices, levelIndex, variation);
+    };
+};
+
+/* ---------- level table: 50 levels, 10 variations each ---------- */
+
+const mathLevels: MathLevel[] = (() => {
   const levels: MathLevel[] = [];
 
-  // Levels 1–10: Basic add/sub
-  for (let i = 0; i < 10; i++) {
+  // Level 1 – baby addition tutorial
+  levels.push({
+    level: 1,
+    description: 'Getting Started',
+    hint: 'Swap the two tiles that make this tiny addition fact true.',
+    generate: makeAddSubGenerator(1, 9, false),
+  });
+
+  // 🔥 Level 2 – already mixed 2-digit + ×
+  levels.push({
+    level: 2,
+    description: 'Early Mix: Add & Multiply',
+    hint: 'Do the multiplication first, then the addition or subtraction. A digit or an operator is in the wrong place.',
+    generate: makeMixedGenerator([10, 40], [2, 9], [2, 9]),
+  });
+
+  // Levels 3–4 – two-digit add/sub
+  for (let i = 0; i < 2; i++) {
     levels.push({
-      level: i + 1,
-      description: 'Basic Addition & Subtraction',
-      hint: 'Check whether the answer matches the operation. Two tiles have swapped places.',
-      variations: makeAddSubVariations(i),
+      level: 3 + i,
+      description: 'Two-Digit Add & Subtract',
+      hint: 'Check the tens and ones carefully on both sides of the equals sign.',
+      generate: makeAddSubGenerator(5, 40, true),
     });
   }
 
-  // Levels 11–20: Two-digit practice
-  for (let i = 0; i < 10; i++) {
+  // Levels 5–8 – early multiplication
+  for (let i = 0; i < 4; i++) {
     levels.push({
-      level: 11 + i,
-      description: 'Two-Digit Numbers',
-      hint: 'Most answers are two-digit numbers now. Look carefully for a swapped pair.',
-      variations: makeMultiDigitVariations(i),
+      level: 5 + i,
+      description: 'Multiplication Basics',
+      hint: 'Think in times tables. One factor, the product, or even the × sign is wrong.',
+      generate: makeMultiplicationGenerator(2, 9, 2, 9),
     });
   }
 
-  // Levels 21–30: Multiplication
+  // Levels 9–12 – early division
+  for (let i = 0; i < 4; i++) {
+    levels.push({
+      level: 9 + i,
+      description: 'Division & Inverses',
+      hint: 'Remember: dividend ÷ divisor = quotient. Something on the left or right is swapped.',
+      generate: makeDivisionGenerator(2, 9, 2, 9),
+    });
+  }
+
+  // Levels 13–20 – harder 2-digit add/sub
+  for (let i = 0; i < 8; i++) {
+    levels.push({
+      level: 13 + i,
+      description: 'Challenging Two-Digit Equations',
+      hint: 'Use mental column addition/subtraction. One tile belongs somewhere else.',
+      generate: makeAddSubGenerator(10, 99, true),
+    });
+  }
+
+  // Levels 21–30 – harder multiplication
   for (let i = 0; i < 10; i++) {
     levels.push({
       level: 21 + i,
-      description: 'Multiplication Practice',
-      hint: 'Think of multiplication tables. The product tile might be in the wrong place.',
-      variations: makeMultiplicationVariations(i),
+      description: 'Multiplication Workout',
+      hint: 'Larger factors mean more digits. Check both the factors and the product.',
+      generate: makeMultiplicationGenerator(3, 12, 3, 12),
     });
   }
 
-  // Levels 31–40: Division & inverses
+  // Levels 31–40 – harder division
   for (let i = 0; i < 10; i++) {
     levels.push({
       level: 31 + i,
-      description: 'Division & Inverses',
-      hint: '“Product ÷ factor = other factor.” One of those tiles has swapped.',
-      variations: makeDivisionVariations(i),
+      description: 'Division Drills',
+      hint: 'Imagine the hidden multiplication fact: dividend = divisor × quotient.',
+      generate: makeDivisionGenerator(3, 12, 3, 12),
     });
   }
 
-  // Levels 41–50: Mixed & order of operations
-  for (let i = 0; i < 10; i++) {
+  // Levels 41–45 – mixed operations, moderate ranges
+  for (let i = 0; i < 5; i++) {
     levels.push({
       level: 41 + i,
       description: 'Order of Operations',
-      hint: 'Remember: multiplication happens before addition. Sometimes even an operator is out of place!',
-      variations: makeMixedVariations(i),
+      hint: 'Do the multiplication first, then the addition or subtraction. Even an operator might be wrong.',
+      generate: makeMixedGenerator([5, 30], [2, 9], [2, 9]),
+    });
+  }
+
+  // Levels 46–50 – mixed operations, big numbers (final boss zone)
+  for (let i = 0; i < 5; i++) {
+    levels.push({
+      level: 46 + i,
+      description: 'Ultimate Challenge',
+      hint: 'Big numbers and two operations. Track the math step by step to find the swapped tiles.',
+      generate: makeMixedGenerator([20, 80], [3, 12], [3, 12]),
     });
   }
 
   return levels;
-};
+})();
 
-export const mathLevels: MathLevel[] = buildMathLevels();
+/* ---------- public API ---------- */
 
-// -----------------------------------------------------------------------------
-// PUBLIC API
-// -----------------------------------------------------------------------------
-
-export function getMathPuzzleConfig(levelIndex: number): MathLevel {
-  // levelIndex is zero-based in the game code
-  const clamped = Math.max(0, Math.min(levelIndex, mathLevels.length - 1));
-  return mathLevels[clamped];
+export function getMathPuzzleConfig(level: number): MathLevel {
+  const idx = Math.max(0, Math.min(level, mathLevels.length - 1));
+  return mathLevels[idx];
 }
 
-export function generatePuzzle(levelIndex: number, retryCount: number): MathPuzzle {
-  const config = getMathPuzzleConfig(levelIndex);
-
-  // Cycle variations per level on each retry (0..9)
-  const variationIndex = retryCount % config.variations.length;
-  const { equation: correctEquation, swap } = config.variations[variationIndex];
-
-  const scrambledEquation = createScrambledEquation(correctEquation, swap);
-
-  const correctValues = toValues(correctEquation);
-  const scrambledValues = toValues(scrambledEquation);
-
-  const board = toTiles(scrambledValues);
-  const swappedIndices = findSwapIndices(scrambledValues, correctValues);
-
-  return {
-    id: `L${config.level}-V${variationIndex}`,
-    board,
-    swappedIndices,
-    correctSolution: correctValues,
-  };
+export function generatePuzzle(
+  level: number,
+  retryCount: number
+): MathPuzzle {
+  const config = getMathPuzzleConfig(level);
+  const variation = retryCount % 10; // 0..9 → 10 variations per level
+  return config.generate(level, variation);
 }
 
-export function getHint(_puzzle: MathPuzzle, levelIndex: number): string {
-  const config = getMathPuzzleConfig(levelIndex);
+export function getHint(_puzzle: MathPuzzle, level: number): string {
+  const config = getMathPuzzleConfig(level);
   return config.hint;
 }

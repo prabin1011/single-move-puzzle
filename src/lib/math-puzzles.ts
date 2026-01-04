@@ -1,3 +1,4 @@
+
 'use client';
 
 export type TileValue = number | string;
@@ -53,12 +54,14 @@ const toValues = (equation: string): TileValue[] => {
 
 /**
  * Converts an array of TileValues into an array of Tile objects.
- * Locks operators and the equals sign by default.
+ * The equals sign is always locked; other tiles are swappable by default.
  */
 const toTiles = (values: TileValue[]): Tile[] => {
     return values.map(value => ({
         value,
-        isLocked: ['+', '-', '*', '/', '='].includes(value as string),
+        // Only the equals sign should be permanently locked.
+        // Other tiles are unlocked and their swappability is determined by the game logic.
+        isLocked: value === '=',
     }));
 };
 
@@ -653,10 +656,6 @@ export function generatePuzzle(level: number, retryCount: number): MathPuzzle {
     
     const swappedIndices = findSwapIndices(scrambledValues, correctValues);
 
-    // Make the swappable tiles selectable
-    if (board[swappedIndices[0]]) board[swappedIndices[0]].isLocked = false;
-    if (board[swappedIndices[1]]) board[swappedIndices[1]].isLocked = false;
-    
     return {
         id: `${config.level}-${variationIndex}`,
         board,
@@ -669,3 +668,5 @@ export function getHint(puzzle: MathPuzzle, level: number): string {
     const config = getMathPuzzleConfig(level);
     return config.hint;
 }
+
+    

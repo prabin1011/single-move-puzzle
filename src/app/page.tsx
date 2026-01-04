@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth, useUser } from '@/firebase';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
-import { Loader2, Landmark, Calculator, Shapes } from 'lucide-react';
+import { Loader2, Landmark, Calculator, Shapes, BookText } from 'lucide-react';
 import { levels } from '@/lib/levels';
 import type { Level } from '@/lib/levels';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -42,6 +42,7 @@ export default function Home() {
   const [landmarkHighestLevel, setLandmarkHighestLevel] = useState(0);
   const [mathHighestLevel, setMathHighestLevel] = useState(0);
   const [patternsHighestLevel, setPatternsHighestLevel] = useState(0);
+  const [wordSwapHighestLevel, setWordSwapHighestLevel] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
@@ -69,6 +70,11 @@ export default function Home() {
         setPatternsHighestLevel(parseInt(savedPatternLevel, 10));
     }
 
+    const savedWordSwapLevel = localStorage.getItem('wordSwapHighestLevel');
+    if (savedWordSwapLevel) {
+        setWordSwapHighestLevel(parseInt(savedWordSwapLevel, 10));
+    }
+
     setIsLoading(false);
   }, []);
 
@@ -79,7 +85,7 @@ export default function Home() {
     }
   }, [isUserLoading, user, auth]);
 
-  const handleNewGame = (game: 'landmark' | 'math' | 'patterns') => {
+  const handleNewGame = (game: 'landmark' | 'math' | 'patterns' | 'word-swap') => {
     playSound("ui", isSoundOn);
 
     if (game === 'landmark') {
@@ -98,12 +104,17 @@ export default function Home() {
         localStorage.removeItem('patternCurrentLevel');
         localStorage.removeItem('patternHighestLevel');
         router.push('/games/one-move-patterns');
+    } else if (game === 'word-swap') {
+        localStorage.removeItem('wordSwapCurrentLevel');
+        localStorage.removeItem('wordSwapHighestLevel');
+        router.push('/games/word-swap');
     }
   };
   
   const showLandmarkContinue = !isLoading && landmarkHighestLevel > 0;
   const showMathContinue = !isLoading && mathHighestLevel > 0;
   const showPatternsContinue = !isLoading && patternsHighestLevel > 0;
+  const showWordSwapContinue = !isLoading && wordSwapHighestLevel > 0;
 
   if (isUserLoading || !auth) {
     return (
@@ -190,11 +201,29 @@ export default function Home() {
               </div>
             </Card>
 
+            {/* Game 4: Word Swap Puzzle */}
+            <Card className="p-4 flex flex-col sm:flex-row items-center gap-4 bg-secondary/50">
+              <BookText className="h-10 w-10 text-primary shrink-0" />
+              <div className="flex-grow text-center sm:text-left">
+                <h3 className="font-bold font-headline text-lg">Word Swap Puzzle</h3>
+                <p className="text-sm text-muted-foreground">Fix the broken word relationships in one move.</p>
+              </div>
+              <div className="flex flex-col space-y-2 w-full sm:w-auto">
+                <Button onClick={() => handleNewGame('word-swap')} className="w-full">New Game</Button>
+                 {showWordSwapContinue && (
+                  <Button asChild variant="secondary">
+                    <Link href="/games/word-swap" onClick={() => playSound("ui", isSoundOn)}>
+                      Continue (Lvl {wordSwapHighestLevel + 1})
+                    </Link>
+                  </Button>
+                )}
+              </div>
+            </Card>
+
+
           </div>
         </CardContent>
       </Card>
     </main>
   );
 }
-
-    

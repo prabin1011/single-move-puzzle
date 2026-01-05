@@ -16,9 +16,9 @@ const headlineFont = Baloo_2({
 });
 
 const APP_NAME = 'One Move Puzzle';
-const APP_DEFAULT_TITLE = 'One Move Puzzle';
+const APP_DEFAULT_TITLE = 'One Move Puzzle - Smart Brain Games for All Ages';
 const APP_TITLE_TEMPLATE = '%s - One Move Puzzle';
-const APP_DESCRIPTION = 'A calm, educational puzzle game about famous landmarks. Can you solve the puzzle in just one move?';
+const APP_DESCRIPTION = 'A collection of calm, educational puzzle games including picture puzzles, math puzzles, pattern puzzles, and more. Can you solve it in one move?';
 const APP_URL = 'https://one-move-puzzle.web.app'; // Replace with your production URL
 
 export const metadata: Metadata = {
@@ -30,15 +30,23 @@ export const metadata: Metadata = {
   description: APP_DESCRIPTION,
   keywords: [
     'puzzle game',
-    'landmark quiz',
-    'geography game',
-    'brain teaser',
-    'visual puzzle',
     'one move puzzle',
-    'educational game',
-    'travel trivia',
+    'smart puzzle',
+    'small puzzle',
     'jigsaw puzzle',
+    'picture puzzle',
+    'symbol puzzle',
+    'math puzzle',
+    'word puzzle',
+    'pattern puzzle',
+    'brain teaser',
+    'educational game',
     'calm game',
+    'logic puzzle',
+    'geography game',
+    'landmark quiz',
+    'PWA game',
+    'offline game',
   ],
   applicationName: APP_NAME,
   appleWebApp: {
@@ -60,7 +68,7 @@ export const metadata: Metadata = {
         url: `${APP_URL}/og-image.png`,
         width: 1200,
         height: 630,
-        alt: 'One Move Puzzle Game',
+        alt: 'One Move Puzzle Game Collection',
       },
     ],
   },

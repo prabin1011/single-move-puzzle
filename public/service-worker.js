@@ -2,12 +2,16 @@
 const CACHE_NAME = 'one-move-puzzle-cache-v1';
 const urlsToCache = [
   '/',
-  '/play',
   '/manifest.json',
-  '/favicon.ico',
   '/logo.png',
-  '/logo-192.png',
-  '/logo-512.png',
+  '/logo-72x72.png',
+  '/logo-96x96.png',
+  '/logo-128x128.png',
+  '/logo-144x144.png',
+  '/logo-152x152.png',
+  '/logo-192x192.png',
+  '/logo-384x384.png',
+  '/logo-512x512.png',
   '/sounds/click.wav',
   '/sounds/ui.wav',
   '/sounds/success.wav',
@@ -16,43 +20,58 @@ const urlsToCache = [
   '/sounds/start.wav',
   '/sounds/preview_done.wav',
   '/sounds/swap.wav',
+  '/about',
+  '/contact',
+  '/privacy',
+  '/disclaimer',
+  '/games/one-move-landmark',
+  '/games/one-move-math',
+  '/games/one-move-patterns',
+  '/games/symbol-puzzle',
+  '/games/word-swap',
 ];
 
-self.addEventListener('install', event => {
+self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => {
+      .then((cache) => {
         console.log('Opened cache');
-        // AddAll can fail if one of the resources fails to be fetched.
-        // For a more robust solution, fetch and cache one by one.
+        // Add all core assets to the cache
         return cache.addAll(urlsToCache);
       })
   );
 });
 
-self.addEventListener('fetch', event => {
+self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request)
-      .then(response => {
+      .then((response) => {
         // Cache hit - return response
         if (response) {
           return response;
         }
 
-        // Clone the request because it's a stream and can only be consumed once.
+        // IMPORTANT: Clone the request. A request is a stream and
+        // can only be consumed once. Since we are consuming this
+        // once by cache and once by the browser for fetch, we need
+        // to clone the response.
         const fetchRequest = event.request.clone();
 
         return fetch(fetchRequest).then(
-          response => {
+          (response) => {
             // Check if we received a valid response
-            if(!response || response.status !== 200 || response.type !== 'basic') {
+            if (!response || response.status !== 200 || response.type !== 'basic') {
               return response;
             }
 
+            // IMPORTANT: Clone the response. A response is a stream
+            // and because we want the browser to consume the response
+            // as well as the cache consuming the response, we need
+            // to clone it so we have two streams.
             const responseToCache = response.clone();
 
             caches.open(CACHE_NAME)
-              .then(cache => {
+              .then((cache) => {
                 cache.put(event.request, responseToCache);
               });
 
@@ -60,15 +79,15 @@ self.addEventListener('fetch', event => {
           }
         );
       })
-    );
+  );
 });
 
-self.addEventListener('activate', event => {
+self.addEventListener('activate', (event) => {
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
-    caches.keys().then(cacheNames => {
+    caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.map(cacheName => {
+        cacheNames.map((cacheName) => {
           if (cacheWhitelist.indexOf(cacheName) === -1) {
             return caches.delete(cacheName);
           }

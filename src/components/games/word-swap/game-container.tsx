@@ -26,7 +26,7 @@ import { cn } from '@/lib/utils';
 type GameState = 'READY' | 'PLAYING' | 'SOLVED_VISUALIZING' | 'SOLVED_COMPLETE' | 'FAILED' | 'GAME_OVER' | 'ALL_LEVELS_COMPLETE';
 
 const MAX_MISTAKES = 0; // Game over on first mistake
-const TOTAL_LEVELS = 50;
+const TOTAL_LEVELS = 100; // Updated to 100 levels
 
 export default function GameContainer() {
   const [level, setLevel] = useState(0);
@@ -37,11 +37,22 @@ export default function GameContainer() {
   const [isLoading, setIsLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
   const { isSoundOn } = useSound();
+  const [currentHint, setCurrentHint] = useState('');
 
   const loadPuzzle = (currentLevel: number, retries: number) => {
     setIsLoading(true);
     const newPuzzle = generatePuzzle(currentLevel, retries);
     setPuzzle(newPuzzle);
+    
+    // Set hint for the new puzzle
+    const config = getWordSwapLevelConfig(currentLevel);
+    const hints = [
+      config.hint,
+      `One of the swapped words is related to "${newPuzzle.pairs[0].left}".`,
+      `The relationship you're looking for is: ${config.relation.replace('_', ' ')}.`,
+    ];
+    setCurrentHint(hints[retries % hints.length]);
+
     setIsLoading(false);
   };
   
@@ -181,7 +192,7 @@ export default function GameContainer() {
                   <AlertDialogTitle className="font-headline">Hint for Level {level + 1}</AlertDialogTitle>
                   <AlertDialogDescription asChild>
                       <div className="text-left text-base p-4 rounded-lg mt-2 bg-yellow-100/70 dark:bg-yellow-900/40 border border-yellow-200/70 dark:border-yellow-700/60">
-                        {puzzleConfig.hint}
+                        {currentHint}
                       </div>
                   </AlertDialogDescription>
                 </AlertDialogHeader>
@@ -245,12 +256,14 @@ export default function GameContainer() {
                 puzzle={{
                   ...puzzle,
                   pairs: puzzle.pairs.map((p, i) => {
-                    const solvedPair = generatePuzzle(level, retryCount).pairs[i];
-                     const solutionIndices = puzzle.solutionIndices;
-                     if(i === solutionIndices[0] || i === solutionIndices[1]) {
-                        return { left: p.left, right: p.left === solvedPair.left ? solvedPair.right : p.right };
-                     }
-                     return p;
+                    const solutionIndices = puzzle.solutionIndices;
+                    if (i === solutionIndices[0]) {
+                        return { left: p.left, right: puzzle.pairs[solutionIndices[1]].right };
+                    }
+                    if (i === solutionIndices[1]) {
+                        return { left: p.left, right: puzzle.pairs[solutionIndices[0]].right };
+                    }
+                    return p;
                   })
                 }}
                 onSuccess={() => {}}

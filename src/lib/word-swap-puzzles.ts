@@ -1,8 +1,6 @@
 
 'use client';
 
-import { number } from "zod";
-
 export type WordRelationType =
   | 'synonym'
   | 'antonym'
@@ -441,43 +439,46 @@ export function getWordSwapLevelConfig(levelIndex: number): WordSwapLevelConfig 
     return wordSwapLevels[clampedIndex];
 }
 
-function seededShuffleAndTake<T>(array: T[], seed: number, count: number): T[] {
-    const shuffled = [...array];
-    let currentIndex = shuffled.length;
-    const random = () => {
-      let x = Math.sin(seed++) * 10000;
-      return x - Math.floor(x);
-    };
-    while (currentIndex !== 0) {
-      const randomIndex = Math.floor(random() * currentIndex);
-      currentIndex -= 1;
-      const temporaryValue = shuffled[currentIndex];
-      shuffled[currentIndex] = shuffled[randomIndex];
-      shuffled[randomIndex] = temporaryValue;
-    }
-    return shuffled.slice(0, count);
+function shuffleAndTake<T>(array: T[], count: number): T[] {
+  const copy = [...array];
+  // Fisher–Yates shuffle
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy.slice(0, count);
 }
 
 export function generatePuzzle(levelIndex: number, retryCount: number): WordSwapPuzzle {
-    const config = getWordSwapLevelConfig(levelIndex);
-    const bank = allBanks[config.bankId];
-    if (!bank) {
-        throw new Error(`Word bank with id "${config.bankId}" not found.`);
-    }
+  const config = getWordSwapLevelConfig(levelIndex);
+  const bank = allBanks[config.bankId];
+  if (!bank) {
+    throw new Error(`Word bank with id "${config.bankId}" not found.`);
+  }
 
-    const seed = levelIndex * 20 + (retryCount % 20);
-    const puzzlePairs = seededShuffleAndTake(bank.pairs, seed, config.itemsPerPuzzle);
-    
-    const scrambledPairs = puzzlePairs.map(p => ({...p}));
-    const indicesToSwap: [number, number] = [0, 1];
-    
-    const temp = scrambledPairs[indicesToSwap[0]].right;
-    scrambledPairs[indicesToSwap[0]].right = scrambledPairs[indicesToSwap[1]].right;
-    scrambledPairs[indicesToSwap[1]].right = temp;
+  // 1) Randomly pick pairs for this puzzle
+  const puzzlePairs = shuffleAndTake(bank.pairs, config.itemsPerPuzzle);
 
-    return {
-        id: `L${levelIndex + 1}-V${retryCount % 10}`,
-        pairs: scrambledPairs,
-        solutionIndices: indicesToSwap,
-    };
+  // 2) Clone for scrambling
+  const scrambledPairs = puzzlePairs.map(p => ({ ...p }));
+
+  // 3) Randomly choose two **different** rows to swap
+  const len = scrambledPairs.length;
+  let idx1 = Math.floor(Math.random() * len);
+  let idx2 = Math.floor(Math.random() * len);
+  while (idx2 === idx1) {
+    idx2 = Math.floor(Math.random() * len);
+  }
+
+  // 4) Swap the right-sides
+  [scrambledPairs[idx1].right, scrambledPairs[idx2].right] = [
+    scrambledPairs[idx2].right,
+    scrambledPairs[idx1].right,
+  ];
+
+  return {
+    id: `L${levelIndex + 1}-V${Date.now()}-${retryCount}`, // ensure React remounts PuzzleBoard
+    pairs: scrambledPairs,
+    solutionIndices: [idx1, idx2],
+  };
 }

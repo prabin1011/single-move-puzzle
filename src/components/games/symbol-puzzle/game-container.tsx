@@ -229,6 +229,9 @@ export default function GameContainer() {
         </div>
 
         <div className={cn("transition-opacity duration-300 absolute inset-0 p-6 flex flex-col justify-center", gameState === 'GAME_OVER' ? 'opacity-100' : 'opacity-0 invisible')}>
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-destructive overflow-hidden">
+                  <Image src="/logo.png" alt="Game Over" width={64} height={64} />
+              </div>
               <CardTitle className="text-3xl font-bold pt-4 font-headline">
                 The Logic Was...
               </CardTitle>

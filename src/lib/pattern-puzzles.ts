@@ -27,6 +27,7 @@ export interface LevelTemplate {
   concept: string;
   gridSize: 3 | 4 | 5;
   hint: string;
+  // The generate function is now chosen from a pool of generators
   generate: (levelIndex: number, variation: number) => PatternPuzzle;
 }
 
@@ -100,36 +101,17 @@ const getVariationSequence = <T>(
   return reversed ? rotated.reverse() : rotated;
 };
 
-/**
- * Creates a sequence by cycling through the base array.
- * This is useful for grids larger than the number of available items.
- */
-const getCycledSequence = <T>(
-  base: T[],
-  length: number,
-  offset: number
-): T[] => {
-  return Array.from({ length }, (_, i) => {
-    const idx = (i + offset) % base.length;
-    return base[idx];
-  });
-};
-
-
 // --------------------------------------------------------
 // PATTERN GENERATORS
 // --------------------------------------------------------
 
+type PatternGenerator = (gridSize: 3 | 4 | 5, levelIndex: number, variation: number) => PatternPuzzle;
+
+
 /**
- * Pattern A (Levels 1–10): 3×3
- * Rows share the same color, columns share the same shape.
- * Very clean: color = row rule, shape = column rule.
+ * Pattern A: Rows share the same color, columns share the same shape.
  */
-const generateRowColorColShape = (
-  gridSize: 3 | 4 | 5,
-  levelIndex: number,
-  variation: number
-): PatternPuzzle => {
+const generateRowColorColShape: PatternGenerator = (gridSize, levelIndex, variation) => {
   const size = gridSize;
   const correctGrid = createGrid(size);
 
@@ -143,29 +125,14 @@ const generateRowColorColShape = (
       correctGrid[idx].shape = colShapes[col];
     }
   }
-
-  const { incorrectGrid, solution } = applySwapFlaw(
-    correctGrid,
-  );
-
-  return {
-    id: `L${levelIndex + 1}-V${variation}`,
-    grid: incorrectGrid,
-    correctGrid: correctGrid,
-    solution: { type: 'swap', indices: solution },
-  };
+  const { incorrectGrid, solution } = applySwapFlaw(correctGrid);
+  return { id: `L${levelIndex + 1}-V${variation}`, grid: incorrectGrid, correctGrid, solution: { type: 'swap', indices: solution } };
 };
 
 /**
- * Pattern B (Levels 11–20): 3×3
- * Rows share the same *shape*, columns share the same *color*.
- * This feels different but is still very regular.
+ * Pattern B: Rows share the same shape, columns share the same color.
  */
-const generateRowShapeColColor = (
-  gridSize: 3 | 4 | 5,
-  levelIndex: number,
-  variation: number
-): PatternPuzzle => {
+const generateRowShapeColColor: PatternGenerator = (gridSize, levelIndex, variation) => {
   const size = gridSize;
   const correctGrid = createGrid(size);
 
@@ -179,162 +146,107 @@ const generateRowShapeColColor = (
       correctGrid[idx].color = colColors[col];
     }
   }
-
-  const { incorrectGrid, solution } = applySwapFlaw(
-    correctGrid,
-  );
-
-  return {
-    id: `L${levelIndex + 1}-V${variation}`,
-    grid: incorrectGrid,
-    correctGrid: correctGrid,
-    solution: { type: 'swap', indices: solution },
-  };
+  const { incorrectGrid, solution } = applySwapFlaw(correctGrid);
+  return { id: `L${levelIndex + 1}-V${variation}`, grid: incorrectGrid, correctGrid, solution: { type: 'swap', indices: solution } };
 };
 
 /**
- * Pattern C (Levels 21–30): 4×4 Diagonal Rule.
- * Main diagonal has same color & shape; other tiles follow a row/column rule.
+ * Pattern C: Rows follow a color sequence, columns are a static shape.
  */
-const generateDiagonalPlusRowCol = (
-  gridSize: 3 | 4 | 5,
-  levelIndex: number,
-  variation: number
-): PatternPuzzle => {
-  const size = gridSize;
-  const correctGrid = createGrid(size);
+const generateRowColorSequence: PatternGenerator = (gridSize, levelIndex, variation) => {
+    const size = gridSize;
+    const correctGrid = createGrid(size);
+    const uniqueColors = getVariationSequence(COLORS, size, variation);
+    const staticShape = SHAPES[(variation + 1) % SHAPES.length];
 
-  const diagColor = COLORS[(variation + 1) % COLORS.length];
-  const diagShape = SHAPES[(variation + 2) % SHAPES.length];
-
-  const rowColors = getVariationSequence(COLORS, size, variation);
-  const colShapes = getVariationSequence(SHAPES, size, variation + 4);
-
-  for (let row = 0; row < size; row++) {
-    for (let col = 0; col < size; col++) {
-      const idx = row * size + col;
-      if (row === col) {
-        correctGrid[idx].color = diagColor;
-        correctGrid[idx].shape = diagShape;
-      } else {
-        correctGrid[idx].color = rowColors[row];
-        correctGrid[idx].shape = colShapes[col];
-      }
+    for(let r = 0; r < size; r++) {
+        for(let c = 0; c < size; c++) {
+            const idx = r * size + c;
+            correctGrid[idx].color = uniqueColors[(c + r + variation) % size];
+            correctGrid[idx].shape = staticShape;
+        }
     }
-  }
-
-  const { incorrectGrid, solution } = applySwapFlaw(
-    correctGrid,
-  );
-
-  return {
-    id: `L${levelIndex + 1}-V${variation}`,
-    grid: incorrectGrid,
-    correctGrid: correctGrid,
-    solution: { type: 'swap', indices: solution },
-  };
-};
+    const { incorrectGrid, solution } = applySwapFlaw(correctGrid);
+    return { id: `L${levelIndex + 1}-V${variation}`, grid: incorrectGrid, correctGrid, solution: { type: 'swap', indices: solution } };
+}
 
 /**
- * Pattern D (Levels 31–40): 4×4 Block / Stripe Logic.
- * Top vs bottom half uses different colors; left vs right uses different shapes.
- * This makes a very visible quadrant pattern.
+ * Pattern D: Columns follow a shape sequence, rows are a static color.
  */
-const generateBlockPattern = (
-  gridSize: 3 | 4 | 5,
-  levelIndex: number,
-  variation: number
-): PatternPuzzle => {
-  const size = gridSize;
-  const correctGrid = createGrid(size);
+const generateColShapeSequence: PatternGenerator = (gridSize, levelIndex, variation) => {
+    const size = gridSize;
+    const correctGrid = createGrid(size);
+    const uniqueShapes = getVariationSequence(SHAPES, size, variation);
+    const staticColor = COLORS[(variation + 2) % COLORS.length];
 
-  const colors = getVariationSequence(COLORS, 4, variation);
-  const shapes = getVariationSequence(SHAPES, 4, variation + 5);
-
-  // split rows in half: top uses colors[0/1], bottom uses colors[2/3]
-  const rowSplit = Math.floor(size / 2);
-  const colSplit = Math.floor(size / 2);
-
-  for (let row = 0; row < size; row++) {
-    for (let col = 0; col < size; col++) {
-      const idx = row * size + col;
-
-      const rowBand = row < rowSplit ? 0 : 1;
-      const colBand = col < colSplit ? 0 : 1;
-
-      // choose color by row band, shape by col band
-      correctGrid[idx].color = colors[rowBand * 2 + colBand];
-      correctGrid[idx].shape = shapes[rowBand * 2 + colBand];
+    for(let c = 0; c < size; c++) {
+        for(let r = 0; r < size; r++) {
+            const idx = r * size + c;
+            correctGrid[idx].shape = uniqueShapes[(r + c + variation) % size];
+            correctGrid[idx].color = staticColor;
+        }
     }
-  }
-
-  const { incorrectGrid, solution } = applySwapFlaw(
-    correctGrid,
-  );
-
-  return {
-    id: `L${levelIndex + 1}-V${variation}`,
-    grid: incorrectGrid,
-    correctGrid: correctGrid,
-    solution: { type: 'swap', indices: solution },
-  };
-};
+    const { incorrectGrid, solution } = applySwapFlaw(correctGrid);
+    return { id: `L${levelIndex + 1}-V${variation}`, grid: incorrectGrid, correctGrid, solution: { type: 'swap', indices: solution } };
+}
 
 /**
- * Pattern E (Levels 41–50): 5×5 Mixed Logic.
- * - Middle row & column have their own sequences.
- * - Other tiles follow rowColor/colShape, so everything ties together.
+ * Pattern E: Sudoku-like rule - one of each shape/color per row/column. (Latin Square)
  */
-const generateMixedPattern = (
-  gridSize: 3 | 4 | 5,
-  levelIndex: number,
-  variation: number
-): PatternPuzzle => {
-  const size = gridSize;
-  const correctGrid = createGrid(size);
+const generateLatinSquare: PatternGenerator = (gridSize, levelIndex, variation) => {
+    const size = gridSize;
+    const correctGrid = createGrid(size);
+    const colorSeq = getVariationSequence(COLORS, size, variation);
+    const shapeSeq = getVariationSequence(SHAPES, size, variation + 1);
 
-  const center = Math.floor(size / 2);
-
-  // Colors: we have 5 colors, so this is fine
-  const rowColors = getVariationSequence(COLORS, size, variation);
-
-  // Shapes: cycle through SHAPES to always get `size` items (works for 5×5)
-  const colShapes = getCycledSequence(SHAPES, size, (variation + 2) % SHAPES.length);
-  const centerRowShapes = getCycledSequence(SHAPES, size, (variation + 6) % SHAPES.length);
-  const centerColColors = getVariationSequence(COLORS, size, variation + 7);
-
-  for (let row = 0; row < size; row++) {
-    for (let col = 0; col < size; col++) {
-      const idx = row * size + col;
-
-      if (row === center) {
-        // Special middle row – shape sequence across the row
-        correctGrid[idx].shape = centerRowShapes[col];
-        correctGrid[idx].color = rowColors[row];
-      } else if (col === center) {
-        // Special middle column – color sequence down the column
-        correctGrid[idx].color = centerColColors[row];
-        correctGrid[idx].shape = colShapes[col];
-      } else {
-        // Normal tiles: row color + column shape
-        correctGrid[idx].color = rowColors[row];
-        correctGrid[idx].shape = colShapes[col];
-      }
+    for(let r = 0; r < size; r++) {
+        for(let c = 0; c < size; c++) {
+            const idx = r * size + c;
+            correctGrid[idx].color = colorSeq[(r + c) % size];
+            correctGrid[idx].shape = shapeSeq[(r + c + Math.floor(variation / 2)) % size];
+        }
     }
-  }
+    const { incorrectGrid, solution } = applySwapFlaw(correctGrid);
+    return { id: `L${levelIndex + 1}-V${variation}`, grid: incorrectGrid, correctGrid, solution: { type: 'swap', indices: solution } };
+}
 
-  const { incorrectGrid, solution } = applySwapFlaw(
-    correctGrid,
-  );
+/**
+ * Pattern F: One specific item (e.g., "Red Circle") must appear once in every row and column.
+ */
+const generateSameItemRule: PatternGenerator = (gridSize, levelIndex, variation) => {
+    const size = gridSize;
+    const correctGrid = createGrid(size);
 
-  return {
-    id: `L${levelIndex + 1}-V${Date.now()}-${variation}`,
-    grid: incorrectGrid,
-    correctGrid: correctGrid,
-    solution: { type: 'swap', indices: solution },
-  };
-};
+    const specialColor = COLORS[variation % COLORS.length];
+    const specialShape = SHAPES[Math.floor(variation / COLORS.length) % SHAPES.length];
+    
+    // Fill with random background tiles
+    for(let i = 0; i < size*size; i++) {
+        correctGrid[i].color = COLORS[(i + variation + 1) % COLORS.length];
+        correctGrid[i].shape = SHAPES[(i + variation + 1) % SHAPES.length];
+        if (correctGrid[i].color === specialColor && correctGrid[i].shape === specialShape) {
+            correctGrid[i].color = COLORS[(i + variation + 2) % COLORS.length];
+        }
+    }
 
+    // Place the special item in a diagonal pattern to satisfy the rule
+    for(let i = 0; i < size; i++) {
+        const idx = ((i + variation) % size) * size + i;
+        correctGrid[idx].color = specialColor;
+        correctGrid[idx].shape = specialShape;
+    }
+
+    const { incorrectGrid, solution } = applySwapFlaw(correctGrid);
+    return { id: `L${levelIndex + 1}-V${variation}`, grid: incorrectGrid, correctGrid, solution: { type: 'swap', indices: solution } };
+}
+
+
+// --- Generator Pools ---
+const basicGenerators: PatternGenerator[] = [generateRowColorColShape, generateRowShapeColColor];
+const sequenceGenerators: PatternGenerator[] = [generateRowColorSequence, generateColShapeSequence];
+const advancedGenerators: PatternGenerator[] = [generateLatinSquare, generateSameItemRule];
+
+const allGenerators: PatternGenerator[] = [...basicGenerators, ...sequenceGenerators, ...advancedGenerators];
 
 // --------------------------------------------------------
 // LEVEL DEFINITIONS – 50 LEVELS
@@ -343,63 +255,42 @@ const generateMixedPattern = (
 export const patternLevels: LevelTemplate[] = (() => {
   const levels: LevelTemplate[] = [];
 
-  // Levels 1–10 (index 0–9): 3×3, simple row-color / column-shape
-  for (let i = 0; i < 10; i++) {
+  // Levels 1–20 (index 0–19): 3×3 grids with basic rules
+  for (let i = 0; i < 20; i++) {
+    const generator = basicGenerators[i % basicGenerators.length];
     levels.push({
       level: i + 1,
-      concept: 'Rows & Colors',
+      concept: 'Basic Rules',
       gridSize: 3,
-      hint: 'Each row shares a color, each column shares a shape.',
-      generate: (levelIndex, variation) =>
-        generateRowColorColShape(3, levelIndex, variation),
+      hint: 'Find the rule connecting rows and columns. It could be about color or shape.',
+      generate: (levelIndex, variation) => generator(3, levelIndex, variation),
     });
   }
 
-  // Levels 11–20 (index 10–19): 3×3, row-shape / column-color
-  for (let i = 10; i < 20; i++) {
+  // Levels 21–35 (index 20–34): 4×4 grids introducing sequences
+  for (let i = 20; i < 35; i++) {
+    // Mix basic and sequence rules
+    const generatorPool = [...basicGenerators, ...sequenceGenerators];
+    const generator = generatorPool[i % generatorPool.length];
     levels.push({
       level: i + 1,
-      concept: 'Rows & Shapes',
-      gridSize: 3,
-      hint: 'Each row shares a shape, each column shares a color.',
-      generate: (levelIndex, variation) =>
-        generateRowShapeColColor(3, levelIndex, variation),
-    });
-  }
-
-  // Levels 21–30 (index 20–29): 4×4, diagonal special + row/col rules
-  for (let i = 20; i < 30; i++) {
-    levels.push({
-      level: i + 1,
-      concept: 'Diagonal Rule',
+      concept: 'Introducing Sequences',
       gridSize: 4,
-      hint: 'The main diagonal is special – the other tiles follow row/column rules.',
-      generate: (levelIndex, variation) =>
-        generateDiagonalPlusRowCol(4, levelIndex, variation),
+      hint: 'The pattern might be static in each row/column, or it might follow a sequence.',
+      generate: (levelIndex, variation) => generator(4, levelIndex, variation),
     });
   }
 
-  // Levels 31–40 (index 30–39): 4×4, quadrant block logic
-  for (let i = 30; i < 40; i++) {
+  // Levels 36–50 (index 35–49): 5×5 grids with all rules, including advanced logic
+  for (let i = 35; i < 50; i++) {
+    // Use all available generators for maximum variety
+    const generator = allGenerators[i % allGenerators.length];
     levels.push({
       level: i + 1,
-      concept: 'Blocks / Quadrants',
-      gridSize: 4,
-      hint: 'Each quadrant follows its own consistent shape & color.',
-      generate: (levelIndex, variation) =>
-        generateBlockPattern(4, levelIndex, variation),
-    });
-  }
-
-  // Levels 41–50 (index 40–49): 5×5, mixed center row/column logic
-  for (let i = 40; i < 50; i++) {
-    levels.push({
-      level: i + 1,
-      concept: 'Mixed Logic',
+      concept: 'Advanced Logic',
       gridSize: 5,
-      hint: 'The middle row and column follow their own sequence; everything else fits around them.',
-      generate: (levelIndex, variation) =>
-        generateMixedPattern(5, levelIndex, variation),
+      hint: 'The rule could involve the whole grid. Look for sequences, unique items, or row/column constraints.',
+      generate: (levelIndex, variation) => generator(5, levelIndex, variation),
     });
   }
 
@@ -411,11 +302,11 @@ export const patternLevels: LevelTemplate[] = (() => {
 // --------------------------------------------------------
 
 export function getPatternPuzzleConfig(levelIndex: number): LevelTemplate {
-  const idx = Math.max(
+  const clampedIndex = Math.max(
     0,
     Math.min(levelIndex, patternLevels.length - 1)
   );
-  return patternLevels[idx];
+  return patternLevels[clampedIndex];
 }
 
 export function generatePatternPuzzle(
@@ -425,5 +316,6 @@ export function generatePatternPuzzle(
   // Use retryCount to vary the sequences, but the swap itself is now random.
   const variation = retryCount % VARIATIONS_PER_LEVEL;
   const config = getPatternPuzzleConfig(levelIndex);
+  // The generator is now determined by the level config, providing more variety
   return config.generate(levelIndex, variation);
 }

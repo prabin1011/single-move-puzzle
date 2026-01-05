@@ -1,8 +1,9 @@
 
 'use client';
 
-import { getAnalytics, logEvent as logFirebaseEvent, isSupported } from 'firebase/analytics';
-import { getApp, getApps } from 'firebase/app';
+// This file is temporarily disabled to prevent server crashes due to a missing
+// 'firebase/analytics' dependency. We can re-enable this later by adding
+// the package to package.json and uncommenting the code.
 
 type EventName =
   | 'game_start_new'
@@ -27,36 +28,9 @@ type EventParams = {
   theme?: 'light' | 'dark';
 };
 
-let analyticsInitialized = false;
-
-// Initialize analytics only once
-const initializeAnalytics = async () => {
-    if (analyticsInitialized) return;
-    if (typeof window !== 'undefined' && (await isSupported())) {
-        if (getApps().length > 0) {
-            getAnalytics(getApp());
-            analyticsInitialized = true;
-        }
-    }
-};
-
-initializeAnalytics();
-
 
 export const trackEvent = (eventName: EventName, params?: EventParams) => {
-  if (!analyticsInitialized) {
-    // Analytics is not supported or not initialized.
-    // In a production app, you might queue these events or log them differently.
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[Analytics Disabled] Event: ${eventName}`, params);
-    }
-    return;
-  }
-
-  try {
-    const analytics = getAnalytics();
-    logFirebaseEvent(analytics, eventName, params);
-  } catch (error) {
-    console.error('Error logging analytics event:', error);
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[Analytics Disabled] Event: ${eventName}`, params);
   }
 };

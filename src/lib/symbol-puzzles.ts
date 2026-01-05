@@ -19,6 +19,7 @@ export interface SymbolPuzzle {
   solution: {
     type: 'swap';
     indices: [number, number]; // indices in flat grid
+    rule: string;
   };
 }
 
@@ -86,7 +87,7 @@ const copyGrid = (grid: SymbolTile[]): SymbolTile[] =>
  */
 const applySwapFlaw = (
   correctGrid: SymbolTile[],
-): { incorrectGrid: SymbolTile[]; solution: [number, number] } => {
+): { incorrectGrid: SymbolTile[]; solutionIndices: [number, number] } => {
   const size = correctGrid.length;
   const incorrectGrid = copyGrid(correctGrid);
 
@@ -102,10 +103,10 @@ const applySwapFlaw = (
     incorrectGrid[idx1],
   ];
 
-  const solution: [number, number] =
+  const solutionIndices: [number, number] =
     idx1 < idx2 ? [idx1, idx2] : [idx2, idx1];
 
-  return { incorrectGrid, solution };
+  return { incorrectGrid, solutionIndices };
 };
 
 /**
@@ -165,6 +166,7 @@ type SymbolPatternGenerator = (
 const generateRowOpColGroup: SymbolPatternGenerator = (gridSize, levelIndex, variation) => {
   const size = gridSize;
   const correctGrid = createGrid(size);
+  const rule = "Each row uses a specific math operator type, and each column is dedicated to a single symbol family (math, comparison, arrows, or logic).";
 
   const rowOps = getVariationSequence(MATH_OPS, size, variation);
   const colFamilies: ('math_op' | 'compare' | 'arrow' | 'logic')[] =
@@ -201,13 +203,13 @@ const generateRowOpColGroup: SymbolPatternGenerator = (gridSize, levelIndex, var
     }
   }
 
-  const { incorrectGrid, solution } = applySwapFlaw(correctGrid);
+  const { incorrectGrid, solutionIndices } = applySwapFlaw(correctGrid);
 
   return {
     id: `L${levelIndex + 1}-ROWOPCOL-${variation}`,
     grid: incorrectGrid,
     correctGrid,
-    solution: { type: 'swap', indices: solution },
+    solution: { type: 'swap', indices: solutionIndices, rule },
   };
 };
 
@@ -218,6 +220,7 @@ const generateRowOpColGroup: SymbolPatternGenerator = (gridSize, levelIndex, var
 const generateRowSequenceMath: SymbolPatternGenerator = (gridSize, levelIndex, variation) => {
   const size = gridSize;
   const correctGrid = createGrid(size);
+  const rule = "Each row follows a repeating sequence of mathematical operators.";
   const seq = getVariationSequence(MATH_OPS, size, variation);
 
   for (let r = 0; r < size; r++) {
@@ -235,13 +238,13 @@ const generateRowSequenceMath: SymbolPatternGenerator = (gridSize, levelIndex, v
     }
   }
 
-  const { incorrectGrid, solution } = applySwapFlaw(correctGrid);
+  const { incorrectGrid, solutionIndices } = applySwapFlaw(correctGrid);
 
   return {
     id: `L${levelIndex + 1}-ROWSEQ-${variation}`,
     grid: incorrectGrid,
     correctGrid,
-    solution: { type: 'swap', indices: solution },
+    solution: { type: 'swap', indices: solutionIndices, rule },
   };
 };
 
@@ -252,6 +255,7 @@ const generateRowSequenceMath: SymbolPatternGenerator = (gridSize, levelIndex, v
 const generateArrowFlow: SymbolPatternGenerator = (gridSize, levelIndex, variation) => {
   const size = gridSize;
   const correctGrid = createGrid(size);
+  const rule = "The arrows create a logical, flowing path across the grid.";
   const arrowSeq = getVariationSequence(ARROWS, size, variation);
 
   for (let r = 0; r < size; r++) {
@@ -269,13 +273,13 @@ const generateArrowFlow: SymbolPatternGenerator = (gridSize, levelIndex, variati
     }
   }
 
-  const { incorrectGrid, solution } = applySwapFlaw(correctGrid);
+  const { incorrectGrid, solutionIndices } = applySwapFlaw(correctGrid);
 
   return {
     id: `L${levelIndex + 1}-ARROW-${variation}`,
     grid: incorrectGrid,
     correctGrid,
-    solution: { type: 'swap', indices: solution },
+    solution: { type: 'swap', indices: solutionIndices, rule },
   };
 };
 
@@ -286,6 +290,7 @@ const generateArrowFlow: SymbolPatternGenerator = (gridSize, levelIndex, variati
 const generateMirrorSymmetry: SymbolPatternGenerator = (gridSize, levelIndex, variation) => {
   const size = gridSize;
   const correctGrid = createGrid(size);
+  const rule = "The grid is symmetrical. The left side is a mirror image of the right, and the top mirrors the bottom.";
   const shapes = getVariationSequence(SHAPE_SYM, size, variation);
   const colors = getVariationSequence(COLORS, size, variation + 3);
 
@@ -307,13 +312,13 @@ const generateMirrorSymmetry: SymbolPatternGenerator = (gridSize, levelIndex, va
     }
   }
 
-  const { incorrectGrid, solution } = applySwapFlaw(correctGrid);
+  const { incorrectGrid, solutionIndices } = applySwapFlaw(correctGrid);
 
   return {
     id: `L${levelIndex + 1}-MIRROR-${variation}`,
     grid: incorrectGrid,
     correctGrid,
-    solution: { type: 'swap', indices: solution },
+    solution: { type: 'swap', indices: solutionIndices, rule },
   };
 };
 
@@ -324,6 +329,7 @@ const generateMirrorSymmetry: SymbolPatternGenerator = (gridSize, levelIndex, va
 const generateCheckerParity: SymbolPatternGenerator = (gridSize, levelIndex, variation) => {
   const size = gridSize;
   const correctGrid = createGrid(size);
+  const rule = "The grid follows a checkerboard pattern. Even-positioned tiles belong to one symbol family, while odd-positioned tiles belong to another.";
 
   const evenFamily: readonly string[] = MATH_OPS;
   const oddFamily: readonly string[] = COMP_OPS;
@@ -351,13 +357,13 @@ const generateCheckerParity: SymbolPatternGenerator = (gridSize, levelIndex, var
     }
   }
 
-  const { incorrectGrid, solution } = applySwapFlaw(correctGrid);
+  const { incorrectGrid, solutionIndices } = applySwapFlaw(correctGrid);
 
   return {
     id: `L${levelIndex + 1}-CHECKER-${variation}`,
     grid: incorrectGrid,
     correctGrid,
-    solution: { type: 'swap', indices: solution },
+    solution: { type: 'swap', indices: solutionIndices, rule },
   };
 };
 
@@ -368,6 +374,7 @@ const generateCheckerParity: SymbolPatternGenerator = (gridSize, levelIndex, var
 const generateGroupCluster: SymbolPatternGenerator = (gridSize, levelIndex, variation) => {
   const size = gridSize;
   const correctGrid = createGrid(size);
+  const rule = "The grid is divided into quadrants, and each quadrant contains symbols from a specific family (e.g., math, logic).";
 
   const families = [
     { cat: 'math_op' as const, list: MATH_OPS },
@@ -398,13 +405,13 @@ const generateGroupCluster: SymbolPatternGenerator = (gridSize, levelIndex, vari
     }
   }
 
-  const { incorrectGrid, solution } = applySwapFlaw(correctGrid);
+  const { incorrectGrid, solutionIndices } = applySwapFlaw(correctGrid);
 
   return {
     id: `L${levelIndex + 1}-CLUSTER-${variation}`,
     grid: incorrectGrid,
     correctGrid,
-    solution: { type: 'swap', indices: solution },
+    solution: { type: 'swap', indices: solutionIndices, rule },
   };
 };
 
@@ -415,6 +422,7 @@ const generateGroupCluster: SymbolPatternGenerator = (gridSize, levelIndex, vari
 const generateLatinSymbol: SymbolPatternGenerator = (gridSize, levelIndex, variation) => {
   const size = gridSize;
   const correctGrid = createGrid(size);
+  const rule = "Similar to Sudoku, each symbol appears exactly once in every row and every column.";
 
   const symbols = getVariationSequence(SHAPE_SYM, size, variation);
 
@@ -435,13 +443,13 @@ const generateLatinSymbol: SymbolPatternGenerator = (gridSize, levelIndex, varia
     }
   }
 
-  const { incorrectGrid, solution } = applySwapFlaw(correctGrid);
+  const { incorrectGrid, solutionIndices } = applySwapFlaw(correctGrid);
 
   return {
     id: `L${levelIndex + 1}-LATIN-${variation}`,
     grid: incorrectGrid,
     correctGrid,
-    solution: { type: 'swap', indices: solution },
+    solution: { type: 'swap', indices: solutionIndices, rule },
   };
 };
 
@@ -452,6 +460,7 @@ const generateLatinSymbol: SymbolPatternGenerator = (gridSize, levelIndex, varia
 const generateShapeComplexity: SymbolPatternGenerator = (gridSize, levelIndex, variation) => {
   const size = gridSize;
   const correctGrid = createGrid(size);
+  const rule = "The symbols are arranged in a gradient of complexity, from simple shapes (like circles) to more complex ones (like stars).";
 
   const orderedShapes = getVariationSequence(SHAPE_SYM, size, variation);
 
@@ -473,13 +482,13 @@ const generateShapeComplexity: SymbolPatternGenerator = (gridSize, levelIndex, v
     }
   }
 
-  const { incorrectGrid, solution } = applySwapFlaw(correctGrid);
+  const { incorrectGrid, solutionIndices } = applySwapFlaw(correctGrid);
 
   return {
     id: `L${levelIndex + 1}-COMPLEX-${variation}`,
     grid: incorrectGrid,
     correctGrid,
-    solution: { type: 'swap', indices: solution },
+    solution: { type: 'swap', indices: solutionIndices, rule },
   };
 };
 
@@ -490,6 +499,7 @@ const generateShapeComplexity: SymbolPatternGenerator = (gridSize, levelIndex, v
 const generateRingRule: SymbolPatternGenerator = (gridSize, levelIndex, variation) => {
   const size = gridSize;
   const correctGrid = createGrid(size);
+  const rule = "The symbols on the outer ring of the grid follow a different rule from the symbols in the center.";
 
   const outerFamily = SHAPE_SYM;
   const innerFamily = LOGIC_SYM;
@@ -517,13 +527,13 @@ const generateRingRule: SymbolPatternGenerator = (gridSize, levelIndex, variatio
     }
   }
 
-  const { incorrectGrid, solution } = applySwapFlaw(correctGrid);
+  const { incorrectGrid, solutionIndices } = applySwapFlaw(correctGrid);
 
   return {
     id: `L${levelIndex + 1}-RING-${variation}`,
     grid: incorrectGrid,
     correctGrid,
-    solution: { type: 'swap', indices: solution },
+    solution: { type: 'swap', indices: solutionIndices, rule },
   };
 };
 
@@ -534,6 +544,7 @@ const generateRingRule: SymbolPatternGenerator = (gridSize, levelIndex, variatio
 const generateQuadrantRule: SymbolPatternGenerator = (gridSize, levelIndex, variation) => {
   const size = gridSize;
   const correctGrid = createGrid(size);
+  const rule = "The grid is split into four quarters. Each quadrant follows its own unique rule or belongs to a different symbol family.";
 
   const families = [
     { cat: 'math_op' as const, list: MATH_OPS },
@@ -563,13 +574,13 @@ const generateQuadrantRule: SymbolPatternGenerator = (gridSize, levelIndex, vari
     }
   }
 
-  const { incorrectGrid, solution } = applySwapFlaw(correctGrid);
+  const { incorrectGrid, solutionIndices } = applySwapFlaw(correctGrid);
 
   return {
     id: `L${levelIndex + 1}-QUAD-${variation}`,
     grid: incorrectGrid,
     correctGrid,
-    solution: { type: 'swap', indices: solution },
+    solution: { type: 'swap', indices: solutionIndices, rule },
   };
 };
 

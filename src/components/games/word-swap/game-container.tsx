@@ -212,14 +212,11 @@ export default function GameContainer() {
         </div>
 
         <div className={cn("transition-opacity duration-300 absolute inset-0 p-6 flex flex-col justify-center", gameState === 'GAME_OVER' ? 'opacity-100' : 'opacity-0 invisible')}>
-            <div className="flex justify-center w-16 h-16 mx-auto">
-                <Image src="/logo.png" alt="Game Over" width={64} height={64} className="object-contain"/>
-            </div>
               <CardTitle className="text-3xl font-bold pt-4 font-headline">
-                Game Over
+                The Logic Was...
               </CardTitle>
-              <CardDescription className="text-muted-foreground px-4">
-                You reached level {level + 1}. Try again!
+              <CardDescription className="text-muted-foreground px-4 mt-2 text-base">
+                {puzzle.rule}
               </CardDescription>
         </div>
         
@@ -234,10 +231,14 @@ export default function GameContainer() {
 
       <CardContent className={cn("flex flex-col items-center justify-center min-h-[200px] transition-opacity duration-500 px-4 sm:px-6")}>
         { gameState === 'READY' && (
-            <div className="flex justify-center items-center gap-4 text-primary/30 dark:text-primary/20">
-              <Baseline className="h-8 w-8 -rotate-12" />
-              <Pilcrow className="h-10 w-10" />
-              <Sigma className="h-8 w-8 rotate-12" />
+             <div className="flex justify-center items-center gap-2 text-primary/30 dark:text-primary/20 text-lg font-mono">
+                <span>ab</span>
+                <span className="text-xl">↔</span>
+                <span>cd</span>
+                <span className="text-2xl rotate-12">≠</span>
+                <span>ef</span>
+                <span className="text-xl">↔</span>
+                <span>gh</span>
             </div>
         )}
         { (gameState === 'PLAYING' || gameState === 'FAILED' || gameState === 'SOLVED_VISUALIZING') && (
@@ -256,14 +257,10 @@ export default function GameContainer() {
                 puzzle={{
                   ...puzzle,
                   pairs: puzzle.pairs.map((p, i) => {
-                    const solutionIndices = puzzle.solutionIndices;
-                    if (i === solutionIndices[0]) {
-                        return { left: p.left, right: puzzle.pairs[solutionIndices[1]].right };
-                    }
-                    if (i === solutionIndices[1]) {
-                        return { left: p.left, right: puzzle.pairs[solutionIndices[0]].right };
-                    }
-                    return p;
+                    // Reconstruct the correct pairs for display
+                    const originalBank = wordSwapLevels.find(l => l.level === level + 1)?.bankId;
+                    const correctPair = allBanks[originalBank!]?.pairs.find(bp => bp.left === p.left);
+                    return { left: p.left, right: correctPair?.right || '???' };
                   })
                 }}
                 onSuccess={() => {}}
@@ -347,3 +344,18 @@ export default function GameContainer() {
     </Card>
   );
 }
+
+// Helper to access word banks in the Game Over display logic
+const allBanks: Record<string, { pairs: { left: string, right: string }[] }> = {
+    'syn_easy': bankSynEasy, 'syn_verbs': bankSynVerbs,
+    'syn_emotion': bankSynEmotion, 'ant_basic': bankAntBasic,
+    'ant_emotion': bankAntEmotion, 'ant_abstract': bankAntAbstract,
+    'cat_objects': bankCategoryObjects, 'cat_time_place': bankCategoryTimePlace,
+    'cat_abstract': bankCategoryAbstract, 'plural_forms': bankPlural,
+    'past_tense': bankPastTense, 'noun_adj': bankNounAdj,
+    'analogy_basic': bankAnalogy, 'function': bankFunction,
+    'analogy_hard': bankAnalogyHard,
+};
+
+import { bankSynEasy, bankSynVerbs, bankSynEmotion, bankAntBasic, bankAntEmotion, bankAntAbstract, bankCategoryObjects, bankCategoryTimePlace, bankCategoryAbstract, bankPlural, bankPastTense, bankNounAdj, bankAnalogy, bankFunction, bankAnalogyHard, wordSwapLevels } from '@/lib/word-swap-puzzles';
+

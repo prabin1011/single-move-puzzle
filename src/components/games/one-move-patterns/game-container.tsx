@@ -209,14 +209,11 @@ export default function GameContainer() {
         </div>
 
         <div className={cn("transition-opacity duration-300 absolute inset-0 p-6 flex flex-col justify-center", gameState === 'GAME_OVER' ? 'opacity-100' : 'opacity-0 invisible')}>
-            <div className="flex justify-center w-16 h-16 mx-auto">
-                <Image src="/logo.png" alt="Game Over" width={64} height={64} className="object-contain"/>
-              </div>
               <CardTitle className="text-3xl font-bold pt-4 font-headline">
-                Game Over
+                The Logic Was...
               </CardTitle>
-              <CardDescription className="text-muted-foreground px-4">
-                Here is the correct solution.
+              <CardDescription className="text-muted-foreground px-4 mt-2 text-base">
+                {puzzle.solution.rule}
               </CardDescription>
         </div>
         

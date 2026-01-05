@@ -36,6 +36,7 @@ export interface WordSwapPuzzle {
     id: string;
     pairs: { left: string; right: string }[];
     solutionIndices: [number, number];
+    rule: string;
 }
 
 // --------------------------------------------------------
@@ -456,6 +457,8 @@ export function generatePuzzle(levelIndex: number, retryCount: number): WordSwap
     throw new Error(`Word bank with id "${config.bankId}" not found.`);
   }
 
+  const rule = `The rule for this puzzle is '${config.relation.replace('_', ' ')}'. Each word on the left should be matched with its correct partner on the right.`;
+
   // 1) Randomly pick pairs for this puzzle
   const puzzlePairs = shuffleAndTake(bank.pairs, config.itemsPerPuzzle);
 
@@ -480,5 +483,6 @@ export function generatePuzzle(levelIndex: number, retryCount: number): WordSwap
     id: `L${levelIndex + 1}-V${Date.now()}-${retryCount}`, // ensure React remounts PuzzleBoard
     pairs: scrambledPairs,
     solutionIndices: [idx1, idx2],
+    rule,
   };
 }

@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth, useUser } from '@/firebase';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
-import { Loader2, Landmark, Calculator, Shapes, BookText, Pilcrow, Sigma, Baseline } from 'lucide-react';
+import { Loader2, Landmark, Calculator, Shapes, BookText, Sigma } from 'lucide-react';
 import { levels } from '@/lib/levels';
 import type { Level } from '@/lib/levels';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -43,6 +43,7 @@ export default function Home() {
   const [mathHighestLevel, setMathHighestLevel] = useState(0);
   const [patternsHighestLevel, setPatternsHighestLevel] = useState(0);
   const [wordSwapHighestLevel, setWordSwapHighestLevel] = useState(0);
+  const [symbolHighestLevel, setSymbolHighestLevel] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
@@ -75,6 +76,11 @@ export default function Home() {
         setWordSwapHighestLevel(parseInt(savedWordSwapLevel, 10));
     }
 
+    const savedSymbolLevel = localStorage.getItem('symbolHighestLevel');
+    if (savedSymbolLevel) {
+        setSymbolHighestLevel(parseInt(savedSymbolLevel, 10));
+    }
+
     setIsLoading(false);
   }, []);
 
@@ -85,7 +91,7 @@ export default function Home() {
     }
   }, [isUserLoading, user, auth]);
 
-  const handleNewGame = (game: 'landmark' | 'math' | 'patterns' | 'word-swap') => {
+  const handleNewGame = (game: 'landmark' | 'math' | 'patterns' | 'word-swap' | 'symbol-puzzle') => {
     playSound("ui", isSoundOn);
 
     if (game === 'landmark') {
@@ -108,6 +114,10 @@ export default function Home() {
         localStorage.removeItem('wordSwapCurrentLevel');
         localStorage.removeItem('wordSwapHighestLevel');
         router.push('/games/word-swap');
+    } else if (game === 'symbol-puzzle') {
+        localStorage.removeItem('symbolCurrentLevel');
+        localStorage.removeItem('symbolHighestLevel');
+        router.push('/games/symbol-puzzle');
     }
   };
   
@@ -115,6 +125,7 @@ export default function Home() {
   const showMathContinue = !isLoading && mathHighestLevel > 0;
   const showPatternsContinue = !isLoading && patternsHighestLevel > 0;
   const showWordSwapContinue = !isLoading && wordSwapHighestLevel > 0;
+  const showSymbolContinue = !isLoading && symbolHighestLevel > 0;
 
   if (isUserLoading || !auth) {
     return (
@@ -221,6 +232,26 @@ export default function Home() {
                   )}
                 </div>
               </Card>
+
+               {/* Game 5: Symbol Puzzle */}
+               <Card className="p-4 flex flex-col sm:flex-row items-center gap-4 bg-secondary/50">
+                <Sigma className="h-10 w-10 text-primary shrink-0" />
+                <div className="flex-grow text-center sm:text-left">
+                  <h3 className="font-bold font-headline text-lg">Symbol Puzzle</h3>
+                  <p className="text-sm text-muted-foreground">Restore the logical sequence of abstract symbols.</p>
+                </div>
+                <div className="flex flex-col space-y-2 w-full sm:w-auto">
+                  <Button onClick={() => handleNewGame('symbol-puzzle')} className="w-full">New Game</Button>
+                   {showSymbolContinue && (
+                    <Button asChild variant="secondary">
+                      <Link href="/games/symbol-puzzle" onClick={() => playSound("ui", isSoundOn)}>
+                        Continue (Lvl {symbolHighestLevel + 1})
+                      </Link>
+                    </Button>
+                  )}
+                </div>
+              </Card>
+
             </div>
           </CardContent>
         </Card>

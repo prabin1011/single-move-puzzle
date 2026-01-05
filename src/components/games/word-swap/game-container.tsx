@@ -16,12 +16,13 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import Link from 'next/link';
-import { generatePuzzle, getWordSwapLevelConfig, type WordSwapPuzzle } from '@/lib/word-swap-puzzles';
+import { generatePuzzle, getWordSwapLevelConfig, type WordSwapPuzzle, wordSwapLevels, bankSynEasy, bankSynVerbs, bankSynEmotion, bankAntBasic, bankAntEmotion, bankAntAbstract, bankCategoryObjects, bankCategoryTimePlace, bankCategoryAbstract, bankPlural, bankPastTense, bankNounAdj, bankAnalogy, bankFunction, bankAnalogyHard } from '@/lib/word-swap-puzzles';
 import PuzzleBoard from './puzzle-board';
-import { Loader2, RefreshCw, Info, Play, ArrowRight, PartyPopper, BookText, Pilcrow, Sigma, CaseLower, CaseUpper, Baseline } from 'lucide-react';
+import { Loader2, RefreshCw, Info, Play, ArrowRight, PartyPopper, BookText } from 'lucide-react';
 import { useSound } from '@/contexts/sound-context';
 import { playSound } from '@/lib/sounds';
 import { cn } from '@/lib/utils';
+import { trackEvent } from '@/lib/analytics';
 
 type GameState = 'READY' | 'PLAYING' | 'SOLVED_VISUALIZING' | 'SOLVED_COMPLETE' | 'FAILED' | 'GAME_OVER' | 'ALL_LEVELS_COMPLETE';
 
@@ -64,6 +65,10 @@ export default function GameContainer() {
     const initialLevel = savedLevel ? parseInt(savedLevel, 10) : 0;
     const initialHighest = savedHighestLevel ? parseInt(savedHighestLevel, 10) : 0;
 
+    if (savedLevel) {
+        trackEvent('game_continue', { game: 'word-swap', level: initialLevel });
+    }
+
     setLevel(initialLevel);
     setHighestLevel(initialHighest);
     loadPuzzle(initialLevel, 0); 
@@ -88,9 +93,11 @@ export default function GameContainer() {
   const handleSuccess = () => {
     playSound('success', isSoundOn);
     setGameState('SOLVED_VISUALIZING');
+    trackEvent('game_level_complete', { game: 'word-swap', level: level + 1 });
     setTimeout(() => {
         if (level >= TOTAL_LEVELS - 1) { 
             playSound('win', isSoundOn);
+            trackEvent('game_all_levels_complete', { game: 'word-swap' });
             setGameState('ALL_LEVELS_COMPLETE');
             localStorage.removeItem('wordSwapCurrentLevel');
             localStorage.removeItem('wordSwapHighestLevel');
@@ -105,6 +112,7 @@ export default function GameContainer() {
     const newMistakeCount = mistakeCount + 1;
     setMistakeCount(newMistakeCount);
     if (newMistakeCount > MAX_MISTAKES) {
+      trackEvent('game_over', { game: 'word-swap', level: level + 1 });
       setGameState("GAME_OVER");
       localStorage.removeItem('wordSwapCurrentLevel');
       localStorage.removeItem('wordSwapHighestLevel');
@@ -123,6 +131,7 @@ export default function GameContainer() {
   
   const handleTryAgain = () => {
     playSound('ui', isSoundOn);
+    trackEvent('puzzle_retry', { game: 'word-swap', level: level + 1 });
     setMistakeCount(0);
     setRetryCount(prev => prev + 1);
     setGameState('PLAYING');
@@ -130,6 +139,7 @@ export default function GameContainer() {
 
   const restartGame = () => {
     playSound("ui", isSoundOn);
+    trackEvent('game_start_new', { game: 'word-swap' });
     setLevel(0);
     setHighestLevel(0);
     setMistakeCount(0);
@@ -142,8 +152,18 @@ export default function GameContainer() {
   
   const handleStart = () => {
     playSound("ui", isSoundOn);
+    trackEvent('puzzle_start', { game: 'word-swap', level: level + 1 });
     setGameState("PLAYING");
   };
+  
+  const handleViewHint = () => {
+    trackEvent('hint_viewed', { game: 'word-swap', level: level + 1 });
+  };
+  
+  const handleBackToHome = () => {
+    playSound("ui", isSoundOn);
+    trackEvent('navigate_to_home');
+  }
 
   if (isLoading || !puzzle) {
     return (
@@ -183,7 +203,7 @@ export default function GameContainer() {
             </CardDescription>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="outline" size="sm" className="mx-auto mt-2">
+                <Button variant="outline" size="sm" className="mx-auto mt-2" onClick={handleViewHint}>
                   <Info className="mr-2 h-4 w-4" /> Hint
                 </Button>
               </AlertDialogTrigger>
@@ -215,7 +235,7 @@ export default function GameContainer() {
               <CardTitle className="text-3xl font-bold pt-4 font-headline">
                 The Logic Was...
               </CardTitle>
-              <CardDescription className="text-muted-foreground px-4 mt-2 text-base">
+              <CardDescription className="text-muted-foreground px-4 mt-2 text-sm">
                 {puzzle.rule}
               </CardDescription>
         </div>
@@ -232,13 +252,13 @@ export default function GameContainer() {
       <CardContent className={cn("flex flex-col items-center justify-center min-h-[200px] transition-opacity duration-500 px-4 sm:px-6")}>
         { gameState === 'READY' && (
              <div className="flex justify-center items-center gap-2 text-primary/30 dark:text-primary/20 text-lg font-mono">
-                <span>ab</span>
+                <span className="opacity-50">word</span>
                 <span className="text-xl">↔</span>
-                <span>cd</span>
-                <span className="text-2xl rotate-12">≠</span>
-                <span>ef</span>
+                <span className="opacity-80">pair</span>
+                <span className="text-2xl rotate-12 opacity-50">≠</span>
+                <span className="opacity-60">logic</span>
                 <span className="text-xl">↔</span>
-                <span>gh</span>
+                <span>swap</span>
             </div>
         )}
         { (gameState === 'PLAYING' || gameState === 'FAILED' || gameState === 'SOLVED_VISUALIZING') && (
@@ -257,8 +277,17 @@ export default function GameContainer() {
                 puzzle={{
                   ...puzzle,
                   pairs: puzzle.pairs.map((p, i) => {
-                    // Reconstruct the correct pairs for display
                     const originalBank = wordSwapLevels.find(l => l.level === level + 1)?.bankId;
+                    const allBanks: Record<string, { pairs: { left: string, right: string }[] }> = {
+                        'syn_easy': bankSynEasy, 'syn_verbs': bankSynVerbs,
+                        'syn_emotion': bankSynEmotion, 'ant_basic': bankAntBasic,
+                        'ant_emotion': bankAntEmotion, 'ant_abstract': bankAntAbstract,
+                        'cat_objects': bankCategoryObjects, 'cat_time_place': bankCategoryTimePlace,
+                        'cat_abstract': bankCategoryAbstract, 'plural_forms': bankPlural,
+                        'past_tense': bankPastTense, 'noun_adj': bankNounAdj,
+                        'analogy_basic': bankAnalogy, 'function': bankFunction,
+                        'analogy_hard': bankAnalogyHard,
+                    };
                     const correctPair = allBanks[originalBank!]?.pairs.find(bp => bp.left === p.left);
                     return { left: p.left, right: correctPair?.right || '???' };
                   })
@@ -301,14 +330,14 @@ export default function GameContainer() {
                 <Button onClick={handleStart} size="lg" className="w-full">
                     <Play className="mr-2" /> Start Puzzle
                 </Button>
-                <Button asChild variant="link" className="text-muted-foreground" onClick={() => playSound("ui", isSoundOn)}>
+                <Button asChild variant="link" className="text-muted-foreground" onClick={handleBackToHome}>
                     <Link href="/">Back to Home</Link>
                 </Button>
              </div>
         )}
 
         {(gameState === 'PLAYING' || gameState === 'SOLVED_VISUALIZING') && (
-            <Button asChild variant="link" className="text-muted-foreground" onClick={() => playSound("ui", isSoundOn)}>
+            <Button asChild variant="link" className="text-muted-foreground" onClick={handleBackToHome}>
                 <Link href="/">Back to Home</Link>
             </Button>
         )}
@@ -318,7 +347,7 @@ export default function GameContainer() {
             <Button onClick={handleTryAgain} size="lg" className="w-full" variant="destructive">
               <RefreshCw className="mr-2 h-4 w-4" /> Try Again
             </Button>
-            <Button asChild variant="link" className="text-muted-foreground" onClick={() => playSound("ui", isSoundOn)}>
+            <Button asChild variant="link" className="text-muted-foreground" onClick={handleBackToHome}>
               <Link href="/">Back to Home</Link>
             </Button>
             </div>
@@ -329,14 +358,14 @@ export default function GameContainer() {
             <Button onClick={restartGame} size="lg" className="w-full">
               Play Again
             </Button>
-            <Button asChild variant="link" className="text-muted-foreground" onClick={() => playSound("ui", isSoundOn)}>
+            <Button asChild variant="link" className="text-muted-foreground" onClick={handleBackToHome}>
               <Link href="/">Back to Home</Link>
             </Button>
           </div>
         )}
         
         { (gameState === 'SOLVED_COMPLETE' ) && (
-            <Button asChild variant="link" className="text-muted-foreground" onClick={() => playSound("ui", isSoundOn)}>
+            <Button asChild variant="link" className="text-muted-foreground" onClick={handleBackToHome}>
                 <Link href="/">Back to Home</Link>
             </Button>
         )}
@@ -344,18 +373,3 @@ export default function GameContainer() {
     </Card>
   );
 }
-
-// Helper to access word banks in the Game Over display logic
-const allBanks: Record<string, { pairs: { left: string, right: string }[] }> = {
-    'syn_easy': bankSynEasy, 'syn_verbs': bankSynVerbs,
-    'syn_emotion': bankSynEmotion, 'ant_basic': bankAntBasic,
-    'ant_emotion': bankAntEmotion, 'ant_abstract': bankAntAbstract,
-    'cat_objects': bankCategoryObjects, 'cat_time_place': bankCategoryTimePlace,
-    'cat_abstract': bankCategoryAbstract, 'plural_forms': bankPlural,
-    'past_tense': bankPastTense, 'noun_adj': bankNounAdj,
-    'analogy_basic': bankAnalogy, 'function': bankFunction,
-    'analogy_hard': bankAnalogyHard,
-};
-
-import { bankSynEasy, bankSynVerbs, bankSynEmotion, bankAntBasic, bankAntEmotion, bankAntAbstract, bankCategoryObjects, bankCategoryTimePlace, bankCategoryAbstract, bankPlural, bankPastTense, bankNounAdj, bankAnalogy, bankFunction, bankAnalogyHard, wordSwapLevels } from '@/lib/word-swap-puzzles';
-

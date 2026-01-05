@@ -39,6 +39,7 @@ import { useGameTimer } from "@/hooks/use-game-timer";
 import { usePrefetchNextImages } from "@/hooks/use-prefetch-images";
 import { playSound } from "@/lib/sounds";
 import { useSound } from "@/contexts/sound-context";
+import { trackEvent } from "@/lib/analytics";
 
 function shuffle<T>(array: T[]): T[] {
   let currentIndex = array.length,
@@ -94,6 +95,10 @@ export default function GameContainer() {
     const initialIndex = savedLevel ? parseInt(savedLevel, 10) : 0;
     const initialHighest = savedHighestLevel ? parseInt(savedHighestLevel, 10) : 0;
     
+    if (savedLevel) {
+        trackEvent('game_continue', { game: 'landmark', level: initialIndex });
+    }
+
     setLevelIndex(initialIndex);
     setHighestLevel(initialHighest);
     setIsComponentLoading(false);
@@ -155,9 +160,11 @@ export default function GameContainer() {
   const handleSuccess = async () => {
     playSound('success', isSoundOn);
     setGameState("SOLVED_VISUALIZING");
+    trackEvent('game_level_complete', { game: 'landmark', level: levelIndex + 1 });
     setTimeout(() => {
       if (levelIndex === levels.length - 1) {
         playSound('win', isSoundOn);
+        trackEvent('game_all_levels_complete', { game: 'landmark' });
         setGameState("ALL_LEVELS_COMPLETE");
         localStorage.removeItem('currentLevelIndex');
         localStorage.removeItem('highestLevel');
@@ -173,6 +180,7 @@ export default function GameContainer() {
     const newMistakeCount = mistakeCount + 1;
     setMistakeCount(newMistakeCount);
     if (newMistakeCount > MAX_MISTAKES) {
+      trackEvent('game_over', { game: 'landmark', level: levelIndex + 1 });
       setGameState("GAME_OVER");
       localStorage.removeItem('currentLevelIndex'); // Reset for next game
       localStorage.removeItem('highestLevel');
@@ -183,6 +191,7 @@ export default function GameContainer() {
 
   const resetForRetry = () => {
     playSound("ui", isSoundOn);
+    trackEvent('puzzle_retry', { game: 'landmark', level: levelIndex + 1 });
     setMistakeCount(0); // Reset mistake count for the retry
     setRetryCount((prev) => prev + 1); // This will trigger puzzle regeneration via useMemo
     setGameState("PREVIEW"); // Go back to preview for another look
@@ -191,24 +200,17 @@ export default function GameContainer() {
 
   const restartGame = () => {
     playSound("ui", isSoundOn);
-    // This is the new "Play Again" logic
-    // 1. Increment game round for new images
+    trackEvent('game_start_new', { game: 'landmark' });
     const currentRound = parseInt(localStorage.getItem('gameRound') || '0', 10);
     localStorage.setItem('gameRound', (currentRound + 1).toString());
-
-    // 2. Create and save a new shuffled list for the new game
     const newShuffledLevels = shuffle(initialLevels);
     localStorage.setItem('shuffledLevels', JSON.stringify(newShuffledLevels));
     setLevels(newShuffledLevels);
-
-    // 3. Reset all game state
     setLevelIndex(0);
     setHighestLevel(0);
     setMistakeCount(0);
     setRetryCount(0);
     setShowFacts(false);
-    
-    // 4. Set the game state to ready for the new first level
     setGameState("READY");
   }
 
@@ -224,14 +226,25 @@ export default function GameContainer() {
   
   const handleStart = () => {
     playSound("ui", isSoundOn);
+    trackEvent('puzzle_start', { game: 'landmark', level: levelIndex + 1 });
     setGameState("PREVIEW");
     resetTimer();
   }
 
   const handleSkipPreview = () => {
     playSound("ui", isSoundOn);
+    trackEvent('landmark_preview_skip', { level: levelIndex + 1 });
     setGameState("PLAYING");
   };
+
+  const handleViewHint = () => {
+    trackEvent('hint_viewed', { game: 'landmark', level: levelIndex + 1 });
+  };
+  
+  const handleBackToHome = () => {
+    playSound("ui", isSoundOn);
+    trackEvent('navigate_to_home');
+  }
 
   const puzzleKey = `${currentLevelData.id}-${retryCount}`;
 
@@ -326,7 +339,7 @@ export default function GameContainer() {
             {levelIndex >= 2 && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="mx-auto mt-2">
+                  <Button variant="outline" size="sm" className="mx-auto mt-2" onClick={handleViewHint}>
                     <Info className="mr-2 h-4 w-4" /> Hint
                   </Button>
                 </AlertDialogTrigger>
@@ -500,7 +513,7 @@ export default function GameContainer() {
               asChild
               variant="link"
               className="text-muted-foreground"
-              onClick={() => playSound("ui", isSoundOn)}
+              onClick={handleBackToHome}
             >
               <Link href="/">Back to Home</Link>
             </Button>
@@ -528,7 +541,7 @@ export default function GameContainer() {
                 asChild
                 variant="link"
                 className="text-muted-foreground"
-                onClick={() => playSound("ui", isSoundOn)}
+                onClick={handleBackToHome}
               >
                 <Link href="/">Back to Home</Link>
               </Button>
@@ -553,7 +566,7 @@ export default function GameContainer() {
               asChild
               variant="link"
               className="text-muted-foreground"
-              onClick={() => playSound("ui", isSoundOn)}
+              onClick={handleBackToHome}
             >
               <Link href="/">Back to Home</Link>
             </Button>
@@ -579,7 +592,7 @@ export default function GameContainer() {
               asChild
               variant="link"
               className="text-muted-foreground"
-              onClick={() => playSound("ui", isSoundOn)}
+              onClick={handleBackToHome}
             >
               <Link href="/">Back to Home</Link>
             </Button>

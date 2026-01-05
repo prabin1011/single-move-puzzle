@@ -22,6 +22,7 @@ import { Loader2, RefreshCw, CheckCircle, Info, Play, ArrowRight, PartyPopper, S
 import { useSound } from '@/contexts/sound-context';
 import { playSound } from '@/lib/sounds';
 import { cn } from '@/lib/utils';
+import { trackEvent } from '@/lib/analytics';
 
 type GameState = 'READY' | 'PLAYING' | 'SOLVED_VISUALIZING' | 'SOLVED_COMPLETE' | 'FAILED' | 'GAME_OVER' | 'ALL_LEVELS_COMPLETE';
 
@@ -59,6 +60,10 @@ export default function GameContainer() {
     const initialLevel = savedLevel ? parseInt(savedLevel, 10) : 0;
     const initialHighest = savedHighestLevel ? parseInt(savedHighestLevel, 10) : 0;
 
+    if (savedLevel) {
+        trackEvent('game_continue', { game: 'patterns', level: initialLevel });
+    }
+
     setLevel(initialLevel);
     setHighestLevel(initialHighest);
     loadPuzzle(initialLevel, 0); 
@@ -83,9 +88,11 @@ export default function GameContainer() {
   const handleSuccess = () => {
     playSound('success', isSoundOn);
     setGameState('SOLVED_VISUALIZING');
+    trackEvent('game_level_complete', { game: 'patterns', level: level + 1 });
     setTimeout(() => {
         if (level >= TOTAL_LEVELS - 1) { 
             playSound('win', isSoundOn);
+            trackEvent('game_all_levels_complete', { game: 'patterns' });
             setGameState('ALL_LEVELS_COMPLETE');
             localStorage.removeItem('patternCurrentLevel');
             localStorage.removeItem('patternHighestLevel');
@@ -100,6 +107,7 @@ export default function GameContainer() {
     const newMistakeCount = mistakeCount + 1;
     setMistakeCount(newMistakeCount);
     if (newMistakeCount > MAX_MISTAKES) {
+      trackEvent('game_over', { game: 'patterns', level: level + 1 });
       setGameState("GAME_OVER");
       localStorage.removeItem('patternCurrentLevel');
       localStorage.removeItem('patternHighestLevel');
@@ -118,6 +126,7 @@ export default function GameContainer() {
   
   const handleTryAgain = () => {
     playSound('ui', isSoundOn);
+    trackEvent('puzzle_retry', { game: 'patterns', level: level + 1 });
     setMistakeCount(0);
     setRetryCount(prev => prev + 1);
     setGameState('PLAYING');
@@ -125,6 +134,7 @@ export default function GameContainer() {
 
   const restartGame = () => {
     playSound("ui", isSoundOn);
+    trackEvent('game_start_new', { game: 'patterns' });
     setLevel(0);
     setHighestLevel(0);
     setMistakeCount(0);
@@ -137,8 +147,18 @@ export default function GameContainer() {
   
   const handleStart = () => {
     playSound("ui", isSoundOn);
+    trackEvent('puzzle_start', { game: 'patterns', level: level + 1 });
     setGameState("PLAYING");
   };
+  
+  const handleViewHint = () => {
+    trackEvent('hint_viewed', { game: 'patterns', level: level + 1 });
+  };
+  
+  const handleBackToHome = () => {
+    playSound("ui", isSoundOn);
+    trackEvent('navigate_to_home');
+  }
 
   if (isLoading || !puzzle) {
     return (
@@ -180,7 +200,7 @@ export default function GameContainer() {
             </CardDescription>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="outline" size="sm" className="mx-auto mt-2">
+                <Button variant="outline" size="sm" className="mx-auto mt-2" onClick={handleViewHint}>
                   <Info className="mr-2 h-4 w-4" /> Hint
                 </Button>
               </AlertDialogTrigger>
@@ -212,7 +232,7 @@ export default function GameContainer() {
               <CardTitle className="text-3xl font-bold pt-4 font-headline">
                 The Logic Was...
               </CardTitle>
-              <CardDescription className="text-muted-foreground px-4 mt-2 text-base">
+              <CardDescription className="text-muted-foreground px-4 mt-2 text-sm">
                 {puzzle.solution.rule}
               </CardDescription>
         </div>
@@ -287,14 +307,14 @@ export default function GameContainer() {
                 <Button onClick={handleStart} size="lg" className="w-full">
                     <Play className="mr-2" /> Start Puzzle
                 </Button>
-                <Button asChild variant="link" className="text-muted-foreground" onClick={() => playSound("ui", isSoundOn)}>
+                <Button asChild variant="link" className="text-muted-foreground" onClick={handleBackToHome}>
                     <Link href="/">Back to Home</Link>
                 </Button>
              </div>
         )}
 
         {(gameState === 'PLAYING' || gameState === 'SOLVED_VISUALIZING') && (
-            <Button asChild variant="link" className="text-muted-foreground" onClick={() => playSound("ui", isSoundOn)}>
+            <Button asChild variant="link" className="text-muted-foreground" onClick={handleBackToHome}>
                 <Link href="/">Back to Home</Link>
             </Button>
         )}
@@ -304,7 +324,7 @@ export default function GameContainer() {
             <Button onClick={handleTryAgain} size="lg" className="w-full" variant="destructive">
               <RefreshCw className="mr-2 h-4 w-4" /> Try Again
             </Button>
-            <Button asChild variant="link" className="text-muted-foreground" onClick={() => playSound("ui", isSoundOn)}>
+            <Button asChild variant="link" className="text-muted-foreground" onClick={handleBackToHome}>
               <Link href="/">Back to Home</Link>
             </Button>
             </div>
@@ -315,14 +335,14 @@ export default function GameContainer() {
             <Button onClick={restartGame} size="lg" className="w-full">
               Play Again
             </Button>
-            <Button asChild variant="link" className="text-muted-foreground" onClick={() => playSound("ui", isSoundOn)}>
+            <Button asChild variant="link" className="text-muted-foreground" onClick={handleBackToHome}>
               <Link href="/">Back to Home</Link>
             </Button>
           </div>
         )}
         
         { (gameState === 'SOLVED_COMPLETE' ) && (
-            <Button asChild variant="link" className="text-muted-foreground" onClick={() => playSound("ui", isSoundOn)}>
+            <Button asChild variant="link" className="text-muted-foreground" onClick={handleBackToHome}>
                 <Link href="/">Back to Home</Link>
             </Button>
         )}

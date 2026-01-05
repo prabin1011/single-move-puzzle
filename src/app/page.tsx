@@ -16,6 +16,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { SoundToggle } from '@/components/sound-toggle';
 import { useSound } from "@/contexts/sound-context";
 import { playSound } from "@/lib/sounds";
+import { trackEvent } from '@/lib/analytics';
 
 function shuffle<T>(array: T[]): T[] {
   let currentIndex = array.length,
@@ -93,6 +94,7 @@ export default function Home() {
 
   const handleNewGame = (game: 'landmark' | 'math' | 'patterns' | 'word-swap' | 'symbol-puzzle') => {
     playSound("ui", isSoundOn);
+    trackEvent('game_start_new', { game });
 
     if (game === 'landmark') {
         const currentRound = parseInt(localStorage.getItem('gameRound') || '0', 10);
@@ -258,13 +260,13 @@ export default function Home() {
 
         <footer className="w-full max-w-md mt-8 text-center">
           <div className="flex justify-center items-center gap-4 text-sm text-muted-foreground">
-            <Link href="/about" className="hover:text-primary transition-colors">About</Link>
+            <Link href="/about" className="hover:text-primary transition-colors" onClick={() => trackEvent('navigate_to_legal', { page: 'about' })}>About</Link>
             <span className="opacity-50">|</span>
-            <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
+            <Link href="/privacy" className="hover:text-primary transition-colors" onClick={() => trackEvent('navigate_to_legal', { page: 'privacy' })}>Privacy</Link>
             <span className="opacity-50">|</span>
-            <Link href="/contact" className="hover:text-primary transition-colors">Contact</Link>
+            <Link href="/contact" className="hover:text-primary transition-colors" onClick={() => trackEvent('navigate_to_legal', { page: 'contact' })}>Contact</Link>
             <span className="opacity-50">|</span>
-            <Link href="/disclaimer" className="hover:text-primary transition-colors">Disclaimer</Link>
+            <Link href="/disclaimer" className="hover:text-primary transition-colors" onClick={() => trackEvent('navigate_to_legal', { page: 'disclaimer' })}>Disclaimer</Link>
           </div>
            <p className="text-xs text-muted-foreground/50 mt-4">
               © {new Date().getFullYear()} One Move Puzzle. All Rights Reserved.

@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth, useUser } from '@/firebase';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
-import { Loader2, Landmark, Calculator, Shapes, BookText } from 'lucide-react';
+import { Loader2, Landmark, Calculator, Shapes, BookText, Pilcrow, Sigma, Baseline } from 'lucide-react';
 import { levels } from '@/lib/levels';
 import type { Level } from '@/lib/levels';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -126,104 +126,120 @@ export default function Home() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-background overflow-hidden">
-      <div className="absolute top-4 right-4 flex items-center gap-2">
+    <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-background overflow-hidden">
+      <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
         <SoundToggle />
         <ThemeToggle />
       </div>
-      <Card className="w-full max-w-md text-center border-border shadow-2xl bg-card">
-        <CardHeader className="space-y-4">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary overflow-hidden">
-            <Image src="/logo.png" alt="One Move Puzzle Logo" width={64} height={64} />
+
+      <main className="flex flex-col items-center justify-center w-full">
+        <Card className="w-full max-w-md text-center border-border shadow-2xl bg-card">
+          <CardHeader className="space-y-4">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary overflow-hidden">
+              <Image src="/logo.png" alt="One Move Puzzle Logo" width={64} height={64} />
+            </div>
+            <CardTitle className="text-3xl font-bold font-headline">One Move Puzzle</CardTitle>
+            <CardDescription className="text-lg text-muted-foreground px-4">
+              A collection of calm, educational puzzle games.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6 pt-6">
+            <div className="grid grid-cols-1 gap-4 px-6">
+
+              {/* Game 1: One Move Landmark */}
+              <Card className="p-4 flex flex-col sm:flex-row items-center gap-4">
+                <Landmark className="h-10 w-10 text-primary shrink-0" />
+                <div className="flex-grow text-center sm:text-left">
+                  <h3 className="font-bold font-headline text-lg">Landmark Puzzle</h3>
+                  <p className="text-sm text-muted-foreground">Guess the swapped tiles in famous landmark photos.</p>
+                </div>
+                <div className="flex flex-col space-y-2 w-full sm:w-auto">
+                  <Button onClick={() => handleNewGame('landmark')} className="w-full">New Game</Button>
+                  {showLandmarkContinue && (
+                    <Button asChild variant="secondary" className="w-full">
+                      <Link href="/games/one-move-landmark" onClick={() => playSound("ui", isSoundOn)}>
+                        Continue (Lvl {landmarkHighestLevel + 1})
+                      </Link>
+                    </Button>
+                  )}
+                </div>
+              </Card>
+
+              {/* Game 2: One Move Math */}
+              <Card className="p-4 flex flex-col sm:flex-row items-center gap-4 bg-secondary/50">
+                <Calculator className="h-10 w-10 text-primary shrink-0" />
+                <div className="flex-grow text-center sm:text-left">
+                  <h3 className="font-bold font-headline text-lg">Math Puzzle</h3>
+                  <p className="text-sm text-muted-foreground">Solve the math equation in just one move.</p>
+                </div>
+                <div className="flex flex-col space-y-2 w-full sm:w-auto">
+                  <Button onClick={() => handleNewGame('math')} className="w-full">New Game</Button>
+                  {showMathContinue && (
+                    <Button asChild variant="secondary">
+                      <Link href="/games/one-move-math" onClick={() => playSound("ui", isSoundOn)}>
+                        Continue (Lvl {mathHighestLevel + 1})
+                      </Link>
+                    </Button>
+                  )}
+                </div>
+              </Card>
+
+              {/* Game 3: One Move Patterns */}
+              <Card className="p-4 flex flex-col sm:flex-row items-center gap-4 bg-secondary/50">
+                <Shapes className="h-10 w-10 text-primary shrink-0" />
+                <div className="flex-grow text-center sm:text-left">
+                  <h3 className="font-bold font-headline text-lg">Patterns Puzzle</h3>
+                  <p className="text-sm text-muted-foreground">Fix the broken pattern in just one move.</p>
+                </div>
+                <div className="flex flex-col space-y-2 w-full sm:w-auto">
+                  <Button onClick={() => handleNewGame('patterns')} className="w-full">New Game</Button>
+                   {showPatternsContinue && (
+                    <Button asChild variant="secondary">
+                      <Link href="/games/one-move-patterns" onClick={() => playSound("ui", isSoundOn)}>
+                        Continue (Lvl {patternsHighestLevel + 1})
+                      </Link>
+                    </Button>
+                  )}
+                </div>
+              </Card>
+
+              {/* Game 4: Word Swap Puzzle */}
+              <Card className="p-4 flex flex-col sm:flex-row items-center gap-4 bg-secondary/50">
+                <BookText className="h-10 w-10 text-primary shrink-0" />
+                <div className="flex-grow text-center sm:text-left">
+                  <h3 className="font-bold font-headline text-lg">Word Swap Puzzle</h3>
+                  <p className="text-sm text-muted-foreground">Fix the broken word relationships in one move.</p>
+                </div>
+                <div className="flex flex-col space-y-2 w-full sm:w-auto">
+                  <Button onClick={() => handleNewGame('word-swap')} className="w-full">New Game</Button>
+                   {showWordSwapContinue && (
+                    <Button asChild variant="secondary">
+                      <Link href="/games/word-swap" onClick={() => playSound("ui", isSoundOn)}>
+                        Continue (Lvl {wordSwapHighestLevel + 1})
+                      </Link>
+                    </Button>
+                  )}
+                </div>
+              </Card>
+            </div>
+          </CardContent>
+        </Card>
+
+        <footer className="w-full max-w-md mt-8 text-center">
+          <div className="flex justify-center items-center gap-4 text-sm text-muted-foreground">
+            <Link href="/about" className="hover:text-primary transition-colors">About</Link>
+            <span className="opacity-50">|</span>
+            <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
+            <span className="opacity-50">|</span>
+            <Link href="/contact" className="hover:text-primary transition-colors">Contact</Link>
+            <span className="opacity-50">|</span>
+            <Link href="/disclaimer" className="hover:text-primary transition-colors">Disclaimer</Link>
           </div>
-          <CardTitle className="text-3xl font-bold font-headline">One Move Puzzle</CardTitle>
-          <CardDescription className="text-lg text-muted-foreground px-4">
-            A collection of calm, educational puzzle games.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6 pt-6">
-          <div className="grid grid-cols-1 gap-4 px-6">
-
-            {/* Game 1: One Move Landmark */}
-            <Card className="p-4 flex flex-col sm:flex-row items-center gap-4">
-              <Landmark className="h-10 w-10 text-primary shrink-0" />
-              <div className="flex-grow text-center sm:text-left">
-                <h3 className="font-bold font-headline text-lg">Landmark Puzzle</h3>
-                <p className="text-sm text-muted-foreground">Guess the swapped tiles in famous landmark photos.</p>
-              </div>
-              <div className="flex flex-col space-y-2 w-full sm:w-auto">
-                <Button onClick={() => handleNewGame('landmark')} className="w-full">New Game</Button>
-                {showLandmarkContinue && (
-                  <Button asChild variant="secondary" className="w-full">
-                    <Link href="/games/one-move-landmark" onClick={() => playSound("ui", isSoundOn)}>
-                      Continue (Lvl {landmarkHighestLevel + 1})
-                    </Link>
-                  </Button>
-                )}
-              </div>
-            </Card>
-
-            {/* Game 2: One Move Math */}
-            <Card className="p-4 flex flex-col sm:flex-row items-center gap-4 bg-secondary/50">
-              <Calculator className="h-10 w-10 text-primary shrink-0" />
-              <div className="flex-grow text-center sm:text-left">
-                <h3 className="font-bold font-headline text-lg">Math Puzzle</h3>
-                <p className="text-sm text-muted-foreground">Solve the math equation in just one move.</p>
-              </div>
-              <div className="flex flex-col space-y-2 w-full sm:w-auto">
-                <Button onClick={() => handleNewGame('math')} className="w-full">New Game</Button>
-                {showMathContinue && (
-                  <Button asChild variant="secondary">
-                    <Link href="/games/one-move-math" onClick={() => playSound("ui", isSoundOn)}>
-                      Continue (Lvl {mathHighestLevel + 1})
-                    </Link>
-                  </Button>
-                )}
-              </div>
-            </Card>
-
-            {/* Game 3: One Move Patterns */}
-            <Card className="p-4 flex flex-col sm:flex-row items-center gap-4 bg-secondary/50">
-              <Shapes className="h-10 w-10 text-primary shrink-0" />
-              <div className="flex-grow text-center sm:text-left">
-                <h3 className="font-bold font-headline text-lg">Patterns Puzzle</h3>
-                <p className="text-sm text-muted-foreground">Fix the broken pattern in just one move.</p>
-              </div>
-              <div className="flex flex-col space-y-2 w-full sm:w-auto">
-                <Button onClick={() => handleNewGame('patterns')} className="w-full">New Game</Button>
-                 {showPatternsContinue && (
-                  <Button asChild variant="secondary">
-                    <Link href="/games/one-move-patterns" onClick={() => playSound("ui", isSoundOn)}>
-                      Continue (Lvl {patternsHighestLevel + 1})
-                    </Link>
-                  </Button>
-                )}
-              </div>
-            </Card>
-
-            {/* Game 4: Word Swap Puzzle */}
-            <Card className="p-4 flex flex-col sm:flex-row items-center gap-4 bg-secondary/50">
-              <BookText className="h-10 w-10 text-primary shrink-0" />
-              <div className="flex-grow text-center sm:text-left">
-                <h3 className="font-bold font-headline text-lg">Word Swap Puzzle</h3>
-                <p className="text-sm text-muted-foreground">Fix the broken word relationships in one move.</p>
-              </div>
-              <div className="flex flex-col space-y-2 w-full sm:w-auto">
-                <Button onClick={() => handleNewGame('word-swap')} className="w-full">New Game</Button>
-                 {showWordSwapContinue && (
-                  <Button asChild variant="secondary">
-                    <Link href="/games/word-swap" onClick={() => playSound("ui", isSoundOn)}>
-                      Continue (Lvl {wordSwapHighestLevel + 1})
-                    </Link>
-                  </Button>
-                )}
-              </div>
-            </Card>
-
-
-          </div>
-        </CardContent>
-      </Card>
-    </main>
+           <p className="text-xs text-muted-foreground/50 mt-4">
+              © {new Date().getFullYear()} One Move Puzzle. All Rights Reserved.
+            </p>
+        </footer>
+      </main>
+    </div>
   );
 }

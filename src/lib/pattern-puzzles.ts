@@ -56,27 +56,19 @@ const createGrid = (size: number): Tile[] =>
 const copyGrid = (grid: Tile[]): Tile[] => grid.map((t) => ({ ...t }));
 
 /**
- * Deterministic "pseudo-random" index picker based on level + variation.
- */
-const makeSeed = (levelIndex: number, variation: number) =>
-  levelIndex * VARIATIONS_PER_LEVEL + variation;
-
-/**
- * Applies a single swap flaw to the *correct* grid to create the puzzle.
+ * Applies a single, random swap flaw to the *correct* grid to create the puzzle.
  */
 const applySwapFlaw = (
   correctGrid: Tile[],
-  levelIndex: number,
-  variation: number
 ): { incorrectGrid: Tile[]; solution: [number, number] } => {
   const size = correctGrid.length;
   const incorrectGrid = copyGrid(correctGrid);
 
-  const seed = makeSeed(levelIndex, variation);
-  let idx1 = seed % size;
-  let idx2 = (seed * 7 + 3) % size;
-  if (idx1 === idx2) {
-    idx2 = (idx2 + 1) % size;
+  let idx1 = Math.floor(Math.random() * size);
+  let idx2 = Math.floor(Math.random() * size);
+  
+  while (idx1 === idx2) {
+    idx2 = Math.floor(Math.random() * size);
   }
 
   [incorrectGrid[idx1], incorrectGrid[idx2]] = [
@@ -154,8 +146,6 @@ const generateRowColorColShape = (
 
   const { incorrectGrid, solution } = applySwapFlaw(
     correctGrid,
-    levelIndex,
-    variation
   );
 
   return {
@@ -192,8 +182,6 @@ const generateRowShapeColColor = (
 
   const { incorrectGrid, solution } = applySwapFlaw(
     correctGrid,
-    levelIndex,
-    variation
   );
 
   return {
@@ -237,8 +225,6 @@ const generateDiagonalPlusRowCol = (
 
   const { incorrectGrid, solution } = applySwapFlaw(
     correctGrid,
-    levelIndex,
-    variation
   );
 
   return {
@@ -284,8 +270,6 @@ const generateBlockPattern = (
 
   const { incorrectGrid, solution } = applySwapFlaw(
     correctGrid,
-    levelIndex,
-    variation
   );
 
   return {
@@ -341,12 +325,10 @@ const generateMixedPattern = (
 
   const { incorrectGrid, solution } = applySwapFlaw(
     correctGrid,
-    levelIndex,
-    variation
   );
 
   return {
-    id: `L${levelIndex + 1}-V${variation}`,
+    id: `L${levelIndex + 1}-V${Date.now()}-${variation}`,
     grid: incorrectGrid,
     correctGrid: correctGrid,
     solution: { type: 'swap', indices: solution },
@@ -440,7 +422,8 @@ export function generatePatternPuzzle(
   levelIndex: number,
   retryCount: number
 ): PatternPuzzle {
-  const variation = retryCount % VARIATIONS_PER_LEVEL; // 0..9
+  // Use retryCount to vary the sequences, but the swap itself is now random.
+  const variation = retryCount % VARIATIONS_PER_LEVEL;
   const config = getPatternPuzzleConfig(levelIndex);
   return config.generate(levelIndex, variation);
 }

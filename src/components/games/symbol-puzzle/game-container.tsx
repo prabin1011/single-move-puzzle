@@ -16,7 +16,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import Link from 'next/link';
-import { generateSymbolPuzzle, getSymbolLevelConfig, getSymbolHints, type SymbolPuzzle } from '@/lib/symbol-puzzles';
+import { generateSymbolPuzzle, getSymbolLevelConfig, getSymbolHints, type SymbolPuzzle, TOTAL_SYMBOL_LEVELS } from '@/lib/symbol-puzzles';
 import PuzzleBoard from './puzzle-board';
 import { Loader2, RefreshCw, Info, Play, ArrowRight, PartyPopper, Sigma } from 'lucide-react';
 import { useSound } from '@/contexts/sound-context';
@@ -27,7 +27,6 @@ import { trackEvent } from '@/lib/analytics';
 type GameState = 'READY' | 'PLAYING' | 'SOLVED_VISUALIZING' | 'SOLVED_COMPLETE' | 'FAILED' | 'GAME_OVER' | 'ALL_LEVELS_COMPLETE';
 
 const MAX_MISTAKES = 0; // Game over on first mistake
-const TOTAL_LEVELS = 100;
 
 export default function GameContainer() {
   const [level, setLevel] = useState(0);
@@ -56,8 +55,12 @@ export default function GameContainer() {
     const savedLevel = localStorage.getItem('symbolCurrentLevel');
     const savedHighestLevel = localStorage.getItem('symbolHighestLevel');
     
-    const initialLevel = savedLevel ? parseInt(savedLevel, 10) : 0;
-    const initialHighest = savedHighestLevel ? parseInt(savedHighestLevel, 10) : 0;
+    const rawLevel = savedLevel ? parseInt(savedLevel, 10) : 0;
+    const initialLevel = Math.max(0, Math.min(rawLevel, TOTAL_SYMBOL_LEVELS - 1));
+
+    const rawHighestLevel = savedHighestLevel ? parseInt(savedHighestLevel, 10) : 0;
+    const initialHighest = Math.max(0, Math.min(rawHighestLevel, TOTAL_SYMBOL_LEVELS - 1));
+
 
     if (savedLevel) {
         trackEvent('game_continue', { game: 'symbol-puzzle', level: initialLevel });
@@ -65,7 +68,6 @@ export default function GameContainer() {
 
     setLevel(initialLevel);
     setHighestLevel(initialHighest);
-    loadPuzzle(initialLevel, 0); 
   }, []);
 
   // Save progress whenever level changes
@@ -73,11 +75,10 @@ export default function GameContainer() {
     if (isLoading) return;
     localStorage.setItem('symbolCurrentLevel', level.toString());
     if (level > highestLevel) {
-      const newHighest = level;
-      setHighestLevel(newHighest);
-      localStorage.setItem('symbolHighestLevel', newHighest.toString());
+      setHighestLevel(level);
+      localStorage.setItem('symbolHighestLevel', level.toString());
     }
-  }, [level, highestLevel, isLoading]);
+  }, [level, isLoading, highestLevel]);
   
   useEffect(() => {
     loadPuzzle(level, retryCount);
@@ -89,7 +90,7 @@ export default function GameContainer() {
     setGameState('SOLVED_VISUALIZING');
     trackEvent('game_level_complete', { game: 'symbol-puzzle', level: level + 1 });
     setTimeout(() => {
-        if (level >= TOTAL_LEVELS - 1) { 
+        if (level >= TOTAL_SYMBOL_LEVELS - 1) { 
             playSound('win', isSoundOn);
             trackEvent('game_all_levels_complete', { game: 'symbol-puzzle' });
             setGameState('ALL_LEVELS_COMPLETE');
@@ -220,7 +221,7 @@ export default function GameContainer() {
         
         <div className={cn("transition-opacity duration-300 absolute inset-0 p-6 flex flex-col justify-center", (gameState === "SOLVED_VISUALIZING") ? 'opacity-100' : 'opacity-0 invisible')}>
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary overflow-hidden">
-                <Image src="/logo.png" alt="Pattern Restored" width={64} height={64} />
+                <Image src="/image/logo.png" alt="Pattern Restored" width={64} height={64} />
             </div>
             <CardTitle className="text-3xl font-bold pt-4 font-headline">
               Logic Restored!
@@ -279,7 +280,7 @@ export default function GameContainer() {
           <AlertDialogContent>
             <AlertDialogHeader className="items-center text-center">
                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary overflow-hidden mb-4">
-                  <Image src="/logo.png" alt="Level Complete" width={64} height={64} />
+                  <Image src="/image/logo.png" alt="Level Complete" width={64} height={64} />
               </div>
               <AlertDialogTitle className="text-3xl font-bold font-headline">
                 Level {level + 1} Complete!

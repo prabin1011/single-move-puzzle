@@ -361,7 +361,7 @@ export default function GameContainer() {
         {gameState === "SOLVED_VISUALIZING" && (
           <>
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary overflow-hidden">
-                <Image src="/logo.png" alt="Puzzle Solved" width={64} height={64} />
+                <Image src="/image/logo.png" alt="Puzzle Solved" width={64} height={64} />
             </div>
             <CardTitle className="text-3xl font-bold pt-4 font-headline">
               Puzzle Solved!
@@ -372,7 +372,7 @@ export default function GameContainer() {
         {gameState === "GAME_OVER" && (
             <>
               <div className="flex justify-center w-16 h-16 mx-auto">
-                <Image src="/logo.png" alt="Game Over" width={64} height={64} className="object-contain"/>
+                <Image src="/image/logo.png" alt="Game Over" width={64} height={64} className="object-contain"/>
               </div>
               <CardTitle className="text-3xl font-bold pt-4 font-headline">
                 Game Over
@@ -432,7 +432,7 @@ export default function GameContainer() {
           <AlertDialogContent>
             <AlertDialogHeader className="items-center text-center">
                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary overflow-hidden mb-4">
-                  <Image src="/logo.png" alt="Level Complete" width={64} height={64} />
+                  <Image src="/image/logo.png" alt="Level Complete" width={64} height={64} />
               </div>
               <AlertDialogTitle className="text-3xl font-bold font-headline">
                 Level {levelIndex + 1} Complete!

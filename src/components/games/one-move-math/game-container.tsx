@@ -215,7 +215,7 @@ export default function GameContainer() {
         <div className={cn("transition-opacity duration-300 absolute inset-0 p-6 flex flex-col justify-center", (gameState === "SOLVED_VISUALIZING" || gameState === "SOLVED_COMPLETE") ? 'opacity-100' : 'opacity-0 invisible')}>
             <div className="flex justify-center">
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary overflow-hidden">
-                <Image src="/logo.png" alt="Puzzle Solved" width={64} height={64} />
+                <Image src="/image/logo.png" alt="Puzzle Solved" width={64} height={64} />
               </div>
             </div>
             <CardTitle className="text-3xl font-bold pt-4 font-headline">
@@ -225,7 +225,7 @@ export default function GameContainer() {
 
         <div className={cn("transition-opacity duration-300 absolute inset-0 p-6 flex flex-col justify-center", gameState === 'GAME_OVER' ? 'opacity-100' : 'opacity-0 invisible')}>
             <div className="flex justify-center w-16 h-16 mx-auto">
-                <Image src="/logo.png" alt="Game Over" width={64} height={64} className="object-contain"/>
+                <Image src="/image/logo.png" alt="Game Over" width={64} height={64} className="object-contain"/>
               </div>
               <CardTitle className="text-3xl font-bold pt-4 font-headline">
                 Game Over
@@ -281,7 +281,7 @@ export default function GameContainer() {
             <AlertDialogHeader className="items-center text-center">
               <div className="flex justify-center pb-4">
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary overflow-hidden">
-                    <Image src="/logo.png" alt="Puzzle Solved" width={64} height={64} />
+                    <Image src="/image/logo.png" alt="Puzzle Solved" width={64} height={64} />
                 </div>
               </div>
               <AlertDialogTitle className="text-3xl font-bold font-headline">
@@ -371,4 +371,3 @@ export default function GameContainer() {
     
 
     
-

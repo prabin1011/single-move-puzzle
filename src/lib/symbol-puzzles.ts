@@ -94,8 +94,18 @@ const applySwapFlaw = (
   let idx1 = Math.floor(Math.random() * size);
   let idx2 = Math.floor(Math.random() * size);
 
-  while (idx1 === idx2) {
+  const areSameTile = (a: SymbolTile, b: SymbolTile) =>
+    a.symbol === b.symbol && a.color === b.color && a.category === b.category;
+
+  // ensure visually different tiles
+  let attempts = 0;
+  while (
+    (idx1 === idx2 || areSameTile(incorrectGrid[idx1], incorrectGrid[idx2])) &&
+    attempts < 50
+  ) {
+    idx1 = Math.floor(Math.random() * size);
     idx2 = Math.floor(Math.random() * size);
+    attempts++;
   }
 
   [incorrectGrid[idx1], incorrectGrid[idx2]] = [
@@ -108,6 +118,7 @@ const applySwapFlaw = (
 
   return { incorrectGrid, solutionIndices };
 };
+
 
 /**
  * Deterministic pseudo-random index generator based on seed.

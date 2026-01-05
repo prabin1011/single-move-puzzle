@@ -100,7 +100,7 @@ const createScrambledEquation = (
 };
 
 
-/* ---------- helpers: swap choice & puzzle creation ---------- */
+/* ---------- helpers: puzzle creation ---------- */
 
 const createPuzzleFromTokens = (
   tokens: TileValue[],
@@ -110,7 +110,7 @@ const createPuzzleFromTokens = (
   variation: number
 ): MathPuzzle => {
   return {
-    id: `L${levelIndex + 1}-V${variation}`,
+    id: `L${levelIndex + 1}-V${variation}-${Date.now()}`,
     board: toTiles(scrambled),
     swappedIndices,
     correctSolution: tokens,
@@ -124,15 +124,12 @@ const makeAddSubGenerator = (
   max: number,
   allowSubtract: boolean
 ): ((levelIndex: number, variation: number) => MathPuzzle) => {
-    const span = max - min + 1;
     return (levelIndex, variation) => {
-        const seed = levelIndex * 17 + variation * 13;
-
-        let a = min + ((seed * 3) % span);
-        let b = min + ((seed * 7 + 1) % span);
+        let a = Math.floor(Math.random() * (max - min + 1)) + min;
+        let b = Math.floor(Math.random() * (max - min + 1)) + min;
 
         let op: '+' | '-' = '+';
-        if (allowSubtract && variation % 2 === 1) {
+        if (allowSubtract && Math.random() > 0.5) {
             op = '-';
             if (a < b) [a, b] = [b, a]; // Ensure positive result
         }
@@ -156,17 +153,14 @@ const makeMultiplicationGenerator = (
   minB: number,
   maxB: number
 ): ((levelIndex: number, variation: number) => MathPuzzle) => {
-    const spanA = maxA - minA + 1;
-    const spanB = maxB - minB + 1;
     return (levelIndex, variation) => {
-        const seed = levelIndex * 23 + variation * 19;
-        const a = minA + (seed % spanA);
-        const b = minB + ((seed * 3 + 1) % spanB);
+        const a = Math.floor(Math.random() * (maxA - minA + 1)) + minA;
+        const b = Math.floor(Math.random() * (maxB - minB + 1)) + minB;
         const correctEq = `${a} * ${b} = ${a * b}`;
         const correctTokens = toValues(correctEq);
         
         // Swap one factor with the result
-        const swap: [string, string] = variation % 2 === 0 ? [`${a}`, `${a*b}`] : [`${b}`, `${a*b}`];
+        const swap: [string, string] = Math.random() > 0.5 ? [`${a}`, `${a*b}`] : [`${b}`, `${a*b}`];
         const scrambledEq = createScrambledEquation(correctEq, swap);
         const scrambledTokens = toValues(scrambledEq);
         const swappedIndices = findSwapIndices(scrambledTokens, correctTokens);
@@ -181,12 +175,9 @@ const makeDivisionGenerator = (
   minDivisor: number,
   maxDivisor: number
 ): ((levelIndex: number, variation: number) => MathPuzzle) => {
-    const spanQ = maxQuotient - minQuotient + 1;
-    const spanD = maxDivisor - minDivisor + 1;
     return (levelIndex, variation) => {
-        const seed = levelIndex * 29 + variation * 31;
-        const q = minQuotient + (seed % spanQ);
-        const d = minDivisor + ((seed * 5 + 1) % spanD);
+        const q = Math.floor(Math.random() * (maxQuotient - minQuotient + 1)) + minQuotient;
+        const d = Math.floor(Math.random() * (maxDivisor - minDivisor + 1)) + minDivisor;
         const dividend = q * d;
         const correctEq = `${dividend} / ${d} = ${q}`;
         const correctTokens = toValues(correctEq);
@@ -210,17 +201,12 @@ const makeMixedGenerator = (
     const [bMin, bMax] = bRange;
     const [cMin, cMax] = cRange;
 
-    const spanA = aMax - aMin + 1;
-    const spanB = bMax - bMin + 1;
-    const spanC = cMax - cMin + 1;
-
     return (levelIndex, variation) => {
-        const seed = levelIndex * 37 + variation * 41;
-        let a = aMin + (seed % spanA);
-        const b = bMin + ((seed * 3) % spanB);
-        const c = cMin + ((seed * 5) % spanC);
+        let a = Math.floor(Math.random() * (aMax - aMin + 1)) + aMin;
+        const b = Math.floor(Math.random() * (bMax - bMin + 1)) + bMin;
+        const c = Math.floor(Math.random() * (cMax - cMin + 1)) + cMin;
         
-        const op1: '+' | '-' = variation % 3 === 0 ? '-' : '+';
+        const op1: '+' | '-' = Math.random() > 0.5 ? '+' : '-';
         if (op1 === '-' && a < (b*c)) {
             a += (b*c); // Ensure positive result
         }
@@ -230,7 +216,7 @@ const makeMixedGenerator = (
         const correctTokens = toValues(correctEq);
         
         // Swap an operator with a number
-        const swap: [string, string] = variation % 2 === 0 ? [op1, `${c}`] : ['*', `${a}`];
+        const swap: [string, string] = Math.random() > 0.5 ? [op1, `${c}`] : ['*', `${a}`];
         const scrambledEq = createScrambledEquation(correctEq, swap);
         const scrambledTokens = toValues(scrambledEq);
         const swappedIndices = findSwapIndices(scrambledTokens, correctTokens);
@@ -239,7 +225,7 @@ const makeMixedGenerator = (
     };
 };
 
-/* ---------- level table: 50 levels, 10 variations each ---------- */
+/* ---------- level table: 50 levels ---------- */
 
 const mathLevels: MathLevel[] = (() => {
   const levels: MathLevel[] = [];
@@ -355,11 +341,13 @@ export function generatePuzzle(
   retryCount: number
 ): MathPuzzle {
   const config = getMathPuzzleConfig(level);
-  const variation = retryCount % 10; // 0..9 → 10 variations per level
-  return config.generate(level, variation);
+  // The variation is now just for tracking, the generation is random.
+  return config.generate(level, retryCount);
 }
 
 export function getHint(_puzzle: MathPuzzle, level: number): string {
   const config = getMathPuzzleConfig(level);
   return config.hint;
 }
+
+    

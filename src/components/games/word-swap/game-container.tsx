@@ -224,7 +224,7 @@ export default function GameContainer() {
         
         <div className={cn("transition-opacity duration-300 absolute inset-0 p-6 flex flex-col justify-center", (gameState === "SOLVED_VISUALIZING") ? 'opacity-100' : 'opacity-0 invisible')}>
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary overflow-hidden">
-                <Image src="/image/logo.png" alt="Logic Restored" width={64} height={64} />
+                <Image src="/logo.png" alt="Logic Restored" width={64} height={64} />
             </div>
             <CardTitle className="text-3xl font-bold pt-4 font-headline">
               Logic Restored!
@@ -303,7 +303,7 @@ export default function GameContainer() {
           <AlertDialogContent>
             <AlertDialogHeader className="items-center text-center">
                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary overflow-hidden mb-4">
-                  <Image src="/image/logo.png" alt="Level Complete" width={64} height={64} />
+                  <Image src="/logo.png" alt="Level Complete" width={64} height={64} />
               </div>
               <AlertDialogTitle className="text-3xl font-bold font-headline">
                 Level {level + 1} Complete!

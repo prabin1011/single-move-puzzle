@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -149,7 +148,7 @@ export default function Home() {
         <Card className="w-full max-w-md text-center border-border shadow-2xl bg-card">
           <CardHeader className="space-y-4">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary overflow-hidden">
-              <Image src="/image/logo.png" alt="One Move Puzzle Logo" width={64} height={64} />
+              <Image src="/logo.png" alt="One Move Puzzle Logo" width={64} height={64} />
             </div>
             <CardTitle className="text-3xl font-bold font-headline">One Move Puzzle</CardTitle>
             <CardDescription className="text-lg text-muted-foreground px-4">

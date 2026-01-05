@@ -37,11 +37,17 @@ export default function GameContainer() {
   const [isLoading, setIsLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
   const { isSoundOn } = useSound();
+  const [currentHint, setCurrentHint] = useState('');
 
   const loadPuzzle = (currentLevel: number, retries: number) => {
     setIsLoading(true);
     const newPuzzle = generatePatternPuzzle(currentLevel, retries);
     setPuzzle(newPuzzle);
+    
+    const config = getPatternPuzzleConfig(currentLevel);
+    // Cycle through hints on retries
+    setCurrentHint(config.hintLevels[retries % config.hintLevels.length]);
+    
     setIsLoading(false);
   };
   
@@ -183,7 +189,7 @@ export default function GameContainer() {
                   <AlertDialogTitle className="font-headline">Hint for Level {level + 1}</AlertDialogTitle>
                   <AlertDialogDescription asChild>
                       <div className="text-left text-base p-4 rounded-lg mt-2 bg-yellow-100/70 dark:bg-yellow-900/40 border border-yellow-200/70 dark:border-yellow-700/60">
-                        {puzzleConfig.hint}
+                        {currentHint}
                       </div>
                   </AlertDialogDescription>
                 </AlertDialogHeader>

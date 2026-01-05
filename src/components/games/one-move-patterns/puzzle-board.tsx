@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import type { PatternPuzzle, Tile } from '@/lib/pattern-puzzles';
 import { playSound } from '@/lib/sounds';
 import { useSound } from '@/contexts/sound-context';
-import { Circle, Square, Triangle, Diamond, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Circle, Square, Triangle, Diamond, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Star, Hexagon, Octagon, Pentagon } from 'lucide-react';
 
 interface PuzzleBoardProps {
   puzzle: PatternPuzzle;
@@ -28,6 +28,10 @@ const shapeMap = {
     square: Square,
     triangle: Triangle,
     diamond: Diamond,
+    hexagon: Hexagon,
+    pentagon: Pentagon,
+    octagon: Octagon,
+    star: Star,
     empty: null,
 };
 

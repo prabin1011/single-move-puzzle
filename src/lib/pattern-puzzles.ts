@@ -2,11 +2,19 @@
 'use client';
 
 // A tile can have a color and a shape.
-// (direction is kept for future use but not used in the current patterns UI.)
 export interface Tile {
   id: string; // Unique ID for React keys, e.g., "0-0"
   color: 'blue' | 'red' | 'green' | 'yellow' | 'purple' | 'empty';
-  shape: 'circle' | 'square' | 'triangle' | 'diamond' | 'empty';
+  shape:
+    | 'circle'
+    | 'square'
+    | 'triangle'
+    | 'diamond'
+    | 'hexagon'
+    | 'pentagon'
+    | 'octagon'
+    | 'star'
+    | 'empty';
   direction: 'up' | 'down' | 'left' | 'right' | 'empty';
 }
 
@@ -23,10 +31,10 @@ export interface PatternPuzzle {
 
 // Level template – concept + generator.
 export interface LevelTemplate {
-  level: number;             // 1..50 (for display)
+  level: number; // 1..50 (for display)
   concept: string;
   gridSize: 3 | 4 | 5;
-  hint: string;
+  hintLevels: string[];
   // The generate function is now chosen from a pool of generators
   generate: (levelIndex: number, variation: number) => PatternPuzzle;
 }
@@ -35,7 +43,16 @@ export interface LevelTemplate {
 // CONSTANTS & UTILITIES
 // --------------------------------------------------------
 
-const SHAPES: Array<Tile['shape']> = ['circle', 'square', 'triangle', 'diamond'];
+const SHAPES: Array<Tile['shape']> = [
+  'circle',
+  'square',
+  'triangle',
+  'diamond',
+  'pentagon',
+  'hexagon',
+  'octagon',
+  'star',
+];
 const COLORS: Array<Tile['color']> = ['blue', 'red', 'green', 'yellow', 'purple'];
 
 export const VARIATIONS_PER_LEVEL = 10;
@@ -240,11 +257,94 @@ const generateSameItemRule: PatternGenerator = (gridSize, levelIndex, variation)
     return { id: `L${levelIndex + 1}-V${variation}`, grid: incorrectGrid, correctGrid, solution: { type: 'swap', indices: solution } };
 }
 
+const generateShapeComplexityGradient: PatternGenerator = (gridSize, levelIndex, variation) => {
+  const size = gridSize;
+  const correctGrid = createGrid(size);
+
+  const orderedShapes = getVariationSequence(SHAPES, size, variation);
+
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      const idx = r * size + c;
+
+      // Complexity = row index + column index
+      const shapeIndex = (r + c) % orderedShapes.length;
+
+      correctGrid[idx].shape = orderedShapes[shapeIndex];
+      correctGrid[idx].color = COLORS[(shapeIndex + variation) % COLORS.length];
+    }
+  }
+
+  const { incorrectGrid, solution } = applySwapFlaw(correctGrid);
+
+  return {
+    id: `L${levelIndex + 1}-G1-${variation}`,
+    grid: incorrectGrid,
+    correctGrid,
+    solution: { type: 'swap', indices: solution }
+  };
+};
+
+const generateMirrorSymmetryPattern: PatternGenerator = (gridSize, levelIndex, variation) => {
+  const size = gridSize;
+  const correctGrid = createGrid(size);
+
+  const rowShapes = getVariationSequence(SHAPES, size, variation);
+  const rowColors = getVariationSequence(COLORS, size, variation + 2);
+
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      const mirrorCol = size - c - 1;
+      const idx = r * size + c;
+
+      correctGrid[idx].shape = rowShapes[Math.min(c, mirrorCol)];
+      correctGrid[idx].color = rowColors[Math.min(r, mirrorCol)];
+    }
+  }
+
+  const { incorrectGrid, solution } = applySwapFlaw(correctGrid);
+
+  return {
+    id: `L${levelIndex + 1}-G2-${variation}`,
+    grid: incorrectGrid,
+    correctGrid,
+    solution: { type: 'swap', indices: solution }
+  };
+};
+
+const generateCheckerboardParityPattern: PatternGenerator = (gridSize, levelIndex, variation) => {
+  const size = gridSize;
+  const correctGrid = createGrid(size);
+
+  const shapeSeq = getVariationSequence(SHAPES, size, variation);
+  const colorSeq = getVariationSequence(COLORS, size, variation + 1);
+
+  for (let i = 0; i < size * size; i++) {
+    const isEven = (i + variation) % 2 === 0;
+
+    if (isEven) {
+      correctGrid[i].color = colorSeq[i % colorSeq.length];
+      correctGrid[i].shape = shapeSeq[(i + 1) % shapeSeq.length];
+    } else {
+      correctGrid[i].shape = shapeSeq[i % shapeSeq.length];
+      correctGrid[i].color = colorSeq[(i + 1) % colorSeq.length];
+    }
+  }
+
+  const { incorrectGrid, solution } = applySwapFlaw(correctGrid);
+
+  return {
+    id: `L${levelIndex + 1}-G3-${variation}`,
+    grid: incorrectGrid,
+    correctGrid,
+    solution: { type: 'swap', indices: solution }
+  };
+};
 
 // --- Generator Pools ---
 const basicGenerators: PatternGenerator[] = [generateRowColorColShape, generateRowShapeColColor];
 const sequenceGenerators: PatternGenerator[] = [generateRowColorSequence, generateColShapeSequence];
-const advancedGenerators: PatternGenerator[] = [generateLatinSquare, generateSameItemRule];
+const advancedGenerators: PatternGenerator[] = [generateLatinSquare, generateSameItemRule, generateShapeComplexityGradient, generateMirrorSymmetryPattern, generateCheckerboardParityPattern];
 
 const allGenerators: PatternGenerator[] = [...basicGenerators, ...sequenceGenerators, ...advancedGenerators];
 
@@ -262,7 +362,12 @@ export const patternLevels: LevelTemplate[] = (() => {
       level: i + 1,
       concept: 'Basic Rules',
       gridSize: 3,
-      hint: 'Find the rule connecting rows and columns. It could be about color or shape.',
+      hintLevels: [
+        "Observe the grid carefully. How are rows and columns related?",
+        "The rule connects either rows or columns to a specific color or shape.",
+        "Check if all items in a row share one property, and all items in a column share another.",
+        "The pattern is: all tiles in a row have the same color, and all tiles in a column have the same shape (or vice-versa)."
+      ],
       generate: (levelIndex, variation) => generator(3, levelIndex, variation),
     });
   }
@@ -270,13 +375,18 @@ export const patternLevels: LevelTemplate[] = (() => {
   // Levels 21–35 (index 20–34): 4×4 grids introducing sequences
   for (let i = 20; i < 35; i++) {
     // Mix basic and sequence rules
-    const generatorPool = [...basicGenerators, ...sequenceGenerators];
+    const generatorPool = [...basicGenerators, ...sequenceGenerators, generateMirrorSymmetryPattern];
     const generator = generatorPool[i % generatorPool.length];
     levels.push({
       level: i + 1,
-      concept: 'Introducing Sequences',
+      concept: 'Introducing Sequences & Symmetry',
       gridSize: 4,
-      hint: 'The pattern might be static in each row/column, or it might follow a sequence.',
+      hintLevels: [
+        "Does the pattern repeat, or does it change?",
+        "The rule might be static (same for the whole row/column) or sequential (changes tile by tile).",
+        "Look for repeating sequences of colors/shapes, or for patterns that mirror across the center.",
+        "The rule could be a sequence, a static property per line, or a mirror image."
+      ],
       generate: (levelIndex, variation) => generator(4, levelIndex, variation),
     });
   }
@@ -289,7 +399,12 @@ export const patternLevels: LevelTemplate[] = (() => {
       level: i + 1,
       concept: 'Advanced Logic',
       gridSize: 5,
-      hint: 'The rule could involve the whole grid. Look for sequences, unique items, or row/column constraints.',
+      hintLevels: [
+        "The rule might involve the whole grid, not just rows or columns.",
+        "Think about concepts like 'one of each', alternating tiles, or gradients.",
+        "Could there be two rules at once? Or a rule about symmetry or complexity?",
+        "The pattern might be a checkerboard, a gradient, a mirror, or a 'Sudoku-style' unique-item rule."
+      ],
       generate: (levelIndex, variation) => generator(5, levelIndex, variation),
     });
   }

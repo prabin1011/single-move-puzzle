@@ -291,7 +291,7 @@ export default function GameContainer() {
                     <Play className="mr-2" /> Start Puzzle
                 </Button>
                 <Button asChild variant="link" className="text-muted-foreground" onClick={() => playSound("ui", isSoundOn)}>
-                    <Link href="/">Back to Main Menu</Link>
+                    <Link href="/">Back to Home</Link>
                 </Button>
              </div>
         )}
@@ -326,7 +326,7 @@ export default function GameContainer() {
         
         { (gameState === 'SOLVED_COMPLETE' ) && (
             <Button asChild variant="link" className="text-muted-foreground" onClick={() => playSound("ui", isSoundOn)}>
-                <Link href="/">Back to Main Menu</Link>
+                <Link href="/">Back to Home</Link>
             </Button>
         )}
       </CardFooter>

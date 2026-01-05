@@ -25,14 +25,14 @@ export const initializeSounds = () => {
     };
 
     // tweak volumes if you like
-    sounds.click.volume = 0.5;
-    sounds.ui.volume = 0.6;
-    sounds.success.volume = 0.7;
-    sounds.fail.volume = 0.6;
-    sounds.win.volume = 0.8;
-    sounds.start.volume = 0.6;
-    sounds.preview_done.volume = 0.7;
-    sounds.swap.volume = 0.7;
+    sounds.click.volume = 0.25;
+    sounds.ui.volume = 0.3;
+    sounds.success.volume = 0.35;
+    sounds.fail.volume = 0.3;
+    sounds.win.volume = 0.4;
+    sounds.start.volume = 0.3;
+    sounds.preview_done.volume = 0.35;
+    sounds.swap.volume = 0.35;
   }
 };
 

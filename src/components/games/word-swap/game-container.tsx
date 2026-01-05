@@ -18,7 +18,7 @@ import {
 import Link from 'next/link';
 import { generatePuzzle, getWordSwapLevelConfig, type WordSwapPuzzle } from '@/lib/word-swap-puzzles';
 import PuzzleBoard from './puzzle-board';
-import { Loader2, RefreshCw, Info, Play, ArrowRight, PartyPopper, BookText, Pilcrow, Sigma, CaseLower, CaseUpper } from 'lucide-react';
+import { Loader2, RefreshCw, Info, Play, ArrowRight, PartyPopper, BookText, Pilcrow, Sigma, CaseLower, CaseUpper, Baseline } from 'lucide-react';
 import { useSound } from '@/contexts/sound-context';
 import { playSound } from '@/lib/sounds';
 import { cn } from '@/lib/utils';
@@ -235,9 +235,9 @@ export default function GameContainer() {
       <CardContent className={cn("flex flex-col items-center justify-center min-h-[200px] transition-opacity duration-500 px-4 sm:px-6")}>
         { gameState === 'READY' && (
             <div className="flex justify-center items-center gap-4 text-primary/30 dark:text-primary/20">
-              <CaseLower className="h-8 w-8 -rotate-12" />
+              <Baseline className="h-8 w-8 -rotate-12" />
               <Pilcrow className="h-10 w-10" />
-              <CaseUpper className="h-8 w-8 rotate-12" />
+              <Sigma className="h-8 w-8 rotate-12" />
             </div>
         )}
         { (gameState === 'PLAYING' || gameState === 'FAILED' || gameState === 'SOLVED_VISUALIZING') && (
@@ -305,7 +305,7 @@ export default function GameContainer() {
                     <Play className="mr-2" /> Start Puzzle
                 </Button>
                 <Button asChild variant="link" className="text-muted-foreground" onClick={() => playSound("ui", isSoundOn)}>
-                    <Link href="/">Back to Main Menu</Link>
+                    <Link href="/">Back to Home</Link>
                 </Button>
              </div>
         )}
@@ -340,7 +340,7 @@ export default function GameContainer() {
         
         { (gameState === 'SOLVED_COMPLETE' ) && (
             <Button asChild variant="link" className="text-muted-foreground" onClick={() => playSound("ui", isSoundOn)}>
-                <Link href="/">Back to Main Menu</Link>
+                <Link href="/">Back to Home</Link>
             </Button>
         )}
       </CardFooter>

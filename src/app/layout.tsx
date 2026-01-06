@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Baloo_2, Inter } from 'next/font/google';
 import './globals.css';
 import ClientLayout from './client-layout';
+import Script from 'next/script';
 
 const bodyFont = Inter({
   subsets: ['latin'],
@@ -88,6 +89,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4763546734673201"
+     crossOrigin="anonymous"></script>
+      </head>
       <body className={`${bodyFont.variable} ${headlineFont.variable} font-sans antialiased`} suppressHydrationWarning>
         <ClientLayout>{children}</ClientLayout>
       </body>

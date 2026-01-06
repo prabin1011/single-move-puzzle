@@ -230,10 +230,10 @@ export default function GameContainer() {
         </div>
 
         <div className={cn("transition-opacity duration-300 absolute inset-0 p-6 flex flex-col justify-center", gameState === 'GAME_OVER' ? 'opacity-100' : 'opacity-0 invisible')}>
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-destructive overflow-hidden">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-card mb-4">
                   <Image src="/logo.png" alt="Game Over" width={64} height={64} />
               </div>
-              <CardTitle className="text-3xl font-bold pt-4 font-headline">
+              <CardTitle className="text-2xl font-bold font-headline">
                 The Logic Was...
               </CardTitle>
               <CardDescription className="text-muted-foreground px-4 mt-2 text-sm">
@@ -354,7 +354,3 @@ export default function GameContainer() {
     </Card>
   );
 }
-
-    
-
-    

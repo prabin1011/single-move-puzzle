@@ -58,13 +58,12 @@ export default function GameContainer() {
     const rawLevel = savedLevel ? parseInt(savedLevel, 10) : 0;
     const initialLevel = Math.max(0, Math.min(rawLevel, TOTAL_SYMBOL_LEVELS - 1));
 
+    if (savedLevel) {
+        trackEvent('symbol_continue', { level: initialLevel });
+    }
+
     const rawHighestLevel = savedHighestLevel ? parseInt(savedHighestLevel, 10) : 0;
     const initialHighest = Math.max(0, Math.min(rawHighestLevel, TOTAL_SYMBOL_LEVELS - 1));
-
-
-    if (savedLevel) {
-        trackEvent('game_continue', { game: 'symbol-puzzle', level: initialLevel });
-    }
 
     setLevel(initialLevel);
     setHighestLevel(initialHighest);
@@ -104,6 +103,7 @@ export default function GameContainer() {
 
   const handleFail = () => {
     playSound('fail', isSoundOn);
+    trackEvent('game_level_fail', { game: 'symbol-puzzle', level: level + 1 });
     const newMistakeCount = mistakeCount + 1;
     setMistakeCount(newMistakeCount);
     if (newMistakeCount > MAX_MISTAKES) {
@@ -134,7 +134,7 @@ export default function GameContainer() {
 
   const restartGame = () => {
     playSound("ui", isSoundOn);
-    trackEvent('game_start_new', { game: 'symbol-puzzle' });
+    trackEvent('symbol_start_new');
     setLevel(0);
     setHighestLevel(0);
     setMistakeCount(0);
@@ -353,5 +353,7 @@ export default function GameContainer() {
     </Card>
   );
 }
+
+    
 
     

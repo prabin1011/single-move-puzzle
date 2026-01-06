@@ -66,7 +66,7 @@ export default function GameContainer() {
     const initialHighest = savedHighestLevel ? parseInt(savedHighestLevel, 10) : 0;
 
     if (savedLevel) {
-        trackEvent('game_continue', { game: 'word-swap', level: initialLevel });
+        trackEvent('wordswap_continue', { level: initialLevel });
     }
 
     setLevel(initialLevel);
@@ -109,6 +109,7 @@ export default function GameContainer() {
 
   const handleFail = () => {
     playSound('fail', isSoundOn);
+    trackEvent('game_level_fail', { game: 'word-swap', level: level + 1 });
     const newMistakeCount = mistakeCount + 1;
     setMistakeCount(newMistakeCount);
     if (newMistakeCount > MAX_MISTAKES) {
@@ -139,7 +140,7 @@ export default function GameContainer() {
 
   const restartGame = () => {
     playSound("ui", isSoundOn);
-    trackEvent('game_start_new', { game: 'word-swap' });
+    trackEvent('wordswap_start_new');
     setLevel(0);
     setHighestLevel(0);
     setMistakeCount(0);
@@ -376,5 +377,7 @@ export default function GameContainer() {
     </Card>
   );
 }
+
+    
 
     

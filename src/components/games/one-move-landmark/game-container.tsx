@@ -96,7 +96,7 @@ export default function GameContainer() {
     const initialHighest = savedHighestLevel ? parseInt(savedHighestLevel, 10) : 0;
     
     if (savedLevel) {
-        trackEvent('game_continue', { game: 'landmark', level: initialIndex });
+        trackEvent('landmark_continue', { level: initialIndex });
     }
 
     setLevelIndex(initialIndex);
@@ -177,6 +177,7 @@ export default function GameContainer() {
 
   const handleFail = () => {
     playSound('fail', isSoundOn);
+    trackEvent('game_level_fail', { game: 'landmark', level: levelIndex + 1 });
     const newMistakeCount = mistakeCount + 1;
     setMistakeCount(newMistakeCount);
     if (newMistakeCount > MAX_MISTAKES) {
@@ -200,7 +201,7 @@ export default function GameContainer() {
 
   const restartGame = () => {
     playSound("ui", isSoundOn);
-    trackEvent('game_start_new', { game: 'landmark' });
+    trackEvent('landmark_start_new');
     const currentRound = parseInt(localStorage.getItem('gameRound') || '0', 10);
     localStorage.setItem('gameRound', (currentRound + 1).toString());
     const newShuffledLevels = shuffle(initialLevels);
@@ -603,5 +604,7 @@ export default function GameContainer() {
     </Card>
   );
 }
+
+    
 
     

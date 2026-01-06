@@ -6,16 +6,32 @@
 // the package to package.json and uncommenting the code.
 
 type EventName =
-  | 'game_start_new'
-  | 'game_continue'
+  // Main Menu Events
+  | 'landmark_start_new'
+  | 'landmark_continue'
+  | 'math_start_new'
+  | 'math_continue'
+  | 'patterns_start_new'
+  | 'patterns_continue'
+  | 'wordswap_start_new'
+  | 'wordswap_continue'
+  | 'symbol_start_new'
+  | 'symbol_continue'
+  
+  // In-Game Events (generic for all games)
   | 'game_level_complete'
+  | 'game_level_fail'
   | 'game_over'
   | 'game_all_levels_complete'
   | 'puzzle_start'
   | 'puzzle_retry'
   | 'hint_viewed'
-  | 'landmark_preview_skip'
   | 'navigate_to_home'
+  
+  // Specific In-Game Events
+  | 'landmark_preview_skip'
+
+  // App-level events
   | 'navigate_to_legal'
   | 'sound_toggled'
   | 'theme_toggled';
@@ -34,3 +50,5 @@ export const trackEvent = (eventName: EventName, params?: EventParams) => {
     console.log(`[Analytics Disabled] Event: ${eventName}`, params);
   }
 };
+
+    

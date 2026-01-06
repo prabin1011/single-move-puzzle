@@ -94,9 +94,9 @@ export default function Home() {
 
   const handleNewGame = (game: 'landmark' | 'math' | 'patterns' | 'word-swap' | 'symbol-puzzle') => {
     playSound("ui", isSoundOn);
-    trackEvent('game_start_new', { game });
 
     if (game === 'landmark') {
+        trackEvent('landmark_start_new');
         const currentRound = parseInt(localStorage.getItem('gameRound') || '0', 10);
         localStorage.setItem('gameRound', (currentRound + 1).toString());
         localStorage.removeItem('currentLevelIndex');
@@ -105,18 +105,22 @@ export default function Home() {
         localStorage.setItem('shuffledLevels', JSON.stringify(newShuffledLevels));
         router.push('/games/one-move-landmark');
     } else if (game === 'math') {
+        trackEvent('math_start_new');
         localStorage.removeItem('mathCurrentLevel');
         localStorage.removeItem('mathHighestLevel');
         router.push('/games/one-move-math');
     } else if (game === 'patterns') {
+        trackEvent('patterns_start_new');
         localStorage.removeItem('patternCurrentLevel');
         localStorage.removeItem('patternHighestLevel');
         router.push('/games/one-move-patterns');
     } else if (game === 'word-swap') {
+        trackEvent('wordswap_start_new');
         localStorage.removeItem('wordSwapCurrentLevel');
         localStorage.removeItem('wordSwapHighestLevel');
         router.push('/games/word-swap');
     } else if (game === 'symbol-puzzle') {
+        trackEvent('symbol_start_new');
         localStorage.removeItem('symbolCurrentLevel');
         localStorage.removeItem('symbolHighestLevel');
         router.push('/games/symbol-puzzle');
@@ -170,7 +174,7 @@ export default function Home() {
                   <Button onClick={() => handleNewGame('landmark')} className="w-full">New Game</Button>
                   {showLandmarkContinue && (
                     <Button asChild variant="secondary" className="w-full">
-                      <Link href="/games/one-move-landmark" onClick={() => playSound("ui", isSoundOn)}>
+                      <Link href="/games/one-move-landmark" onClick={() => { playSound("ui", isSoundOn); trackEvent('landmark_continue'); }}>
                         Continue (Lvl {landmarkHighestLevel + 1})
                       </Link>
                     </Button>
@@ -189,7 +193,7 @@ export default function Home() {
                   <Button onClick={() => handleNewGame('math')} className="w-full">New Game</Button>
                   {showMathContinue && (
                     <Button asChild variant="secondary">
-                      <Link href="/games/one-move-math" onClick={() => playSound("ui", isSoundOn)}>
+                      <Link href="/games/one-move-math" onClick={() => { playSound("ui", isSoundOn); trackEvent('math_continue'); }}>
                         Continue (Lvl {mathHighestLevel + 1})
                       </Link>
                     </Button>
@@ -208,7 +212,7 @@ export default function Home() {
                   <Button onClick={() => handleNewGame('patterns')} className="w-full">New Game</Button>
                    {showPatternsContinue && (
                     <Button asChild variant="secondary">
-                      <Link href="/games/one-move-patterns" onClick={() => playSound("ui", isSoundOn)}>
+                      <Link href="/games/one-move-patterns" onClick={() => { playSound("ui", isSoundOn); trackEvent('patterns_continue'); }}>
                         Continue (Lvl {patternsHighestLevel + 1})
                       </Link>
                     </Button>
@@ -227,7 +231,7 @@ export default function Home() {
                   <Button onClick={() => handleNewGame('word-swap')} className="w-full">New Game</Button>
                    {showWordSwapContinue && (
                     <Button asChild variant="secondary">
-                      <Link href="/games/word-swap" onClick={() => playSound("ui", isSoundOn)}>
+                      <Link href="/games/word-swap" onClick={() => { playSound("ui", isSoundOn); trackEvent('wordswap_continue'); }}>
                         Continue (Lvl {wordSwapHighestLevel + 1})
                       </Link>
                     </Button>
@@ -246,7 +250,7 @@ export default function Home() {
                   <Button onClick={() => handleNewGame('symbol-puzzle')} className="w-full">New Game</Button>
                    {showSymbolContinue && (
                     <Button asChild variant="secondary">
-                      <Link href="/games/symbol-puzzle" onClick={() => playSound("ui", isSoundOn)}>
+                      <Link href="/games/symbol-puzzle" onClick={() => { playSound("ui", isSoundOn); trackEvent('symbol_continue'); }}>
                         Continue (Lvl {symbolHighestLevel + 1})
                       </Link>
                     </Button>
@@ -276,5 +280,7 @@ export default function Home() {
     </div>
   );
 }
+
+    
 
     

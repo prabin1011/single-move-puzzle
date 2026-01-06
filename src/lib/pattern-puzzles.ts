@@ -132,7 +132,7 @@ type PatternGenerator = (gridSize: 3 | 4 | 5, levelIndex: number, variation: num
 const generateRowColorColShape: PatternGenerator = (gridSize, levelIndex, variation) => {
   const size = gridSize;
   const correctGrid = createGrid(size);
-  const rule = "Each row has a single color, and each column has a single shape.";
+  const rule = "Each row has one color, and each column has one shape.";
 
   const rowColors = getVariationSequence(COLORS, size, variation);
   const colShapes = getVariationSequence(SHAPES, size, variation + 1);
@@ -154,7 +154,7 @@ const generateRowColorColShape: PatternGenerator = (gridSize, levelIndex, variat
 const generateRowShapeColColor: PatternGenerator = (gridSize, levelIndex, variation) => {
   const size = gridSize;
   const correctGrid = createGrid(size);
-  const rule = "Each row has a single shape, and each column has a single color.";
+  const rule = "Each row has one shape, and each column has one color.";
 
   const rowShapes = getVariationSequence(SHAPES, size, variation);
   const colColors = getVariationSequence(COLORS, size, variation + 3);
@@ -178,7 +178,7 @@ const generateRowColorSequence: PatternGenerator = (gridSize, levelIndex, variat
     const correctGrid = createGrid(size);
     const uniqueColors = getVariationSequence(COLORS, size, variation);
     const staticShape = SHAPES[(variation + 1) % SHAPES.length];
-    const rule = `Each row is a repeating sequence of colors, and all tiles share the same shape (${staticShape}).`;
+    const rule = `Rows are a repeating color sequence; all tiles are the same shape.`;
 
     for(let r = 0; r < size; r++) {
         for(let c = 0; c < size; c++) {
@@ -199,7 +199,7 @@ const generateColShapeSequence: PatternGenerator = (gridSize, levelIndex, variat
     const correctGrid = createGrid(size);
     const uniqueShapes = getVariationSequence(SHAPES, size, variation);
     const staticColor = COLORS[(variation + 2) % COLORS.length];
-    const rule = `Each column is a repeating sequence of shapes, and all tiles are the same color (${staticColor}).`;
+    const rule = `Columns are a repeating shape sequence; all tiles are the same color.`;
 
     for(let c = 0; c < size; c++) {
         for(let r = 0; r < size; r++) {
@@ -220,7 +220,7 @@ const generateLatinSquare: PatternGenerator = (gridSize, levelIndex, variation) 
     const correctGrid = createGrid(size);
     const colorSeq = getVariationSequence(COLORS, size, variation);
     const shapeSeq = getVariationSequence(SHAPES, size, variation + 1);
-    const rule = "Each row and each column contains exactly one of each color and one of each shape.";
+    const rule = "Each row and column contains exactly one of each color and shape.";
 
 
     for(let r = 0; r < size; r++) {
@@ -243,7 +243,7 @@ const generateSameItemRule: PatternGenerator = (gridSize, levelIndex, variation)
 
     const specialColor = COLORS[variation % COLORS.length];
     const specialShape = SHAPES[Math.floor(variation / COLORS.length) % SHAPES.length];
-    const rule = `The special tile (a ${specialColor} ${specialShape}) must appear exactly once in every row and every column.`;
+    const rule = `The special tile (${specialColor} ${specialShape}) appears once in every row and column.`;
     
     // Fill with random background tiles
     for(let i = 0; i < size*size; i++) {
@@ -268,7 +268,7 @@ const generateSameItemRule: PatternGenerator = (gridSize, levelIndex, variation)
 const generateShapeComplexityGradient: PatternGenerator = (gridSize, levelIndex, variation) => {
   const size = gridSize;
   const correctGrid = createGrid(size);
-  const rule = "Shapes get more complex (more sides) as you move from top-left to bottom-right.";
+  const rule = "Shapes get more complex (more sides) from top-left to bottom-right.";
 
   const orderedShapes = getVariationSequence(SHAPES, size, variation);
 
@@ -297,7 +297,7 @@ const generateShapeComplexityGradient: PatternGenerator = (gridSize, levelIndex,
 const generateMirrorSymmetryPattern: PatternGenerator = (gridSize, levelIndex, variation) => {
   const size = gridSize;
   const correctGrid = createGrid(size);
-  const rule = "The grid is symmetrical. The left side is a mirror image of the right side, and the top mirrors the bottom.";
+  const rule = "The grid is symmetrical. The left side mirrors the right, and the top mirrors the bottom.";
 
   const rowShapes = getVariationSequence(SHAPES, size, variation);
   const rowColors = getVariationSequence(COLORS, size, variation + 2);
@@ -325,7 +325,7 @@ const generateMirrorSymmetryPattern: PatternGenerator = (gridSize, levelIndex, v
 const generateCheckerboardParityPattern: PatternGenerator = (gridSize, levelIndex, variation) => {
   const size = gridSize;
   const correctGrid = createGrid(size);
-  const rule = "The grid follows a checkerboard pattern. Tiles in 'light' squares follow one rule, and tiles in 'dark' squares follow another.";
+  const rule = "'Light' and 'dark' squares on the checkerboard follow different rules.";
 
   const shapeSeq = getVariationSequence(SHAPES, size, variation);
   const colorSeq = getVariationSequence(COLORS, size, variation + 1);
@@ -390,7 +390,7 @@ export const patternLevels: LevelTemplate[] = (() => {
     const generator = generatorPool[i % generatorPool.length];
     levels.push({
       level: i + 1,
-      concept: 'Introducing Sequences & Symmetry',
+      concept: 'Sequences & Symmetry',
       gridSize: 4,
       hintLevels: [
         "Does the pattern repeat, or does it change?",

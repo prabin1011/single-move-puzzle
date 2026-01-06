@@ -177,7 +177,7 @@ type SymbolPatternGenerator = (
 const generateRowOpColGroup: SymbolPatternGenerator = (gridSize, levelIndex, variation) => {
   const size = gridSize;
   const correctGrid = createGrid(size);
-  const rule = "Each row uses a specific math operator type, and each column is dedicated to a single symbol family (math, comparison, arrows, or logic).";
+  const rule = "Each row uses one operator type; each column uses one symbol family.";
 
   const rowOps = getVariationSequence(MATH_OPS, size, variation);
   const colFamilies: ('math_op' | 'compare' | 'arrow' | 'logic')[] =
@@ -231,7 +231,7 @@ const generateRowOpColGroup: SymbolPatternGenerator = (gridSize, levelIndex, var
 const generateRowSequenceMath: SymbolPatternGenerator = (gridSize, levelIndex, variation) => {
   const size = gridSize;
   const correctGrid = createGrid(size);
-  const rule = "Each row follows a repeating sequence of mathematical operators.";
+  const rule = "Each row follows a repeating sequence of math operators.";
   const seq = getVariationSequence(MATH_OPS, size, variation);
 
   for (let r = 0; r < size; r++) {
@@ -301,7 +301,7 @@ const generateArrowFlow: SymbolPatternGenerator = (gridSize, levelIndex, variati
 const generateMirrorSymmetry: SymbolPatternGenerator = (gridSize, levelIndex, variation) => {
   const size = gridSize;
   const correctGrid = createGrid(size);
-  const rule = "The grid is symmetrical. The left side is a mirror image of the right, and the top mirrors the bottom.";
+  const rule = "The grid is symmetrical. The left side mirrors the right, and the top mirrors the bottom.";
   const shapes = getVariationSequence(SHAPE_SYM, size, variation);
   const colors = getVariationSequence(COLORS, size, variation + 3);
 
@@ -340,7 +340,7 @@ const generateMirrorSymmetry: SymbolPatternGenerator = (gridSize, levelIndex, va
 const generateCheckerParity: SymbolPatternGenerator = (gridSize, levelIndex, variation) => {
   const size = gridSize;
   const correctGrid = createGrid(size);
-  const rule = "The grid follows a checkerboard pattern. Even-positioned tiles belong to one symbol family, while odd-positioned tiles belong to another.";
+  const rule = "Even and odd cells (like a checkerboard) belong to different symbol families.";
 
   const evenFamily: readonly string[] = MATH_OPS;
   const oddFamily: readonly string[] = COMP_OPS;
@@ -385,7 +385,7 @@ const generateCheckerParity: SymbolPatternGenerator = (gridSize, levelIndex, var
 const generateGroupCluster: SymbolPatternGenerator = (gridSize, levelIndex, variation) => {
   const size = gridSize;
   const correctGrid = createGrid(size);
-  const rule = "The grid is divided into quadrants, and each quadrant contains symbols from a specific family (e.g., math, logic).";
+  const rule = "Each quadrant of the grid contains symbols from a specific family.";
 
   const families = [
     { cat: 'math_op' as const, list: MATH_OPS },
@@ -433,7 +433,7 @@ const generateGroupCluster: SymbolPatternGenerator = (gridSize, levelIndex, vari
 const generateLatinSymbol: SymbolPatternGenerator = (gridSize, levelIndex, variation) => {
   const size = gridSize;
   const correctGrid = createGrid(size);
-  const rule = "Similar to Sudoku, each symbol appears exactly once in every row and every column.";
+  const rule = "Each symbol appears only once in every row and every column.";
 
   const symbols = getVariationSequence(SHAPE_SYM, size, variation);
 
@@ -471,7 +471,7 @@ const generateLatinSymbol: SymbolPatternGenerator = (gridSize, levelIndex, varia
 const generateShapeComplexity: SymbolPatternGenerator = (gridSize, levelIndex, variation) => {
   const size = gridSize;
   const correctGrid = createGrid(size);
-  const rule = "The symbols are arranged in a gradient of complexity, from simple shapes (like circles) to more complex ones (like stars).";
+  const rule = "Symbols are arranged by complexity, from simple to complex shapes.";
 
   const orderedShapes = getVariationSequence(SHAPE_SYM, size, variation);
 
@@ -510,7 +510,7 @@ const generateShapeComplexity: SymbolPatternGenerator = (gridSize, levelIndex, v
 const generateRingRule: SymbolPatternGenerator = (gridSize, levelIndex, variation) => {
   const size = gridSize;
   const correctGrid = createGrid(size);
-  const rule = "The symbols on the outer ring of the grid follow a different rule from the symbols in the center.";
+  const rule = "The outer ring of symbols follows a different rule from the inner symbols.";
 
   const outerFamily = SHAPE_SYM;
   const innerFamily = LOGIC_SYM;
@@ -555,7 +555,7 @@ const generateRingRule: SymbolPatternGenerator = (gridSize, levelIndex, variatio
 const generateQuadrantRule: SymbolPatternGenerator = (gridSize, levelIndex, variation) => {
   const size = gridSize;
   const correctGrid = createGrid(size);
-  const rule = "The grid is split into four quarters. Each quadrant follows its own unique rule or belongs to a different symbol family.";
+  const rule = "Each of the four quadrants follows its own unique rule or symbol family.";
 
   const families = [
     { cat: 'math_op' as const, list: MATH_OPS },
@@ -621,64 +621,64 @@ const hardGenerators: SymbolPatternGenerator[] = [
 
 const baseHints: Record<SymbolGeneratorType, string[]> = {
   ROW_OP_COL_GROUP: [
-    'The symbols in each row are not random – they share something.',
-    'Look at rows and columns separately. Do rows and columns behave differently?',
-    'Rows tend to use a similar kind of symbol (like operators).',
-    'Columns might represent categories (math, comparison, arrows, logic). Find the two tiles that break this idea.',
+    'Rows and columns behave differently.',
+    'Rows use similar symbols; columns are grouped by category.',
+    'One tile is in the wrong column for its category.',
+    'The rule is: Rows share an operator type, columns share a symbol family.',
   ],
   ROW_SEQ_MATH: [
-    'Scan each row from left to right – do you see a repeating pattern?',
-    'Think of sequences like +, −, ×, ÷ repeating.',
-    'Each row should follow the same math-operation pattern.',
-    'Find the two symbols that break the repeating order and imagine swapping them.',
+    'Scan each row from left to right for a repeating pattern.',
+    'Each row should follow the same sequence of math operators.',
+    'Find two symbols that break the repeating sequence.',
+    'The rule is: A repeating sequence of math symbols in each row.',
   ],
   ARROW_FLOW: [
-    'Focus on the arrows – where are they pointing?',
-    'Try to see if arrows create a flow or path across the grid.',
-    'Some rows / columns might always move in a consistent direction.',
-    'Find the two arrows whose directions don’t fit the overall flow.',
+    'Focus on the direction of the arrows.',
+    'The arrows should create a logical flow or path.',
+    'Find two arrows pointing in the wrong direction for the pattern.',
+    'The rule is: Arrows must follow a consistent directional flow.',
   ],
   MIRROR_SYM: [
-    'Imagine drawing a line in the middle of the grid.',
-    'Some tiles may have mirror partners across a center line.',
-    'Check if left and right halves (or top and bottom) mirror each other.',
-    'Find the two symbols that break the mirror symmetry.',
+    'Imagine a line down the middle of the grid.',
+    'The left and right (or top and bottom) should be mirror images.',
+    'Find two tiles that break the symmetry.',
+    'The rule is: The grid must be perfectly symmetrical.',
   ],
   CHECKER_PARITY: [
-    'Think of the grid like a chessboard: dark and light squares.',
-    'Even and odd positions might follow different rules.',
-    'Some cells might always show operators, others comparisons.',
-    'Find the two tiles that are on the wrong “color” of this checkerboard logic.',
+    'Think of the grid like a chessboard.',
+    '"Light" and "dark" squares follow different rules.',
+    'Find a tile that belongs to the other group of squares.',
+    'The rule is: Even/odd tiles belong to different symbol families.',
   ],
   GROUP_CLUSTER: [
-    'Look at each corner or region – do they group similar symbols?',
-    'Top-left, top-right, bottom-left, bottom-right might act like families.',
-    'Each quadrant could belong to a single symbol family (math, compare, arrow, logic).',
-    'Find the two symbols that ended up in the wrong region.',
+    'Look at the grid in quarters or regions.',
+    'Each region should contain a specific family of symbols.',
+    'Find a symbol that has wandered into the wrong region.',
+    'The rule is: Each quadrant contains a specific symbol family.',
   ],
   LATIN_SYMBOL: [
-    'Try comparing rows and columns carefully.',
-    'Each row and column might be using each symbol only once.',
-    'No symbol should repeat in the same row or column.',
-    'Find the swap that restores this “one of each per row/column” rule.',
+    'No symbol should repeat in any row or column.',
+    'Think like Sudoku: each symbol appears once per line.',
+    'Find the two symbols that are duplicated in a row or column.',
+    'The rule is: Each symbol appears exactly once per row and column.',
   ],
   SHAPE_COMPLEXITY: [
-    'Focus on shapes, not colors.',
-    'Some shapes are simpler, others more complex or “spiky”.',
-    'Complexity might change as you move across the grid.',
-    'Find the two shapes that don’t follow the simple → complex progression.',
+    'The shapes are arranged from simple to complex.',
+    'Look for a shape that is too simple or too complex for its position.',
+    'Complexity might increase from left-to-right or top-to-bottom.',
+    'The rule is: A gradient of shape complexity across the grid.',
   ],
   RING_RULE: [
-    'Look at the outer ring vs the inner area.',
-    'Maybe the outer edge uses different symbols than the center.',
-    'Inner tiles could belong to one family, outer tiles to another.',
-    'Find the two symbols that are on the wrong side of this ring rule.',
+    'The outer ring follows a different rule than the center.',
+    'Find a symbol that is in the wrong ring for its type.',
+    'The edge pieces have a different purpose than the inner ones.',
+    'The rule is: The outer ring and inner core use different symbol sets.',
   ],
   QUADRANT_RULE: [
-    'Split the grid into four quadrants.',
-    'Each quadrant might use a different kind of symbol.',
-    'Top-left, top-right, bottom-left, bottom-right may each follow their own rule.',
-    'Find the two tiles that look like they belong to a different quadrant.',
+    'The grid is split into four quadrants.',
+    'Each quadrant has its own unique rule or symbol family.',
+    'Find a tile that doesn\'t fit the rule of its quadrant.',
+    'The rule is: Each of the four quadrants follows its own logic.',
   ],
 };
 
@@ -703,9 +703,9 @@ export const symbolLevels: SymbolLevelTemplate[] = (() => {
       level: i + 1,
       concept:
         type === 'ROW_OP_COL_GROUP'
-          ? 'Row Operator / Column Group'
+          ? 'Row/Column Groups'
           : type === 'ROW_SEQ_MATH'
-          ? 'Row Operation Sequence'
+          ? 'Row Sequence'
           : 'Arrow Flow',
       gridSize: 3,
       difficulty: 'easy',
@@ -749,8 +749,8 @@ export const symbolLevels: SymbolLevelTemplate[] = (() => {
           : type === 'ARROW_FLOW'
           ? 'Arrow Flow'
           : type === 'ROW_SEQ_MATH'
-          ? 'Row Operation Sequence'
-          : 'Row Operator / Column Group',
+          ? 'Row Sequence'
+          : 'Row/Column Groups',
       gridSize: 4,
       difficulty: 'medium',
       generatorType: type,
@@ -783,7 +783,7 @@ export const symbolLevels: SymbolLevelTemplate[] = (() => {
       level: i + 1,
       concept:
         type === 'SHAPE_COMPLEXITY'
-          ? 'Shape Complexity Gradient'
+          ? 'Complexity Gradient'
           : type === 'RING_RULE'
           ? 'Inner vs Outer Ring'
           : type === 'QUADRANT_RULE'

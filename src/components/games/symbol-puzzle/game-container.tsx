@@ -229,14 +229,14 @@ export default function GameContainer() {
         </div>
 
         <div className={cn("transition-opacity duration-300 absolute inset-0 p-6 flex flex-col justify-center", gameState === 'GAME_OVER' ? 'opacity-100' : 'opacity-0 invisible')}>
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-card mb-4">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-destructive overflow-hidden mb-2">
                   <Image src="/logo.png" alt="Game Over" width={64} height={64} />
               </div>
-              <CardTitle className="text-2xl font-bold font-headline">
-                The Logic Was...
+              <CardTitle className="text-3xl font-bold pt-2 font-headline">
+                Game Over
               </CardTitle>
-              <CardDescription className="text-muted-foreground px-4 mt-2 text-sm">
-                {puzzle.solution.rule}
+              <CardDescription className="text-muted-foreground px-4 mt-1 text-sm">
+                Here is the correct solution.
               </CardDescription>
         </div>
         
@@ -249,7 +249,7 @@ export default function GameContainer() {
         </div>
       </CardHeader>
 
-      <CardContent className={cn("flex items-center justify-center min-h-[256px] transition-opacity duration-500 px-2 sm:px-4")}>
+      <CardContent className={cn("flex flex-col items-center justify-center min-h-[256px] transition-opacity duration-500 px-2 sm:px-4")}>
         { gameState === 'READY' && (
              <div className="w-full max-w-[256px] scale-90 opacity-50">
                 <PuzzleBoard
@@ -271,13 +271,19 @@ export default function GameContainer() {
             />
         )}
         {gameState === 'GAME_OVER' && (
-            <PuzzleBoard
-                key={`${puzzle.id}-solution`}
-                puzzle={{ ...puzzle, grid: solvedGrid }}
-                onSuccess={() => {}}
-                onFail={() => {}}
-                isReadOnly={true}
-            />
+            <div className="flex flex-col items-center gap-4 w-full">
+                <PuzzleBoard
+                    key={`${puzzle.id}-solution`}
+                    puzzle={{ ...puzzle, grid: solvedGrid }}
+                    onSuccess={() => {}}
+                    onFail={() => {}}
+                    isReadOnly={true}
+                />
+                <div className="w-full max-w-xs text-center p-3 mt-2 rounded-lg bg-yellow-100/70 dark:bg-yellow-900/40 border border-yellow-200/70 dark:border-yellow-700/60">
+                    <h4 className="font-bold font-headline text-yellow-900 dark:text-yellow-200">The Logic Was:</h4>
+                    <p className="text-sm text-yellow-800 dark:text-yellow-300/90 mt-1">{puzzle.solution.rule}</p>
+                </div>
+            </div>
         )}
          <AlertDialog open={gameState === 'SOLVED_COMPLETE'}>
           <AlertDialogContent>

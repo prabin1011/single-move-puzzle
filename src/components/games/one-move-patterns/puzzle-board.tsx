@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -12,6 +13,7 @@ interface PuzzleBoardProps {
   onSuccess: () => void;
   onFail: () => void;
   isReadOnly?: boolean;
+  showSolution?: boolean;
 }
 
 const colorMap = {
@@ -48,6 +50,7 @@ export default function PuzzleBoard({
   onSuccess,
   onFail,
   isReadOnly = false,
+  showSolution = false,
 }: PuzzleBoardProps) {
   const [board, setBoard] = useState<Tile[]>(puzzle.grid);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
@@ -55,7 +58,7 @@ export default function PuzzleBoard({
   const { isSoundOn } = useSound();
   
   const handleTileClick = (index: number) => {
-    if (isReadOnly || selectedIndices.length >= 2 || showIncorrect) {
+    if (isReadOnly || selectedIndices.length >= 2 || showIncorrect || showSolution) {
       return;
     }
 
@@ -115,7 +118,8 @@ export default function PuzzleBoard({
       >
         {board.map((tile, index) => {
           const isSelected = selectedIndices.includes(index);
-          const shouldHighlight = showIncorrect && selectedIndices.includes(index);
+          const showIncorrectHighlight = showIncorrect && selectedIndices.includes(index);
+          const showSolutionHighlight = showSolution && puzzle.solution.indices.includes(index);
           
           const ShapeComponent = shapeMap[tile.shape];
           const DirectionComponent = directionMap[tile.direction];
@@ -126,9 +130,10 @@ export default function PuzzleBoard({
               onClick={() => handleTileClick(index)}
               className={cn(
                 'flex items-center justify-center rounded-md aspect-square select-none transition-all duration-300 ease-in-out bg-card border',
-                !isReadOnly && 'cursor-pointer hover:scale-105 active:scale-100',
+                !isReadOnly && !showSolution && 'cursor-pointer hover:scale-105 active:scale-100',
                 isSelected && 'z-10 scale-[1.08] tile-glow',
-                shouldHighlight && 'z-10 ring-4 ring-red-500 ring-offset-2 ring-offset-background animate-pulse',
+                showIncorrectHighlight && 'z-10 ring-4 ring-red-500 ring-offset-2 ring-offset-background animate-pulse',
+                showSolutionHighlight && 'z-10 tile-glow', // Use green glow for correct solution
                 isReadOnly && 'cursor-default'
               )}
             >
@@ -143,7 +148,8 @@ export default function PuzzleBoard({
       <div className="h-6 text-center mt-2">
           {!isReadOnly && !showIncorrect && selectedIndices.length === 0 && <p className="text-sm text-muted-foreground">Select the first tile to swap.</p>}
           {!isReadOnly && !showIncorrect && selectedIndices.length === 1 && <p className="text-sm text-muted-foreground">Select the second tile to swap.</p>}
-          {isReadOnly && !showIncorrect && <p className="text-sm text-muted-foreground">&nbsp;</p>}
+          {isReadOnly && !showIncorrect && !showSolution && <p className="text-sm text-muted-foreground">&nbsp;</p>}
+          {showSolution && <p className="text-sm text-success">This was the correct swap.</p>}
        </div>
     </div>
   );

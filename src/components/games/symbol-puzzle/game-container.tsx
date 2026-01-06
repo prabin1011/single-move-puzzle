@@ -278,6 +278,7 @@ export default function GameContainer() {
                     onSuccess={() => {}}
                     onFail={() => {}}
                     isReadOnly={true}
+                    showSolution={true}
                 />
                 <div className="w-full max-w-xs text-center p-3 mt-2 rounded-lg bg-yellow-100/70 dark:bg-yellow-900/40 border border-yellow-200/70 dark:border-yellow-700/60">
                     <h4 className="font-bold font-headline text-yellow-900 dark:text-yellow-200">The Logic Was:</h4>

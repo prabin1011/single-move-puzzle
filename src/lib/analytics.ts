@@ -1,9 +1,8 @@
 
 'use client';
 
-// This file is temporarily disabled to prevent server crashes due to a missing
-// 'firebase/analytics' dependency. We can re-enable this later by adding
-// the package to package.json and uncommenting the code.
+import { getAnalytics, logEvent, isSupported } from 'firebase/analytics';
+import { initializeFirebase } from '@/firebase';
 
 type EventName =
   // Main Menu Events
@@ -44,11 +43,23 @@ type EventParams = {
   theme?: 'light' | 'dark';
 };
 
+let analytics: any;
+
+// Initialize analytics only if it's supported by the browser
+isSupported().then((supported) => {
+  if (supported) {
+    const { firebaseApp } = initializeFirebase();
+    analytics = getAnalytics(firebaseApp);
+  } else {
+    console.log("Firebase Analytics is not supported in this environment.");
+  }
+});
+
 
 export const trackEvent = (eventName: EventName, params?: EventParams) => {
-  if (process.env.NODE_ENV === 'development') {
+  if (analytics) {
+    logEvent(analytics, eventName, params);
+  } else if (process.env.NODE_ENV === 'development') {
     console.log(`[Analytics Disabled] Event: ${eventName}`, params);
   }
 };
-
-    

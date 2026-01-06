@@ -249,7 +249,7 @@ export default function GameContainer() {
               <CardTitle className="text-3xl font-bold pt-4 font-headline">
                 Game Over
               </CardTitle>
-              <CardDescription className="text-muted-foreground px-4">
+              <CardDescription className="text-muted-foreground px-4 text-sm">
                 Here is the correct solution.
               </CardDescription>
         </div>

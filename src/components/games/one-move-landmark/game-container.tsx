@@ -378,7 +378,7 @@ export default function GameContainer() {
               <CardTitle className="text-3xl font-bold pt-4 font-headline">
                 Game Over
               </CardTitle>
-              <CardDescription className="text-muted-foreground px-4">
+              <CardDescription className="text-muted-foreground px-4 text-sm">
                 You reached level {levelIndex + 1}. Every master was once a beginner. Try again!
               </CardDescription>
             </>
@@ -481,7 +481,7 @@ export default function GameContainer() {
         
         {(gameState === "GAME_OVER") && (
             <div className="text-center">
-                <p>You successfully completed {levelIndex} {levelIndex === 1 ? 'level' : 'levels'}.</p>
+                <p className="text-sm">You successfully completed {levelIndex} {levelIndex === 1 ? 'level' : 'levels'}.</p>
             </div>
         )}
         

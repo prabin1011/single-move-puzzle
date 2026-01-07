@@ -16,9 +16,6 @@ import { SoundToggle } from '@/components/sound-toggle';
 import { useSound } from "@/contexts/sound-context";
 import { playSound } from "@/lib/sounds";
 import { trackEvent } from '@/lib/analytics';
-import { DailyChallengeCountdown } from '@/components/daily-challenge-countdown';
-import { getTodaysDateKey } from '@/lib/daily-challenge';
-
 
 function shuffle<T>(array: T[]): T[] {
   let currentIndex = array.length,
@@ -48,7 +45,6 @@ export default function Home() {
   const [wordSwapHighestLevel, setWordSwapHighestLevel] = useState(0);
   const [symbolHighestLevel, setSymbolHighestLevel] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [isDailyChallengeCompleted, setIsDailyChallengeCompleted] = useState(false);
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
   const { isSoundOn } = useSound();
@@ -75,22 +71,15 @@ export default function Home() {
         setPatternsHighestLevel(parseInt(savedPatternLevel, 10));
     }
 
-    const savedWordSwapLevel = localStorage.getItem('wordSwapHighestLevel');
+    const savedWordSwapLevel = localStorage.getItem('wordSwapCurrentLevel');
     if (savedWordSwapLevel) {
         setWordSwapHighestLevel(parseInt(savedWordSwapLevel, 10));
     }
 
-    const savedSymbolLevel = localStorage.getItem('symbolHighestLevel');
+    const savedSymbolLevel = localStorage.getItem('symbolCurrentLevel');
     if (savedSymbolLevel) {
         setSymbolHighestLevel(parseInt(savedSymbolLevel, 10));
     }
-
-    const todayKey = getTodaysDateKey();
-    const lastCompletion = localStorage.getItem('dailyChallengeCompletion');
-    if (lastCompletion === todayKey) {
-      setIsDailyChallengeCompleted(true);
-    }
-
 
     setIsLoading(false);
   }, []);
@@ -173,22 +162,19 @@ export default function Home() {
           <CardContent className="space-y-6 pt-6">
             <div className="grid grid-cols-1 gap-4 px-6">
               
-              {/* Daily Challenge Card */}
-              <Card className="p-4 flex flex-col items-center gap-4 bg-primary/10 border-primary/50">
+              {/* Daily Challenge Card - Disabled */}
+              <Card className="p-4 flex flex-col items-center gap-4 bg-primary/10 border-primary/50 opacity-60">
                   <div className="flex items-center gap-4 w-full">
                     <Flame className="h-10 w-10 text-primary shrink-0" />
                     <div className="flex-grow text-left">
                       <h3 className="font-bold font-headline text-lg">Daily Challenge</h3>
-                      <p className="text-sm text-muted-foreground">{isDailyChallengeCompleted ? 'Completed! Come back tomorrow.' : 'A new curated puzzle every day.'}</p>
+                      <p className="text-sm text-muted-foreground">A new curated puzzle every day.</p>
                     </div>
                   </div>
                   <div className='w-full'>
-                    <Button asChild className="w-full bg-gradient-to-r from-orange-400 to-rose-400 text-white shadow-lg" disabled={isDailyChallengeCompleted}>
-                      <Link href="/games/daily-challenge" onClick={() => { playSound("ui", isSoundOn); trackEvent('daily_challenge_start'); }}>
-                        {isDailyChallengeCompleted ? 'Solved Today' : 'Play Daily Challenge'}
-                      </Link>
+                    <Button className="w-full" disabled>
+                      Coming Soon
                     </Button>
-                    {!isDailyChallengeCompleted && <DailyChallengeCountdown />}
                   </div>
               </Card>
 

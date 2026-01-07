@@ -25,7 +25,7 @@ const colorMap = {
   empty: 'text-transparent',
 };
 
-const shapeMap = {
+const shapeMap: Record<Tile['shape'], React.FC<any> | null> = {
     circle: Circle,
     square: Square,
     triangle: Triangle,
@@ -37,7 +37,7 @@ const shapeMap = {
     empty: null,
 };
 
-const directionMap = {
+const directionMap: Record<Tile['direction'], React.FC<any> | null> = {
     up: ArrowUp,
     down: ArrowDown,
     left: ArrowLeft,

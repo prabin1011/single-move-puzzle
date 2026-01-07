@@ -304,42 +304,44 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
       </CardHeader>
 
       <CardContent className={cn("flex flex-col items-center justify-center min-h-[256px] transition-opacity duration-500 px-2 sm:px-4")}>
-        { gameState === 'READY' && (
-             <div className="w-full max-w-[256px] scale-90 opacity-50">
-                <PuzzleBoard
-                    key={`${puzzle.id}-preview`}
-                    puzzle={{...puzzle, grid: solvedGrid }}
-                    onSuccess={() => {}}
-                    onFail={() => {}}
-                    isReadOnly={true}
-                />
-            </div>
-        )}
-        { (gameState === 'PLAYING' || gameState === 'FAILED' || gameState === 'SOLVED_VISUALIZING') && (
-            <PuzzleBoard
-              key={puzzle.id}
-              puzzle={puzzle}
-              onSuccess={handleSuccess}
-              onFail={handleFail}
-              isReadOnly={gameState !== 'PLAYING'}
-            />
-        )}
-        {gameState === 'GAME_OVER' && !isDailyChallenge && (
-            <div className="flex flex-col items-center gap-4 w-full">
-                <PuzzleBoard
-                    key={`${puzzle.id}-solution`}
-                    puzzle={{ ...puzzle, grid: solvedGrid }}
-                    onSuccess={() => {}}
-                    onFail={() => {}}
-                    isReadOnly={true}
-                    showSolution={true}
-                />
-                <div className="w-full max-w-xs text-center p-3 mt-2 rounded-lg bg-yellow-100/70 dark:bg-yellow-900/40 border border-yellow-200/70 dark:border-yellow-700/60">
-                    <h4 className="font-bold font-headline text-yellow-900 dark:text-yellow-200">The Logic Was:</h4>
-                    <p className="text-sm text-yellow-800 dark:text-yellow-300/90 mt-1">{puzzle.solution.rule}</p>
+        {isLoading ? <Loader2 className="h-12 w-12 animate-spin" /> : <>
+            { gameState === 'READY' && puzzle && (
+                <div className="w-full max-w-[256px] scale-90 opacity-50">
+                    <PuzzleBoard
+                        key={`${puzzle.id}-preview`}
+                        puzzle={{...puzzle, grid: puzzle.correctGrid }}
+                        onSuccess={() => {}}
+                        onFail={() => {}}
+                        isReadOnly={true}
+                    />
                 </div>
-            </div>
-        )}
+            )}
+            { (gameState === 'PLAYING' || gameState === 'FAILED' || gameState === 'SOLVED_VISUALIZING') && puzzle && (
+                <PuzzleBoard
+                key={puzzle.id}
+                puzzle={puzzle}
+                onSuccess={handleSuccess}
+                onFail={handleFail}
+                isReadOnly={gameState !== 'PLAYING'}
+                />
+            )}
+            {gameState === 'GAME_OVER' && puzzle && !isDailyChallenge && (
+                <div className="flex flex-col items-center gap-4 w-full">
+                    <PuzzleBoard
+                        key={`${puzzle.id}-solution`}
+                        puzzle={{ ...puzzle, grid: solvedGrid }}
+                        onSuccess={() => {}}
+                        onFail={() => {}}
+                        isReadOnly={true}
+                        showSolution={true}
+                    />
+                    <div className="w-full max-w-xs text-center p-3 mt-2 rounded-lg bg-yellow-100/70 dark:bg-yellow-900/40 border border-yellow-200/70 dark:border-yellow-700/60">
+                        <h4 className="font-bold font-headline text-yellow-900 dark:text-yellow-200">The Logic Was:</h4>
+                        <p className="text-sm text-yellow-800 dark:text-yellow-300/90 mt-1">{puzzle.solution.rule}</p>
+                    </div>
+                </div>
+            )}
+        </>}
          <AlertDialog open={gameState === 'SOLVED_COMPLETE'}>
           <AlertDialogContent>
             <AlertDialogHeader className="items-center text-center">

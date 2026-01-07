@@ -84,5 +84,8 @@ export default function DailyChallengeContainer() {
     );
   }
 
-  return <PuzzleComponent isDailyChallenge={true} dailyLevel={puzzleData.level} />;
+  // Pass a consistent seed to the component for reproducible puzzles
+  const puzzleSeed = seededRandom(getTodaysDateKey() + '-puzzle-instance');
+
+  return <PuzzleComponent isDailyChallenge={true} dailyLevel={puzzleData.level} puzzleSeed={puzzleSeed} />;
 }

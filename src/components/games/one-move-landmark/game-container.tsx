@@ -42,6 +42,8 @@ import { playSound } from "@/lib/sounds";
 import { useSound } from "@/contexts/sound-context";
 import { trackEvent } from "@/lib/analytics";
 import { getTodaysDateKey } from "@/lib/daily-challenge";
+import { DailyChallengeCountdown } from "@/components/daily-challenge-countdown";
+
 
 function shuffle<T>(array: T[]): T[] {
   let currentIndex = array.length,
@@ -63,9 +65,10 @@ const PREVIEW_TIME = 5; // 5 seconds to memorize
 interface GameContainerProps {
   isDailyChallenge?: boolean;
   dailyLevel?: number;
+  puzzleSeed?: number;
 }
 
-export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0 }: GameContainerProps) {
+export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0, puzzleSeed = 0 }: GameContainerProps) {
   const router = useRouter();
   const [levels, setLevels] = useState<Level[]>([]);
   const [levelIndex, setLevelIndex] = useState(0);
@@ -94,9 +97,10 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
         setShowAlreadyCompleted(true);
         return;
       }
-      setLevelIndex(dailyLevel -1); // dailyLevel is 1-based
-      setLevels(initialLevels); // Use unshuffled levels for daily challenge
-      setIsComponentLoading(false);
+      // For daily challenge, we use the passed-in level.
+      // And we need to use the initial unshuffled levels array to find the correct puzzle.
+      setLevelIndex(dailyLevel); 
+      setLevels(initialLevels); 
     } else {
       const savedLevel = localStorage.getItem('currentLevelIndex');
       const savedHighestLevel = localStorage.getItem('highestLevel');
@@ -119,8 +123,8 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
 
       setLevelIndex(initialIndex);
       setHighestLevel(initialHighest);
-      setIsComponentLoading(false);
     }
+    setIsComponentLoading(false);
   }, [isDailyChallenge, dailyLevel, router]);
   
   // Save progress whenever level changes
@@ -135,19 +139,21 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   }, [levelIndex, highestLevel, isComponentLoading, isDailyChallenge]);
 
   const currentLevelData = useMemo(() => {
-    if (isComponentLoading || levels.length === 0 || levelIndex >= levels.length) return null;
-    return levels[levelIndex];
-  }, [levelIndex, levels, isComponentLoading]);
+    if (isComponentLoading || levels.length === 0) return null;
+    const index = isDailyChallenge ? dailyLevel : levelIndex;
+    if (index >= levels.length) return null;
+    return levels[index];
+  }, [levelIndex, levels, isComponentLoading, isDailyChallenge, dailyLevel]);
   
-  const { grid: currentGridSize } = getLevelConfig(levelIndex);
+  const { grid: currentGridSize } = getLevelConfig(isDailyChallenge ? dailyLevel : levelIndex);
 
   // Generate the puzzle for the current level
   const currentPuzzle = useMemo(() => {
     if (!currentLevelData) return null;
-    // For daily challenge, we want the same puzzle every time, so retryCount is 0
-    const effectiveRetryCount = isDailyChallenge ? 0 : retryCount;
+    // Use the puzzleSeed for daily challenge to ensure the same puzzle instance for everyone.
+    const effectiveRetryCount = isDailyChallenge ? puzzleSeed : retryCount;
     return generatePuzzle(currentLevelData.imageId, currentGridSize, effectiveRetryCount);
-  }, [currentLevelData, currentGridSize, retryCount, isDailyChallenge]);
+  }, [currentLevelData, currentGridSize, retryCount, isDailyChallenge, puzzleSeed]);
 
   // Game timer logic
   useEffect(() => {
@@ -201,12 +207,10 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     if (isDailyChallenge) {
         const todayKey = getTodaysDateKey();
         localStorage.setItem('dailyChallengeCompletion', todayKey);
-        setTimeout(() => setGameState("SOLVED_COMPLETE"), 2000); // Go to a final state
-        return;
     }
     
     setTimeout(() => {
-      if (levelIndex === levels.length - 1) {
+      if (levelIndex === levels.length - 1 && !isDailyChallenge) {
         playSound('win', isSoundOn);
         trackEvent('game_all_levels_complete', { game: 'landmark' });
         setGameState("ALL_LEVELS_COMPLETE");
@@ -227,12 +231,12 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     if (newMistakeCount > MAX_MISTAKES) {
       trackEvent('game_over', { game: 'landmark', level: levelIndex + 1 });
       setGameState("GAME_OVER");
-      if (!isDailyChallenge) {
-        localStorage.removeItem('currentLevelIndex');
-        localStorage.removeItem('highestLevel');
-      } else {
+      if (isDailyChallenge) {
         const todayKey = getTodaysDateKey();
         localStorage.setItem('dailyChallengeCompletion', todayKey); // Mark as completed even on fail
+      } else {
+        localStorage.removeItem('currentLevelIndex');
+        localStorage.removeItem('highestLevel');
       }
     } else {
       setGameState("FAILED");
@@ -294,12 +298,13 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   
   const handleBackToHome = () => {
     playSound("ui", isSoundOn);
+    router.push('/');
     trackEvent('navigate_to_home');
   }
 
   const puzzleKey = `${currentLevelData.id}-${retryCount}`;
   const title = isDailyChallenge ? `Daily Challenge` : `Level ${levelIndex + 1}`;
-  const subTitle = isDailyChallenge ? currentLevelData.place : `${currentGridSize}x${currentGridSize} Grid`;
+  const subTitle = `${currentGridSize}x${currentGridSize} Grid`;
 
   return (
     <Card
@@ -325,7 +330,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                     dark:bg-secondary/90 dark:border-transparent
                   "
                 >
-                  {isDailyChallenge ? currentLevelData.place : `${currentGridSize}x${currentGridSize} Grid`}
+                  {isDailyChallenge ? currentLevelData.place : subTitle}
                 </CardDescription>
                 <CardDescription className="text-muted-foreground pt-3">
                   Click Start to memorize the image.
@@ -374,7 +379,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 dark:bg-secondary/90 dark:border-transparent
               "
             >
-              {isDailyChallenge ? 'Daily Challenge' : `Level ${levelIndex + 1}`} • {currentGridSize}x{currentGridSize} Grid
+              {isDailyChallenge ? 'Daily Challenge' : `Level ${levelIndex + 1}`} • {subTitle}
             </CardDescription>
             <CardDescription className="text-muted-foreground pt-2">
               The timer has started. Memorize the image.
@@ -423,15 +428,15 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
         )}
         
         {gameState === "GAME_OVER" && (
-            <>
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-destructive overflow-hidden">
-                <Image src="/logo.png" alt="Game Over" width={64} height={64} />
+           <>
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-destructive overflow-hidden mb-2">
+                  <Image src="/logo.png" alt="Game Over" width={64} height={64} style={{ borderRadius: '50%' }} />
               </div>
-              <CardTitle className="text-3xl font-bold pt-4 font-headline">
+              <CardTitle className="text-3xl font-bold pt-2 font-headline">
                 Game Over
               </CardTitle>
               <CardDescription className="text-muted-foreground px-4 text-sm">
-                {isDailyChallenge ? "That wasn't it. Better luck tomorrow!" : `You reached level ${levelIndex + 1}. Try again!`}
+                That wasn't it. Better luck tomorrow!
               </CardDescription>
             </>
         )}
@@ -512,11 +517,18 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 ))}
               </ul>
             </div>
-            <AlertDialogFooter className="pt-4">
+            <AlertDialogFooter className="pt-4 flex flex-col gap-2">
                 {isDailyChallenge ? (
-                    <Button asChild size="lg" className="w-full">
-                        <Link href="/" onClick={handleBackToHome}>Back to Home</Link>
-                    </Button>
+                    <>
+                        <div className="text-center p-4 rounded-lg bg-secondary">
+                            <h3 className="font-bold font-headline text-lg">Today's Stats</h3>
+                            <p className="text-muted-foreground text-sm mt-1">23 players played today. Only 30% managed to solve it!</p>
+                            <DailyChallengeCountdown />
+                        </div>
+                        <Button asChild size="lg" className="w-full">
+                            <Link href="/" onClick={handleBackToHome}>Back to Home</Link>
+                        </Button>
+                    </>
                 ) : (
                     <Button
                       onClick={nextLevel}
@@ -537,6 +549,30 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
         </AlertDialog>
 
         
+        <AlertDialog open={gameState === 'GAME_OVER' && isDailyChallenge}>
+            <AlertDialogContent>
+                <AlertDialogHeader className="items-center text-center">
+                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-destructive overflow-hidden mb-4">
+                        <Image src="/logo.png" alt="Game Over" width={64} height={64} />
+                    </div>
+                    <AlertDialogTitle className="text-3xl font-bold font-headline">Better Luck Tomorrow!</AlertDialogTitle>
+                    <AlertDialogDescription className="text-lg text-muted-foreground !mt-2">
+                        That was a tough one. Come back tomorrow for a new challenge!
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter className="pt-4 flex flex-col gap-2">
+                    <div className="text-center p-4 rounded-lg bg-secondary">
+                        <h3 className="font-bold font-headline text-lg">Today's Stats</h3>
+                        <p className="text-muted-foreground text-sm mt-1">Another 20% of players didn't dare to complete the puzzle!</p>
+                        <DailyChallengeCountdown />
+                    </div>
+                    <Button asChild size="lg" className="w-full">
+                        <Link href="/" onClick={handleBackToHome}>Back to Home</Link>
+                    </Button>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+
         {(gameState === "GAME_OVER" && !isDailyChallenge) && (
             <div className="text-center">
                 <p className="text-sm">You successfully completed {levelIndex} {levelIndex === 1 ? 'level' : 'levels'}.</p>
@@ -595,7 +631,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
           </Button>
         )}
 
-        {gameState === 'PLAYING' && (
+        {(gameState === 'PLAYING' || gameState === 'SOLVED_VISUALIZING') && (
              <Button
                 asChild
                 variant="link"
@@ -633,14 +669,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
         )}
         
         {gameState === "FAILED" && isDailyChallenge && (
-            <Button
-              asChild
-              variant="link"
-              className="text-muted-foreground"
-              onClick={handleBackToHome}
-            >
-              <Link href="/">Back to Home</Link>
-            </Button>
+            <div className="text-center text-muted-foreground">This was your only attempt for today.</div>
         )}
 
         {(gameState === "GAME_OVER" || gameState === "ALL_LEVELS_COMPLETE") && !isDailyChallenge && (
@@ -668,21 +697,8 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
             </Button>
           </div>
         )}
-        
-        {gameState === "GAME_OVER" && isDailyChallenge && (
-            <Button
-              asChild
-              variant="link"
-              className="text-muted-foreground"
-              onClick={handleBackToHome}
-            >
-              <Link href="/">Back to Home</Link>
-            </Button>
-        )}
 
       </CardFooter>
     </Card>
   );
 }
-
-    

@@ -26,6 +26,7 @@ import { cn } from '@/lib/utils';
 import { trackEvent } from '@/lib/analytics';
 import { useGameTimer } from "@/hooks/use-game-timer";
 import { getTodaysDateKey } from '@/lib/daily-challenge';
+import { DailyChallengeCountdown } from '@/components/daily-challenge-countdown';
 
 type GameState = 'READY' | 'PLAYING' | 'SOLVED_VISUALIZING' | 'SOLVED_COMPLETE' | 'FAILED' | 'GAME_OVER' | 'ALL_LEVELS_COMPLETE';
 
@@ -35,9 +36,10 @@ const TOTAL_LEVELS = 100; // Updated to 100 levels
 interface GameContainerProps {
   isDailyChallenge?: boolean;
   dailyLevel?: number;
+  puzzleSeed?: number;
 }
 
-export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0 }: GameContainerProps) {
+export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0, puzzleSeed = 0 }: GameContainerProps) {
   const router = useRouter();
   const [level, setLevel] = useState(0);
   const [highestLevel, setHighestLevel] = useState(0);
@@ -49,10 +51,13 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const { isSoundOn } = useSound();
   const [currentHint, setCurrentHint] = useState('');
   const { time, reset: resetTimer } = useGameTimer(gameState === 'PLAYING');
+  const [showAlreadyCompleted, setShowAlreadyCompleted] = useState(false);
+
 
   const loadPuzzle = (currentLevel: number, retries: number) => {
     setIsLoading(true);
-    const newPuzzle = generatePuzzle(currentLevel, retries);
+    const effectiveVariation = isDailyChallenge ? puzzleSeed : retries;
+    const newPuzzle = generatePuzzle(currentLevel, effectiveVariation);
     setPuzzle(newPuzzle);
     
     const config = getWordSwapLevelConfig(currentLevel);
@@ -71,10 +76,10 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     if (isDailyChallenge) {
         const todayKey = getTodaysDateKey();
         if (localStorage.getItem('dailyChallengeCompletion') === todayKey) {
-            router.push('/');
+            setShowAlreadyCompleted(true);
             return;
         }
-        setLevel(dailyLevel - 1);
+        setLevel(dailyLevel);
     } else {
         const savedLevel = localStorage.getItem('wordSwapCurrentLevel');
         const savedHighestLevel = localStorage.getItem('wordSwapHighestLevel');
@@ -104,8 +109,9 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   }, [level, highestLevel, isLoading, isDailyChallenge]);
   
   useEffect(() => {
-    loadPuzzle(level, retryCount);
-  }, [level, retryCount]);
+    const currentLevel = isDailyChallenge ? dailyLevel : level;
+    loadPuzzle(currentLevel, retryCount);
+  }, [level, retryCount, dailyLevel, isDailyChallenge]);
 
 
   const handleSuccess = () => {
@@ -116,12 +122,10 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     if (isDailyChallenge) {
         const todayKey = getTodaysDateKey();
         localStorage.setItem('dailyChallengeCompletion', todayKey);
-        setTimeout(() => setGameState("SOLVED_COMPLETE"), 2000); // Go to a final state
-        return;
     }
 
     setTimeout(() => {
-        if (level >= TOTAL_LEVELS - 1) { 
+        if (level >= TOTAL_LEVELS - 1 && !isDailyChallenge) { 
             playSound('win', isSoundOn);
             trackEvent('game_all_levels_complete', { game: 'word-swap' });
             setGameState('ALL_LEVELS_COMPLETE');
@@ -141,12 +145,12 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     if (newMistakeCount > MAX_MISTAKES) {
       trackEvent('game_over', { game: 'word-swap', level: level + 1 });
       setGameState("GAME_OVER");
-      if (!isDailyChallenge) {
-        localStorage.removeItem('wordSwapCurrentLevel');
-        localStorage.removeItem('wordSwapHighestLevel');
-      } else {
+      if (isDailyChallenge) {
         const todayKey = getTodaysDateKey();
         localStorage.setItem('dailyChallengeCompletion', todayKey);
+      } else {
+        localStorage.removeItem('wordSwapCurrentLevel');
+        localStorage.removeItem('wordSwapHighestLevel');
       }
     } else {
       setGameState("FAILED");
@@ -196,20 +200,38 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   
   const handleBackToHome = () => {
     playSound("ui", isSoundOn);
+    router.push('/');
     trackEvent('navigate_to_home');
   }
+
+  const effectiveLevel = isDailyChallenge ? dailyLevel : level;
 
   if (isLoading || !puzzle) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center">
+         <AlertDialog open={showAlreadyCompleted} onOpenChange={setShowAlreadyCompleted}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                <AlertDialogTitle>Challenge Already Completed</AlertDialogTitle>
+                <AlertDialogDescription>
+                    You've already solved today's challenge. Come back tomorrow for a new one!
+                </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogAction asChild>
+                        <Link href="/">Back to Home</Link>
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
         <Loader2 className="h-12 w-12 animate-spin" />
         <p className="mt-4 text-muted-foreground">Loading Word Puzzle...</p>
       </div>
     );
   }
   
-  const puzzleConfig = getWordSwapLevelConfig(level);
-  const title = isDailyChallenge ? 'Daily Challenge' : `Level ${level + 1}`;
+  const puzzleConfig = getWordSwapLevelConfig(effectiveLevel);
+  const title = isDailyChallenge ? 'Daily Challenge' : `Level ${effectiveLevel + 1}`;
 
   return (
     <Card
@@ -267,14 +289,14 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
         </div>
 
         <div className={cn("transition-opacity duration-300 absolute inset-0 p-6 flex flex-col justify-center", gameState === 'GAME_OVER' ? 'opacity-100' : 'opacity-0 invisible')}>
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-destructive overflow-hidden">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-destructive overflow-hidden mb-2">
                   <Image src="/logo.png" alt="Game Over" width={64} height={64} />
               </div>
-              <CardTitle className="text-3xl font-bold pt-4 font-headline">
+              <CardTitle className="text-3xl font-bold pt-2 font-headline">
                 Game Over
               </CardTitle>
               <CardDescription className="text-muted-foreground px-4 mt-2 text-sm">
-                 {isDailyChallenge ? "Better luck tomorrow!" : "Here's the correct logic."}
+                 Here's the correct logic.
               </CardDescription>
         </div>
         
@@ -315,7 +337,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 puzzle={{
                   ...puzzle,
                   pairs: puzzle.pairs.map((p, i) => {
-                    const originalBank = wordSwapLevels.find(l => l.level === level + 1)?.bankId;
+                    const originalBank = wordSwapLevels.find(l => l.level === effectiveLevel + 1)?.bankId;
                     const allBanks: Record<string, { pairs: { left: string, right: string }[] }> = {
                         'syn_easy': bankSynEasy, 'syn_verbs': bankSynVerbs,
                         'syn_emotion': bankSynEmotion, 'ant_basic': bankAntBasic,
@@ -344,17 +366,24 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                   <Image src="/logo.png" alt="Level Complete" width={64} height={64} />
               </div>
               <AlertDialogTitle className="text-3xl font-bold font-headline">
-                {isDailyChallenge ? "Challenge Complete!" : `Level ${level + 1} Complete!`}
+                {isDailyChallenge ? "Challenge Complete!" : `Level ${effectiveLevel + 1} Complete!`}
               </AlertDialogTitle>
               <AlertDialogDescription className="text-lg text-muted-foreground !mt-2">
                 {isDailyChallenge ? "Great job! Your score has been submitted." : "Excellent! You fixed the word pairs."}
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogFooter className="pt-4">
+            <AlertDialogFooter className="pt-4 flex flex-col gap-2">
                  {isDailyChallenge ? (
-                    <Button asChild size="lg" className="w-full">
-                        <Link href="/" onClick={handleBackToHome}>Back to Home</Link>
-                    </Button>
+                    <>
+                        <div className="text-center p-4 rounded-lg bg-secondary">
+                            <h3 className="font-bold font-headline text-lg">Today's Stats</h3>
+                            <p className="text-muted-foreground text-sm mt-1">23 players played today. Only 30% managed to solve it!</p>
+                            <DailyChallengeCountdown />
+                        </div>
+                        <Button asChild size="lg" className="w-full">
+                            <Link href="/" onClick={handleBackToHome}>Back to Home</Link>
+                        </Button>
+                    </>
                 ) : (
                     <Button
                         onClick={handleNextLevel}
@@ -366,6 +395,29 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 )}
             </AlertDialogFooter>
           </AlertDialogContent>
+        </AlertDialog>
+        <AlertDialog open={gameState === 'GAME_OVER' && isDailyChallenge}>
+            <AlertDialogContent>
+                <AlertDialogHeader className="items-center text-center">
+                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-destructive overflow-hidden mb-4">
+                        <Image src="/logo.png" alt="Game Over" width={64} height={64} />
+                    </div>
+                    <AlertDialogTitle className="text-3xl font-bold font-headline">Better Luck Tomorrow!</AlertDialogTitle>
+                    <AlertDialogDescription className="text-lg text-muted-foreground !mt-2">
+                        That was a tough one. Come back tomorrow for a new challenge!
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter className="pt-4 flex flex-col gap-2">
+                    <div className="text-center p-4 rounded-lg bg-secondary">
+                        <h3 className="font-bold font-headline text-lg">Today's Stats</h3>
+                        <p className="text-muted-foreground text-sm mt-1">Another 20% of players didn't dare to complete the puzzle!</p>
+                        <DailyChallengeCountdown />
+                    </div>
+                    <Button asChild size="lg" className="w-full">
+                        <Link href="/" onClick={handleBackToHome}>Back to Home</Link>
+                    </Button>
+                </AlertDialogFooter>
+            </AlertDialogContent>
         </AlertDialog>
       </CardContent>
       <CardFooter className="flex flex-col items-center justify-center p-6 space-y-4 min-h-[110px]">
@@ -398,9 +450,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
         )}
         
         {gameState === "FAILED" && isDailyChallenge && (
-            <Button asChild variant="link" className="text-muted-foreground" onClick={handleBackToHome}>
-                <Link href="/">Back to Home</Link>
-            </Button>
+            <div className="text-center text-muted-foreground">This was your only attempt for today.</div>
         )}
 
         {(gameState === "GAME_OVER" || gameState === "ALL_LEVELS_COMPLETE") && !isDailyChallenge && (
@@ -413,18 +463,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
             </Button>
           </div>
         )}
-
-        {gameState === "GAME_OVER" && isDailyChallenge && (
-             <Button asChild variant="link" className="text-muted-foreground" onClick={handleBackToHome}>
-                <Link href="/">Back to Home</Link>
-            </Button>
-        )}
         
-        { (gameState === 'SOLVED_COMPLETE' ) && (
-            <Button asChild variant="link" className="text-muted-foreground" onClick={handleBackToHome}>
-                <Link href="/">Back to Home</Link>
-            </Button>
-        )}
       </CardFooter>
     </Card>
   );

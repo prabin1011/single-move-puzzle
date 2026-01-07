@@ -564,19 +564,22 @@ const generateQuadrantRule: SymbolPatternGenerator = (gridSize, levelIndex, vari
     { cat: 'shape' as const, list: SHAPE_SYM },
   ];
 
-  const midpoint = size / 2;
+  const midpoint = (size -1) / 2;
 
   for (let r = 0; r < size; r++) {
     for (let c = 0; c < size; c++) {
       const idx = r * size + c;
       const base = correctGrid[idx];
       
-      let qIndex;
-      // Handle odd-sized grids by assigning center to quadrant 0
-      if (r < midpoint && c < midpoint) qIndex = 0; // Top-left
-      else if (r < midpoint && c >= midpoint) qIndex = 1; // Top-right
-      else if (r >= midpoint && c < midpoint) qIndex = 2; // Bottom-left
-      else qIndex = 3; // Bottom-right
+      let qIndex = 0;
+      if (size % 2 !== 0 && (r === midpoint || c === midpoint)) {
+        // Center row/column in odd grids, assign to quadrant 0
+        qIndex = 0;
+      } else {
+        const qRow = r < midpoint ? 0 : 1;
+        const qCol = c < midpoint ? 0 : 1;
+        qIndex = qRow * 2 + qCol;
+      }
       
       const famIndex = (qIndex + variation) % families.length;
       const fam = families[famIndex];

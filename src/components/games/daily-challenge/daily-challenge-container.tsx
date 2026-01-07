@@ -2,11 +2,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useDoc, useFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
 import { Loader2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { WifiOff } from 'lucide-react';
 
 // Dynamically import all possible game containers
 import LandmarkGameContainer from '@/components/games/one-move-landmark/game-container';
@@ -26,6 +23,33 @@ const puzzleComponents = {
 
 type PuzzleType = keyof typeof puzzleComponents;
 
+const puzzleTypes: PuzzleType[] = [
+  'one-move-landmark',
+  'one-move-math',
+  'one-move-patterns',
+  'word-swap',
+  'symbol-puzzle',
+];
+
+interface DailyPuzzle {
+  puzzleType: PuzzleType;
+  level: number;
+}
+
+// Simple pseudo-random number generator based on a seed (date string)
+const seededRandom = (seed: string) => {
+  let h1 = 1779033703, h2 = 3144134277,
+      h3 = 1013904242, h4 = 2773480762;
+  for (let i = 0, k; i < seed.length; i++) {
+      k = seed.charCodeAt(i);
+      h1 = h2 ^ Math.imul(h1, k);
+      h2 = h3 ^ Math.imul(h2, k);
+      h3 = h4 ^ Math.imul(h3, k);
+      h4 = h1 ^ Math.imul(h4, k);
+  }
+  return (h1>>>0) / 4294967296;
+}
+
 const getTodaysDateKey = () => {
   const now = new Date();
   const year = now.getUTCFullYear();
@@ -34,52 +58,43 @@ const getTodaysDateKey = () => {
   return `${year}-${month}-${day}`;
 };
 
-export default function DailyChallengeContainer() {
-  const { firestore } = useFirebase();
-  const [dateKey, setDateKey] = useState('');
+const generateDailyPuzzle = (dateKey: string): DailyPuzzle => {
+    // Use the date string as a seed for all "random" choices
+    const typeIndex = Math.floor(seededRandom(dateKey) * puzzleTypes.length);
+    const puzzleType = puzzleTypes[typeIndex];
 
-  // Set the date key only once on the client
+    // Difficulty range: levels 15 to 30 (inclusive)
+    const minLevel = 15;
+    const maxLevel = 30;
+    const level = minLevel + Math.floor(seededRandom(dateKey + '-level') * (maxLevel - minLevel + 1));
+    
+    return {
+        puzzleType,
+        level,
+    };
+}
+
+
+export default function DailyChallengeContainer() {
+  const [puzzleData, setPuzzleData] = useState<DailyPuzzle | null>(null);
+
+  // Generate the puzzle on the client side based on the date
   useEffect(() => {
-    setDateKey(getTodaysDateKey());
+    const dateKey = getTodaysDateKey();
+    const puzzle = generateDailyPuzzle(dateKey);
+    setPuzzleData(puzzle);
   }, []);
 
-  const dailyPuzzleRef = dateKey ? doc(firestore, 'dailyPuzzles', dateKey) : null;
-  const { data: puzzleData, isLoading, error } = useDoc(dailyPuzzleRef);
-
-  if (isLoading || !dateKey) {
+  if (!puzzleData) {
     return (
       <div className="flex flex-col items-center gap-4">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        <p className="text-muted-foreground">Loading Daily Challenge...</p>
+        <p className="text-muted-foreground">Generating Daily Challenge...</p>
       </div>
     );
   }
 
-  if (error) {
-    return (
-        <Alert variant="destructive" className="max-w-md">
-            <WifiOff className="h-4 w-4" />
-            <AlertTitle>Connection Error</AlertTitle>
-            <AlertDescription>
-                Could not load the Daily Challenge. Please check your internet connection and try again.
-            </AlertDescription>
-        </Alert>
-    );
-  }
-  
-  if (!puzzleData) {
-    return (
-      <Alert className="max-w-md">
-        <AlertTitle>No Challenge Today</AlertTitle>
-        <AlertDescription>
-            It looks like today&apos;s puzzle hasn&apos;t been set up yet. Please check back later!
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
-  const puzzleType = puzzleData.puzzleType as PuzzleType;
-  const PuzzleComponent = puzzleComponents[puzzleType];
+  const PuzzleComponent = puzzleComponents[puzzleData.puzzleType];
 
   if (!PuzzleComponent) {
      return (
@@ -92,8 +107,9 @@ export default function DailyChallengeContainer() {
     );
   }
 
-  // TODO: Once individual puzzle components can accept specific puzzle data,
-  // we will pass puzzleData.puzzleData down as props.
-  // For now, they generate their own level 0 puzzle.
-  return <PuzzleComponent />;
+  // Pass a 'isDailyChallenge' prop and the generated level to the component.
+  // The component will need to be updated to handle this.
+  // For now, we render it with its default logic, but this is the next step.
+  // @ts-ignore
+  return <PuzzleComponent isDailyChallenge={true} dailyLevel={puzzleData.level} />;
 }

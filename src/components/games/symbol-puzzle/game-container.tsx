@@ -23,12 +23,18 @@ import { useSound } from '@/contexts/sound-context';
 import { playSound } from '@/lib/sounds';
 import { cn } from '@/lib/utils';
 import { trackEvent } from '@/lib/analytics';
+import { useGameTimer } from "@/hooks/use-game-timer";
 
 type GameState = 'READY' | 'PLAYING' | 'SOLVED_VISUALIZING' | 'SOLVED_COMPLETE' | 'FAILED' | 'GAME_OVER' | 'ALL_LEVELS_COMPLETE';
 
 const MAX_MISTAKES = 0; // Game over on first mistake
 
-export default function GameContainer() {
+interface GameContainerProps {
+  isDailyChallenge?: boolean;
+  dailyLevel?: number;
+}
+
+export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0 }: GameContainerProps) {
   const [level, setLevel] = useState(0);
   const [highestLevel, setHighestLevel] = useState(0);
   const [mistakeCount, setMistakeCount] = useState(0);
@@ -38,6 +44,7 @@ export default function GameContainer() {
   const [retryCount, setRetryCount] = useState(0);
   const { isSoundOn } = useSound();
   const [currentHint, setCurrentHint] = useState('');
+  const { time, reset: resetTimer } = useGameTimer(gameState === 'PLAYING');
 
   const loadPuzzle = (currentLevel: number, retries: number) => {
     setIsLoading(true);
@@ -52,32 +59,37 @@ export default function GameContainer() {
   
   // Load progress on mount
   useEffect(() => {
-    const savedLevel = localStorage.getItem('symbolCurrentLevel');
-    const savedHighestLevel = localStorage.getItem('symbolHighestLevel');
-    
-    const rawLevel = savedLevel ? parseInt(savedLevel, 10) : 0;
-    const initialLevel = Math.max(0, Math.min(rawLevel, TOTAL_SYMBOL_LEVELS - 1));
+    if (isDailyChallenge) {
+        setLevel(dailyLevel - 1);
+    } else {
+        const savedLevel = localStorage.getItem('symbolCurrentLevel');
+        const savedHighestLevel = localStorage.getItem('symbolHighestLevel');
+        
+        const rawLevel = savedLevel ? parseInt(savedLevel, 10) : 0;
+        const initialLevel = Math.max(0, Math.min(rawLevel, TOTAL_SYMBOL_LEVELS - 1));
 
-    if (savedLevel) {
-        trackEvent('symbol_continue', { level: initialLevel });
+        if (savedLevel) {
+            trackEvent('symbol_continue', { level: initialLevel });
+        }
+
+        const rawHighestLevel = savedHighestLevel ? parseInt(savedHighestLevel, 10) : 0;
+        const initialHighest = Math.max(0, Math.min(rawHighestLevel, TOTAL_SYMBOL_LEVELS - 1));
+
+        setLevel(initialLevel);
+        setHighestLevel(initialHighest);
     }
-
-    const rawHighestLevel = savedHighestLevel ? parseInt(savedHighestLevel, 10) : 0;
-    const initialHighest = Math.max(0, Math.min(rawHighestLevel, TOTAL_SYMBOL_LEVELS - 1));
-
-    setLevel(initialLevel);
-    setHighestLevel(initialHighest);
-  }, []);
+    setIsLoading(false);
+  }, [isDailyChallenge, dailyLevel]);
 
   // Save progress whenever level changes
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || isDailyChallenge) return;
     localStorage.setItem('symbolCurrentLevel', level.toString());
     if (level > highestLevel) {
       setHighestLevel(level);
       localStorage.setItem('symbolHighestLevel', level.toString());
     }
-  }, [level, isLoading, highestLevel]);
+  }, [level, isLoading, highestLevel, isDailyChallenge]);
   
   useEffect(() => {
     loadPuzzle(level, retryCount);
@@ -88,6 +100,14 @@ export default function GameContainer() {
     playSound('success', isSoundOn);
     setGameState('SOLVED_VISUALIZING');
     trackEvent('game_level_complete', { game: 'symbol-puzzle', level: level + 1 });
+    
+    if (isDailyChallenge) {
+        // TODO: Show leaderboard here
+        console.log("Daily Challenge Solved! Time:", time); // Placeholder
+        setTimeout(() => setGameState("GAME_OVER"), 2000); // Go to a final state
+        return;
+    }
+    
     setTimeout(() => {
         if (level >= TOTAL_SYMBOL_LEVELS - 1) { 
             playSound('win', isSoundOn);
@@ -109,14 +129,17 @@ export default function GameContainer() {
     if (newMistakeCount > MAX_MISTAKES) {
       trackEvent('game_over', { game: 'symbol-puzzle', level: level + 1 });
       setGameState("GAME_OVER");
-      localStorage.removeItem('symbolCurrentLevel');
-      localStorage.removeItem('symbolHighestLevel');
+      if (!isDailyChallenge) {
+        localStorage.removeItem('symbolCurrentLevel');
+        localStorage.removeItem('symbolHighestLevel');
+      }
     } else {
       setGameState("FAILED");
     }
   };
 
   const handleNextLevel = () => {
+    if (isDailyChallenge) return;
     playSound('ui', isSoundOn);
     setMistakeCount(0);
     setRetryCount(0);
@@ -149,6 +172,7 @@ export default function GameContainer() {
     playSound("ui", isSoundOn);
     trackEvent('puzzle_start', { game: 'symbol-puzzle', level: level + 1 });
     setGameState("PLAYING");
+    resetTimer();
   };
 
   const handleViewHint = () => {
@@ -172,6 +196,7 @@ export default function GameContainer() {
   const puzzleConfig = getSymbolLevelConfig(level);
   
   const solvedGrid = puzzle.correctGrid;
+  const title = isDailyChallenge ? 'Daily Challenge' : `Level ${level + 1}`;
 
   return (
     <Card
@@ -185,7 +210,7 @@ export default function GameContainer() {
       <CardHeader className="text-center min-h-[160px] flex flex-col justify-center relative transition-all duration-300">
         <div className={cn("transition-opacity duration-300 absolute inset-0 p-6 flex flex-col justify-center space-y-2", gameState === 'READY' ? 'opacity-100' : 'opacity-0 invisible')}>
             <Sigma className="h-12 w-12 mx-auto text-primary" />
-            <CardTitle className="text-3xl font-bold font-headline mt-2">Level {level + 1}: {puzzleConfig.concept}</CardTitle>
+            <CardTitle className="text-3xl font-bold font-headline mt-2">{title}: {puzzleConfig.concept}</CardTitle>
             <CardDescription className="mt-1 text-base text-muted-foreground">
                 Find the one broken rule. Fix it in one move.
             </CardDescription>
@@ -206,7 +231,7 @@ export default function GameContainer() {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle className="font-headline">Hint for Level {level + 1}</AlertDialogTitle>
+                  <AlertDialogTitle className="font-headline">Hint for {title}</AlertDialogTitle>
                   <AlertDialogDescription asChild>
                       <div className="text-left text-base p-4 rounded-lg mt-2 bg-yellow-100/70 dark:bg-yellow-900/40 border border-yellow-200/70 dark:border-yellow-700/60">
                         {currentHint}
@@ -326,7 +351,7 @@ export default function GameContainer() {
             </Button>
         )}
         
-        {gameState === "FAILED" && (
+        {gameState === "FAILED" && !isDailyChallenge && (
            <div className="w-full text-center space-y-4">
             <Button onClick={handleTryAgain} size="lg" className="w-full" variant="destructive">
               <RefreshCw className="mr-2 h-4 w-4" /> Try Again
@@ -337,7 +362,13 @@ export default function GameContainer() {
             </div>
         )}
 
-        {(gameState === "GAME_OVER" || gameState === "ALL_LEVELS_COMPLETE") && (
+        {gameState === "FAILED" && isDailyChallenge && (
+             <Button asChild variant="link" className="text-muted-foreground" onClick={handleBackToHome}>
+                <Link href="/">Back to Home</Link>
+            </Button>
+        )}
+
+        {(gameState === "GAME_OVER" || gameState === "ALL_LEVELS_COMPLETE") && !isDailyChallenge && (
           <div className="w-full text-center space-y-4">
             <Button onClick={restartGame} size="lg" className="w-full">
               Play Again
@@ -346,6 +377,12 @@ export default function GameContainer() {
               <Link href="/">Back to Home</Link>
             </Button>
           </div>
+        )}
+        
+        {gameState === "GAME_OVER" && isDailyChallenge && (
+             <Button asChild variant="link" className="text-muted-foreground" onClick={handleBackToHome}>
+                <Link href="/">Back to Home</Link>
+            </Button>
         )}
         
         { (gameState === 'SOLVED_COMPLETE' ) && (

@@ -24,12 +24,18 @@ import { playSound } from '@/lib/sounds';
 import { cn } from '@/lib/utils';
 import type { TileValue } from '@/lib/math-puzzles';
 import { trackEvent } from '@/lib/analytics';
+import { useGameTimer } from "@/hooks/use-game-timer";
 
 type GameState = 'READY' | 'PLAYING' | 'SOLVED_VISUALIZING' | 'SOLVED_COMPLETE' | 'FAILED' | 'GAME_OVER' | 'ALL_LEVELS_COMPLETE';
 
 const MAX_MISTAKES = 0; // Game over on first mistake
 
-export default function GameContainer() {
+interface GameContainerProps {
+  isDailyChallenge?: boolean;
+  dailyLevel?: number;
+}
+
+export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0 }: GameContainerProps) {
   const [level, setLevel] = useState(0);
   const [highestLevel, setHighestLevel] = useState(0);
   const [mistakeCount, setMistakeCount] = useState(0);
@@ -38,10 +44,10 @@ export default function GameContainer() {
   const [isLoading, setIsLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
   const { isSoundOn } = useSound();
+  const { time, reset: resetTimer, stop: stopTimer } = useGameTimer(gameState === 'PLAYING');
 
   const loadPuzzle = (currentLevel: number, retries: number) => {
     setIsLoading(true);
-    // Puzzle generation is now instant from the template library
     const newPuzzle = generatePuzzle(currentLevel, retries);
     setPuzzle(newPuzzle);
     setIsLoading(false);
@@ -49,32 +55,36 @@ export default function GameContainer() {
   
   // Load progress on mount
   useEffect(() => {
-    const savedLevel = localStorage.getItem('mathCurrentLevel');
-    const savedHighestLevel = localStorage.getItem('mathHighestLevel');
-    
-    const initialLevel = savedLevel ? parseInt(savedLevel, 10) : 0;
-    const initialHighest = savedHighestLevel ? parseInt(savedHighestLevel, 10) : 0;
+    if (isDailyChallenge) {
+        setLevel(dailyLevel -1); // dailyLevel is 1-based
+        setIsLoading(false);
+    } else {
+        const savedLevel = localStorage.getItem('mathCurrentLevel');
+        const savedHighestLevel = localStorage.getItem('mathHighestLevel');
+        
+        const initialLevel = savedLevel ? parseInt(savedLevel, 10) : 0;
+        const initialHighest = savedHighestLevel ? parseInt(savedHighestLevel, 10) : 0;
 
-    if (savedLevel) {
-        trackEvent('math_continue', { level: initialLevel });
+        if (savedLevel) {
+            trackEvent('math_continue', { level: initialLevel });
+        }
+
+        setLevel(initialLevel);
+        setHighestLevel(initialHighest);
+        loadPuzzle(initialLevel, 0); 
     }
-
-    setLevel(initialLevel);
-    setHighestLevel(initialHighest);
-    // Use a fresh retry count on initial load.
-    loadPuzzle(initialLevel, 0); 
-  }, []); // Only runs on initial mount
+  }, [isDailyChallenge, dailyLevel]);
 
   // Save progress whenever level changes
   useEffect(() => {
-    if (isLoading) return; // Don't save during initial load
+    if (isLoading || isDailyChallenge) return;
     localStorage.setItem('mathCurrentLevel', level.toString());
     if (level > highestLevel) {
       const newHighest = level;
       setHighestLevel(newHighest);
       localStorage.setItem('mathHighestLevel', newHighest.toString());
     }
-  }, [level, highestLevel, isLoading]);
+  }, [level, highestLevel, isLoading, isDailyChallenge]);
   
   useEffect(() => {
     // This effect now correctly handles level changes and retries
@@ -86,6 +96,14 @@ export default function GameContainer() {
     playSound('success', isSoundOn);
     setGameState('SOLVED_VISUALIZING');
     trackEvent('game_level_complete', { game: 'math', level: level + 1 });
+
+    if (isDailyChallenge) {
+        // TODO: Show leaderboard here
+        console.log("Daily Challenge Solved! Time:", time); // Placeholder
+        setTimeout(() => setGameState("GAME_OVER"), 2000); // Go to a final state
+        return;
+    }
+
     setTimeout(() => {
         // There are 50 levels, indexed 0-49
         if (level >= 49) { 
@@ -108,17 +126,20 @@ export default function GameContainer() {
     if (newMistakeCount > MAX_MISTAKES) {
       trackEvent('game_over', { game: 'math', level: level + 1 });
       setGameState("GAME_OVER");
-      localStorage.removeItem('mathCurrentLevel');
-      localStorage.removeItem('mathHighestLevel');
+      if (!isDailyChallenge) {
+        localStorage.removeItem('mathCurrentLevel');
+        localStorage.removeItem('mathHighestLevel');
+      }
     } else {
       setGameState("FAILED");
     }
   };
 
   const handleNextLevel = () => {
+    if (isDailyChallenge) return;
     playSound('ui', isSoundOn);
     setMistakeCount(0);
-    setRetryCount(0); // Reset retries for the new level
+    setRetryCount(0);
     setLevel(prev => prev + 1);
     setGameState('READY');
   };
@@ -127,8 +148,6 @@ export default function GameContainer() {
     playSound('ui', isSoundOn);
     trackEvent('puzzle_retry', { game: 'math', level: level + 1 });
     setMistakeCount(0);
-    // Instead of just retrying, we now regenerate the puzzle for the same level
-    // by incrementing retryCount, which fetches a new variation.
     setRetryCount(prev => prev + 1);
     setGameState('PLAYING');
   };
@@ -141,7 +160,7 @@ export default function GameContainer() {
     setMistakeCount(0);
     setRetryCount(0);
     setGameState("READY");
-    loadPuzzle(0, 0); // explicitly reload puzzle for level 0
+    loadPuzzle(0, 0);
     localStorage.removeItem('mathCurrentLevel');
     localStorage.removeItem('mathHighestLevel');
   }
@@ -150,6 +169,7 @@ export default function GameContainer() {
     playSound("ui", isSoundOn);
     trackEvent('puzzle_start', { game: 'math', level: level + 1 });
     setGameState("PLAYING");
+    resetTimer();
   };
 
   const handleViewHint = () => {
@@ -173,16 +193,15 @@ export default function GameContainer() {
   const hint = getHint(puzzle, level);
   const puzzleConfig = getMathPuzzleConfig(level);
 
-  // This creates a renderable board from the correct solution for the "Game Over" state
   const solutionBoard = {
     ...puzzle,
     board: puzzle.correctSolution.map((val) => {
-      // In the solution board, only the equals sign is locked.
       const isLocked = val === '=';
       return { value: val, isLocked: isLocked, isPartOfSwap: false };
     })
   };
 
+  const title = isDailyChallenge ? 'Daily Challenge' : `Level ${level + 1}`;
 
   return (
     <Card
@@ -195,7 +214,7 @@ export default function GameContainer() {
     >
       <CardHeader className="text-center min-h-[160px] flex flex-col justify-center relative transition-all duration-300">
         <div className={cn("transition-opacity duration-300 absolute inset-0 p-6 flex flex-col justify-center", gameState === 'READY' ? 'opacity-100' : 'opacity-0 invisible')}>
-            <CardTitle className="text-3xl font-bold font-headline mt-4">Level {level + 1}: {puzzleConfig.description}</CardTitle>
+            <CardTitle className="text-3xl font-bold font-headline mt-4">{title}: {puzzleConfig.description}</CardTitle>
             <CardDescription
                 className="
                 mt-2 text-base text-muted-foreground
@@ -220,7 +239,7 @@ export default function GameContainer() {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle className="font-headline">Hint for Level {level + 1}</AlertDialogTitle>
+                  <AlertDialogTitle className="font-headline">Hint for {title}</AlertDialogTitle>
                   <AlertDialogDescription asChild>
                       <div className="text-left text-base p-4 rounded-lg mt-2 bg-yellow-100/70 dark:bg-yellow-900/40 border border-yellow-200/70 dark:border-yellow-700/60">
                         {hint}
@@ -250,7 +269,7 @@ export default function GameContainer() {
                 Game Over
               </CardTitle>
               <CardDescription className="text-muted-foreground px-4 text-sm">
-                Here is the correct solution.
+                 {isDailyChallenge ? "Better luck tomorrow!" : "Here is the correct solution."}
               </CardDescription>
         </div>
         
@@ -332,13 +351,13 @@ export default function GameContainer() {
              </div>
         )}
 
-        {(gameState === 'PLAYING' || gameState === 'SOLVED_VISUALIZING' || gameState === 'FAILED') && (
+        {(gameState === 'PLAYING' || gameState === 'SOLVED_VISUALIZING') && (
             <Button asChild variant="link" className="text-muted-foreground" onClick={handleBackToHome}>
                 <Link href="/">Back to Home</Link>
             </Button>
         )}
         
-        {gameState === "FAILED" && (
+        {gameState === "FAILED" && !isDailyChallenge && (
            <div className="w-full text-center space-y-4">
             <Button
               onClick={handleTryAgain}
@@ -364,7 +383,13 @@ export default function GameContainer() {
             </div>
         )}
 
-        {(gameState === "GAME_OVER" || gameState === "ALL_LEVELS_COMPLETE") && (
+        {gameState === "FAILED" && isDailyChallenge && (
+             <Button asChild variant="link" className="text-muted-foreground" onClick={handleBackToHome}>
+                <Link href="/">Back to Home</Link>
+            </Button>
+        )}
+
+        {(gameState === "GAME_OVER" || gameState === "ALL_LEVELS_COMPLETE") && !isDailyChallenge && (
           <div className="w-full text-center space-y-4">
             <Button onClick={restartGame} size="lg" className="w-full">
               Play Again
@@ -373,6 +398,12 @@ export default function GameContainer() {
               <Link href="/">Back to Home</Link>
             </Button>
           </div>
+        )}
+
+         {gameState === "GAME_OVER" && isDailyChallenge && (
+            <Button asChild variant="link" className="text-muted-foreground" onClick={handleBackToHome}>
+              <Link href="/">Back to Home</Link>
+            </Button>
         )}
         
         { (gameState === 'SOLVED_COMPLETE' ) && (
@@ -384,5 +415,3 @@ export default function GameContainer() {
     </Card>
   );
 }
-
-    

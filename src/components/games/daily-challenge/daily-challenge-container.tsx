@@ -63,9 +63,9 @@ const generateDailyPuzzle = (dateKey: string): DailyPuzzle => {
     const typeIndex = Math.floor(seededRandom(dateKey) * puzzleTypes.length);
     const puzzleType = puzzleTypes[typeIndex];
 
-    // Difficulty range: levels 15 to 30 (inclusive)
-    const minLevel = 15;
-    const maxLevel = 30;
+    // Difficulty range: levels 30 to 40
+    const minLevel = 30;
+    const maxLevel = 40;
     const level = minLevel + Math.floor(seededRandom(dateKey + '-level') * (maxLevel - minLevel + 1));
     
     return {
@@ -107,9 +107,5 @@ export default function DailyChallengeContainer() {
     );
   }
 
-  // Pass a 'isDailyChallenge' prop and the generated level to the component.
-  // The component will need to be updated to handle this.
-  // For now, we render it with its default logic, but this is the next step.
-  // @ts-ignore
   return <PuzzleComponent isDailyChallenge={true} dailyLevel={puzzleData.level} />;
 }

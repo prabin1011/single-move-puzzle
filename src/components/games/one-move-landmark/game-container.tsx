@@ -74,6 +74,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const [isComponentLoading, setIsComponentLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
   const { isSoundOn } = useSound();
+  const [showAlreadyCompleted, setShowAlreadyCompleted] = useState(false);
 
   const [gameState, setGameState] = useState<
     "READY" | "PREVIEW" | "PLAYING" | "SOLVED_VISUALIZING" | "SOLVED_COMPLETE" | "FAILED" | "GAME_OVER" | "ALL_LEVELS_COMPLETE"
@@ -90,7 +91,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     if (isDailyChallenge) {
       const todayKey = getTodaysDateKey();
       if (localStorage.getItem('dailyChallengeCompletion') === todayKey) {
-        router.push('/');
+        setShowAlreadyCompleted(true);
         return;
       }
       setLevelIndex(dailyLevel -1); // dailyLevel is 1-based
@@ -168,6 +169,21 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   if (isComponentLoading || !currentLevelData || !currentPuzzle) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center">
+        <AlertDialog open={showAlreadyCompleted} onOpenChange={setShowAlreadyCompleted}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                <AlertDialogTitle>Challenge Already Completed</AlertDialogTitle>
+                <AlertDialogDescription>
+                    You've already solved today's challenge. Come back tomorrow for a new one!
+                </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogAction asChild>
+                        <Link href="/">Back to Home</Link>
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
         <Loader2 className="h-12 w-12 animate-spin" />
         <p className="mt-4 text-muted-foreground">Loading Game...</p>
       </div>
@@ -668,3 +684,5 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     </Card>
   );
 }
+
+    

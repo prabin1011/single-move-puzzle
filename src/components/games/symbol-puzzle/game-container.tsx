@@ -48,6 +48,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const { isSoundOn } = useSound();
   const [currentHint, setCurrentHint] = useState('');
   const { time, reset: resetTimer } = useGameTimer(gameState === 'PLAYING');
+  const [showAlreadyCompleted, setShowAlreadyCompleted] = useState(false);
 
   const loadPuzzle = (currentLevel: number, retries: number) => {
     setIsLoading(true);
@@ -65,7 +66,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     if (isDailyChallenge) {
         const todayKey = getTodaysDateKey();
         if (localStorage.getItem('dailyChallengeCompletion') === todayKey) {
-            router.push('/');
+            setShowAlreadyCompleted(true);
             return;
         }
         setLevel(dailyLevel - 1);
@@ -198,6 +199,21 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   if (isLoading || !puzzle) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center">
+        <AlertDialog open={showAlreadyCompleted} onOpenChange={setShowAlreadyCompleted}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                <AlertDialogTitle>Challenge Already Completed</AlertDialogTitle>
+                <AlertDialogDescription>
+                    You've already solved today's challenge. Come back tomorrow for a new one!
+                </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogAction asChild>
+                        <Link href="/">Back to Home</Link>
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
         <Loader2 className="h-12 w-12 animate-spin" />
         <p className="mt-4 text-muted-foreground">Loading Symbols...</p>
       </div>
@@ -411,3 +427,5 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     </Card>
   );
 }
+
+    

@@ -556,7 +556,7 @@ const generateQuadrantRule: SymbolPatternGenerator = (gridSize, levelIndex, vari
   const size = gridSize;
   const correctGrid = createGrid(size);
   const rule = "Each of the four quadrants follows its own unique rule or symbol family.";
-
+  
   const families = [
     { cat: 'math_op' as const, list: MATH_OPS },
     { cat: 'compare' as const, list: COMP_OPS },
@@ -564,15 +564,18 @@ const generateQuadrantRule: SymbolPatternGenerator = (gridSize, levelIndex, vari
     { cat: 'shape' as const, list: SHAPE_SYM },
   ];
 
+  const midpoint = Math.floor(size / 2);
+
   for (let r = 0; r < size; r++) {
     for (let c = 0; c < size; c++) {
       const idx = r * size + c;
       const base = correctGrid[idx];
 
-      const qRow = r < size / 2 ? 0 : 1;
-      const qCol = c < size / 2 ? 0 : 1;
-      const qIndex = (qRow * 2 + qCol + variation) % families.length;
-
+      // Determine quadrant index based on position relative to the midpoint
+      const qRow = r >= midpoint ? 1 : 0;
+      const qCol = c >= midpoint ? 1 : 0;
+      let qIndex = (qRow * 2 + qCol + variation) % families.length;
+      
       const fam = families[qIndex];
       const sym = fam.list[(r + c + 2 * variation) % fam.list.length];
 

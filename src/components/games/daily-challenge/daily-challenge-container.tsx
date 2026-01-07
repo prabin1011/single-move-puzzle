@@ -36,14 +36,17 @@ interface DailyPuzzle {
 }
 
 const generateDailyPuzzle = (dateKey: string): DailyPuzzle => {
-    // Use the date string as a seed for all "random" choices
-    const typeIndex = Math.floor(seededRandom(dateKey) * puzzleTypes.length);
+    // Use the date string as a seed for all "random" choices to ensure consistency
+    const typeRng = seededRandom(dateKey + '-type');
+    const levelRng = seededRandom(dateKey + '-level');
+
+    const typeIndex = Math.floor(typeRng * puzzleTypes.length);
     const puzzleType = puzzleTypes[typeIndex];
 
     // Difficulty range: levels 40 to 50
     const minLevel = 40;
     const maxLevel = 50;
-    const level = minLevel + Math.floor(seededRandom(dateKey + '-level') * (maxLevel - minLevel + 1));
+    const level = minLevel + Math.floor(levelRng * (maxLevel - minLevel + 1));
     
     return {
         puzzleType,

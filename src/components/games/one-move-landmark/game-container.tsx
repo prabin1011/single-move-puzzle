@@ -97,8 +97,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
         setShowAlreadyCompleted(true);
         return;
       }
-      // For daily challenge, we use the passed-in level.
-      // And we need to use the initial unshuffled levels array to find the correct puzzle.
+      // For daily challenge, we use the passed-in level and the initial unshuffled levels.
       setLevelIndex(dailyLevel); 
       setLevels(initialLevels); 
     } else {
@@ -125,7 +124,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
       setHighestLevel(initialHighest);
     }
     setIsComponentLoading(false);
-  }, [isDailyChallenge, dailyLevel, router]);
+  }, [isDailyChallenge, dailyLevel]);
   
   // Save progress whenever level changes
   useEffect(() => {
@@ -226,20 +225,22 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const handleFail = () => {
     playSound('fail', isSoundOn);
     trackEvent('game_level_fail', { game: 'landmark', level: levelIndex + 1 });
-    const newMistakeCount = mistakeCount + 1;
-    setMistakeCount(newMistakeCount);
-    if (newMistakeCount > MAX_MISTAKES) {
-      trackEvent('game_over', { game: 'landmark', level: levelIndex + 1 });
-      setGameState("GAME_OVER");
-      if (isDailyChallenge) {
+    
+    if (isDailyChallenge) {
         const todayKey = getTodaysDateKey();
         localStorage.setItem('dailyChallengeCompletion', todayKey); // Mark as completed even on fail
-      } else {
-        localStorage.removeItem('currentLevelIndex');
-        localStorage.removeItem('highestLevel');
-      }
+        setGameState("GAME_OVER");
     } else {
-      setGameState("FAILED");
+        const newMistakeCount = mistakeCount + 1;
+        setMistakeCount(newMistakeCount);
+        if (newMistakeCount > MAX_MISTAKES) {
+          trackEvent('game_over', { game: 'landmark', level: levelIndex + 1 });
+          setGameState("GAME_OVER");
+          localStorage.removeItem('currentLevelIndex');
+          localStorage.removeItem('highestLevel');
+        } else {
+          setGameState("FAILED");
+        }
     }
   };
 
@@ -392,7 +393,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
               Find the two swapped pieces.
             </CardTitle>
             <CardDescription className="text-muted-foreground">
-              You have {MAX_MISTAKES - mistakeCount + 1} chance remaining.
+              You have {isDailyChallenge ? 1 : (MAX_MISTAKES - mistakeCount + 1)} chance remaining.
             </CardDescription>
             {levelIndex >= 2 && (
               <AlertDialog>
@@ -428,17 +429,19 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
         )}
         
         {gameState === "GAME_OVER" && (
-           <>
+           <div className="flex flex-col items-center gap-2">
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-destructive overflow-hidden mb-2">
                   <Image src="/logo.png" alt="Game Over" width={64} height={64} style={{ borderRadius: '50%' }} />
               </div>
               <CardTitle className="text-3xl font-bold pt-2 font-headline">
                 Game Over
               </CardTitle>
-              <CardDescription className="text-muted-foreground px-4 text-sm">
-                That wasn't it. Better luck tomorrow!
-              </CardDescription>
-            </>
+              {!isDailyChallenge && (
+                <CardDescription className="text-muted-foreground px-4 text-sm">
+                  That wasn't it. Better luck next time!
+                </CardDescription>
+              )}
+            </div>
         )}
         {gameState === "ALL_LEVELS_COMPLETE" && (
           <>
@@ -553,7 +556,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
             <AlertDialogContent>
                 <AlertDialogHeader className="items-center text-center">
                     <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-destructive overflow-hidden mb-4">
-                        <Image src="/logo.png" alt="Game Over" width={64} height={64} />
+                        <Image src="/logo.png" alt="Game Over" width={64} height={64} style={{ borderRadius: '50%' }} />
                     </div>
                     <AlertDialogTitle className="text-3xl font-bold font-headline">Better Luck Tomorrow!</AlertDialogTitle>
                     <AlertDialogDescription className="text-lg text-muted-foreground !mt-2">
@@ -666,10 +669,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
               <Link href="/">Back to Home</Link>
             </Button>
             </div>
-        )}
-        
-        {gameState === "FAILED" && isDailyChallenge && (
-            <div className="text-center text-muted-foreground">This was your only attempt for today.</div>
         )}
 
         {(gameState === "GAME_OVER" || gameState === "ALL_LEVELS_COMPLETE") && !isDailyChallenge && (

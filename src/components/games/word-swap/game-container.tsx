@@ -95,7 +95,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
         setHighestLevel(initialHighest);
     }
      setIsLoading(false);
-  }, [isDailyChallenge, dailyLevel, router]);
+  }, [isDailyChallenge, dailyLevel]);
 
   // Save progress whenever level changes
   useEffect(() => {
@@ -111,7 +111,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   useEffect(() => {
     const currentLevel = isDailyChallenge ? dailyLevel : level;
     loadPuzzle(currentLevel, retryCount);
-  }, [level, retryCount, dailyLevel, isDailyChallenge]);
+  }, [level, retryCount, dailyLevel, isDailyChallenge, puzzleSeed]);
 
 
   const handleSuccess = () => {
@@ -140,20 +140,22 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const handleFail = () => {
     playSound('fail', isSoundOn);
     trackEvent('game_level_fail', { game: 'word-swap', level: level + 1 });
-    const newMistakeCount = mistakeCount + 1;
-    setMistakeCount(newMistakeCount);
-    if (newMistakeCount > MAX_MISTAKES) {
-      trackEvent('game_over', { game: 'word-swap', level: level + 1 });
+
+    if (isDailyChallenge) {
+      const todayKey = getTodaysDateKey();
+      localStorage.setItem('dailyChallengeCompletion', todayKey); // Mark as completed even on fail
       setGameState("GAME_OVER");
-      if (isDailyChallenge) {
-        const todayKey = getTodaysDateKey();
-        localStorage.setItem('dailyChallengeCompletion', todayKey);
-      } else {
-        localStorage.removeItem('wordSwapCurrentLevel');
-        localStorage.removeItem('wordSwapHighestLevel');
-      }
     } else {
-      setGameState("FAILED");
+        const newMistakeCount = mistakeCount + 1;
+        setMistakeCount(newMistakeCount);
+        if (newMistakeCount > MAX_MISTAKES) {
+          trackEvent('game_over', { game: 'word-swap', level: level + 1 });
+          setGameState("GAME_OVER");
+          localStorage.removeItem('wordSwapCurrentLevel');
+          localStorage.removeItem('wordSwapHighestLevel');
+        } else {
+          setGameState("FAILED");
+        }
     }
   };
 
@@ -256,7 +258,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
               Find the two swapped words.
             </CardTitle>
             <CardDescription className="text-muted-foreground">
-              Swap them to restore the meaning.
+              You have {isDailyChallenge ? 1 : (MAX_MISTAKES - mistakeCount + 1)} chance remaining.
             </CardDescription>
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -295,9 +297,11 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
               <CardTitle className="text-3xl font-bold pt-2 font-headline">
                 Game Over
               </CardTitle>
-              <CardDescription className="text-muted-foreground px-4 mt-2 text-sm">
-                 Here's the correct logic.
-              </CardDescription>
+              {!isDailyChallenge &&
+                <CardDescription className="text-muted-foreground px-4 mt-2 text-sm">
+                   Here's the correct logic.
+                </CardDescription>
+              }
         </div>
         
         <div className={cn("transition-opacity duration-300 absolute inset-0 p-6 flex flex-col justify-center", gameState === 'ALL_LEVELS_COMPLETE' ? 'opacity-100' : 'opacity-0 invisible')}>
@@ -331,7 +335,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
               relationType={puzzleConfig.relation}
             />
         )}
-        {gameState === 'GAME_OVER' && (
+        {gameState === 'GAME_OVER' && !isDailyChallenge && (
             <PuzzleBoard
                 key={`${puzzle.id}-solution`}
                 puzzle={{
@@ -447,10 +451,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
               <Link href="/">Back to Home</Link>
             </Button>
             </div>
-        )}
-        
-        {gameState === "FAILED" && isDailyChallenge && (
-            <div className="text-center text-muted-foreground">This was your only attempt for today.</div>
         )}
 
         {(gameState === "GAME_OVER" || gameState === "ALL_LEVELS_COMPLETE") && !isDailyChallenge && (

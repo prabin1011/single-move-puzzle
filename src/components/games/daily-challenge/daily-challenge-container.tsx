@@ -7,6 +7,7 @@ import LandmarkGameContainer from '@/components/games/one-move-landmark/game-con
 import MathGameContainer from '@/components/games/one-move-math/game-container';
 import PatternsGameContainer from '@/components/games/one-move-patterns/game-container';
 import SymbolPuzzleGameContainer from '@/components/games/symbol-puzzle/game-container';
+import WordSwapGameContainer from '@/components/games/word-swap/game-container';
 
 const puzzleComponents = {
   'one-move-landmark': LandmarkGameContainer,

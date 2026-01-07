@@ -12,7 +12,7 @@ import MathGameContainer from '@/components/games/one-move-math/game-container';
 import PatternsGameContainer from '@/components/games/one-move-patterns/game-container';
 import SymbolPuzzleGameContainer from '@/components/games/symbol-puzzle/game-container';
 
-// A mapping from puzzleType in Firestore to the actual component
+// A mapping from puzzleType to the actual component
 const puzzleComponents = {
   'one-move-landmark': LandmarkGameContainer,
   'one-move-math': MathGameContainer,
@@ -27,7 +27,7 @@ const puzzleTypes: PuzzleType[] = [
   'one-move-landmark',
   'one-move-math',
   'one-move-patterns',
-  'symbol-puzzle',
+  'symbol-puzzle'
 ];
 
 interface DailyPuzzle {

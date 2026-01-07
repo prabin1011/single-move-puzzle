@@ -6,6 +6,7 @@ import { initializeFirebase } from '@/firebase';
 
 type EventName =
   // Main Menu Events
+  | 'daily_challenge_start'
   | 'landmark_start_new'
   | 'landmark_continue'
   | 'math_start_new'
@@ -36,7 +37,7 @@ type EventName =
   | 'theme_toggled';
 
 type EventParams = {
-  game?: 'landmark' | 'math' | 'patterns' | 'word-swap' | 'symbol-puzzle';
+  game?: 'landmark' | 'math' | 'patterns' | 'word-swap' | 'symbol-puzzle' | 'daily';
   level?: number;
   page?: 'about' | 'privacy' | 'contact' | 'disclaimer';
   status?: 'on' | 'off';

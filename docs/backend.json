@@ -87,6 +87,61 @@
         }
       },
       "required": ["id", "name", "country", "category", "visualComplexity", "allowedGrids", "imageUrl", "facts"]
+    },
+    "DailyPuzzle": {
+      "title": "Daily Puzzle",
+      "type": "object",
+      "description": "Defines the structure for a single daily puzzle challenge.",
+      "properties": {
+        "date": {
+          "type": "string",
+          "description": "The date of the puzzle in YYYY-MM-DD format.",
+          "format": "date"
+        },
+        "puzzleType": {
+          "type": "string",
+          "description": "The type of puzzle for the day.",
+          "enum": ["landmark", "math", "pattern", "word-swap", "symbol-puzzle"]
+        },
+        "puzzleId": {
+          "type": "string",
+          "description": "A reference ID for the puzzle used, e.g., 'landmark_lvl_015' or 'math_template_3'."
+        },
+        "puzzleData": {
+          "type": "object",
+          "description": "The specific data needed to generate and solve the puzzle for that day."
+        }
+      },
+      "required": ["date", "puzzleType", "puzzleId", "puzzleData"]
+    },
+    "DailyLeaderboardEntry": {
+      "title": "Daily Leaderboard Entry",
+      "type": "object",
+      "description": "Represents a single user's entry on the daily leaderboard.",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The UID of the user who solved the puzzle."
+        },
+        "userName": {
+          "type": "string",
+          "description": "The display name of the user (optional)."
+        },
+        "timeTaken": {
+          "type": "number",
+          "description": "The time in milliseconds it took the user to solve the puzzle."
+        },
+        "hintsUsed": {
+          "type": "boolean",
+          "description": "Whether the user used a hint to solve the puzzle."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "When the entry was submitted.",
+          "format": "date-time"
+        }
+      },
+      "required": ["userId", "timeTaken", "hintsUsed", "timestamp"]
     }
   },
   "auth": {
@@ -115,6 +170,26 @@
             "$ref": "#/entities/Landmark"
           },
           "description": "Stores the curated list of all landmarks and their associated metadata for puzzles."
+        }
+      },
+      {
+        "path": "/dailyPuzzles/{date}",
+        "definition": {
+          "entityName": "DailyPuzzle",
+          "schema": {
+            "$ref": "#/entities/DailyPuzzle"
+          },
+          "description": "Stores the curated daily challenge for a specific date (YYYY-MM-DD)."
+        }
+      },
+      {
+        "path": "/dailyLeaderboards/{date}/entries/{userId}",
+        "definition": {
+          "entityName": "DailyLeaderboardEntry",
+          "schema": {
+            "$ref": "#/entities/DailyLeaderboardEntry"
+          },
+          "description": "Stores user scores for the daily challenge on a specific date."
         }
       }
     ]

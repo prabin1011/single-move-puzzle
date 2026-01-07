@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -9,7 +8,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth, useUser } from '@/firebase';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
-import { Loader2, Landmark, Calculator, Shapes, BookText, Sigma } from 'lucide-react';
+import { Loader2, Landmark, Calculator, Shapes, BookText, Sigma, Flame } from 'lucide-react';
 import { levels } from '@/lib/levels';
 import type { Level } from '@/lib/levels';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -17,6 +16,8 @@ import { SoundToggle } from '@/components/sound-toggle';
 import { useSound } from "@/contexts/sound-context";
 import { playSound } from "@/lib/sounds";
 import { trackEvent } from '@/lib/analytics';
+import { DailyChallengeCountdown } from '@/components/daily-challenge-countdown';
+
 
 function shuffle<T>(array: T[]): T[] {
   let currentIndex = array.length,
@@ -162,6 +163,25 @@ export default function Home() {
           </CardHeader>
           <CardContent className="space-y-6 pt-6">
             <div className="grid grid-cols-1 gap-4 px-6">
+              
+              {/* Daily Challenge Card */}
+              <Card className="p-4 flex flex-col items-center gap-4 bg-primary/10 border-primary/50">
+                  <div className="flex items-center gap-4 w-full">
+                    <Flame className="h-10 w-10 text-primary shrink-0" />
+                    <div className="flex-grow text-left">
+                      <h3 className="font-bold font-headline text-lg">Daily Challenge</h3>
+                      <p className="text-sm text-muted-foreground">A new curated puzzle every day. Can you solve it?</p>
+                    </div>
+                  </div>
+                  <div className='w-full'>
+                    <Button asChild className="w-full bg-gradient-to-r from-orange-400 to-rose-400 text-white shadow-lg">
+                      <Link href="/games/daily-challenge" onClick={() => { playSound("ui", isSoundOn); trackEvent('daily_challenge_start'); }}>
+                        Play Daily Challenge
+                      </Link>
+                    </Button>
+                    <DailyChallengeCountdown />
+                  </div>
+              </Card>
 
               {/* Game 1: One Move Landmark */}
               <Card className="p-4 flex flex-col sm:flex-row items-center gap-4">
@@ -280,7 +300,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
-
-    

@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { useRouter } from 'next/navigation';
 import { useGameTimer } from "@/hooks/use-game-timer";
 import { usePrefetchNextImages } from "@/hooks/use-prefetch-images";
 import { playSound } from "@/lib/sounds";
@@ -65,6 +66,7 @@ interface GameContainerProps {
 }
 
 export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0 }: GameContainerProps) {
+  const router = useRouter();
   const [levels, setLevels] = useState<Level[]>([]);
   const [levelIndex, setLevelIndex] = useState(0);
   const [highestLevel, setHighestLevel] = useState(0);
@@ -86,6 +88,11 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   // Load progress and shuffled levels on mount
   useEffect(() => {
     if (isDailyChallenge) {
+      const todayKey = getTodaysDateKey();
+      if (localStorage.getItem('dailyChallengeCompletion') === todayKey) {
+        router.push('/');
+        return;
+      }
       setLevelIndex(dailyLevel -1); // dailyLevel is 1-based
       setLevels(initialLevels); // Use unshuffled levels for daily challenge
       setIsComponentLoading(false);
@@ -113,7 +120,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
       setHighestLevel(initialHighest);
       setIsComponentLoading(false);
     }
-  }, [isDailyChallenge, dailyLevel]);
+  }, [isDailyChallenge, dailyLevel, router]);
   
   // Save progress whenever level changes
   useEffect(() => {
@@ -178,8 +185,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     if (isDailyChallenge) {
         const todayKey = getTodaysDateKey();
         localStorage.setItem('dailyChallengeCompletion', todayKey);
-        // TODO: Save to Firestore Leaderboard
-        console.log("Daily Challenge Solved! Time:", time); // Placeholder
         setTimeout(() => setGameState("SOLVED_COMPLETE"), 2000); // Go to a final state
         return;
     }

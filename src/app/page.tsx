@@ -188,7 +188,7 @@ export default function Home() {
                         {isDailyChallengeCompleted ? 'Solved Today' : 'Play Daily Challenge'}
                       </Link>
                     </Button>
-                    <DailyChallengeCountdown />
+                    {!isDailyChallengeCompleted && <DailyChallengeCountdown />}
                   </div>
               </Card>
 

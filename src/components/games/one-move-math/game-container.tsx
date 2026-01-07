@@ -16,6 +16,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { generatePuzzle, getHint, type MathPuzzle, getMathPuzzleConfig } from '@/lib/math-puzzles';
 import PuzzleBoard from './puzzle-board';
 import { Loader2, RefreshCw, Info, Play, ArrowRight, PartyPopper, BrainCircuit, Plus, Minus, X, Divide } from 'lucide-react';
@@ -37,6 +38,7 @@ interface GameContainerProps {
 }
 
 export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0 }: GameContainerProps) {
+  const router = useRouter();
   const [level, setLevel] = useState(0);
   const [highestLevel, setHighestLevel] = useState(0);
   const [mistakeCount, setMistakeCount] = useState(0);
@@ -57,6 +59,11 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   // Load progress on mount
   useEffect(() => {
     if (isDailyChallenge) {
+        const todayKey = getTodaysDateKey();
+        if (localStorage.getItem('dailyChallengeCompletion') === todayKey) {
+            router.push('/');
+            return;
+        }
         setLevel(dailyLevel -1); // dailyLevel is 1-based
         setIsLoading(false);
     } else {
@@ -74,7 +81,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
         setHighestLevel(initialHighest);
         loadPuzzle(initialLevel, 0); 
     }
-  }, [isDailyChallenge, dailyLevel]);
+  }, [isDailyChallenge, dailyLevel, router]);
 
   // Save progress whenever level changes
   useEffect(() => {
@@ -101,8 +108,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     if (isDailyChallenge) {
         const todayKey = getTodaysDateKey();
         localStorage.setItem('dailyChallengeCompletion', todayKey);
-        // TODO: Save to Firestore Leaderboard
-        console.log("Daily Challenge Solved! Time:", time); // Placeholder
         setTimeout(() => setGameState("SOLVED_COMPLETE"), 2000); // Go to a final state
         return;
     }

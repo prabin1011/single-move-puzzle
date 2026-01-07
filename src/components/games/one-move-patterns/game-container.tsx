@@ -16,6 +16,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { generatePatternPuzzle, getPatternPuzzleConfig, type PatternPuzzle } from '@/lib/pattern-puzzles';
 import PuzzleBoard from './puzzle-board';
 import { Loader2, RefreshCw, CheckCircle, Info, Play, ArrowRight, PartyPopper, Shapes, Square, Circle, Triangle } from 'lucide-react';
@@ -37,6 +38,7 @@ interface GameContainerProps {
 }
 
 export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0 }: GameContainerProps) {
+  const router = useRouter();
   const [level, setLevel] = useState(0);
   const [highestLevel, setHighestLevel] = useState(0);
   const [mistakeCount, setMistakeCount] = useState(0);
@@ -62,6 +64,11 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   // Load progress on mount
   useEffect(() => {
     if (isDailyChallenge) {
+        const todayKey = getTodaysDateKey();
+        if (localStorage.getItem('dailyChallengeCompletion') === todayKey) {
+            router.push('/');
+            return;
+        }
         setLevel(dailyLevel -1); // dailyLevel is 1-based
     } else {
         const savedLevel = localStorage.getItem('patternCurrentLevel');
@@ -78,7 +85,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
         setHighestLevel(initialHighest);
     }
     setIsLoading(false);
-  }, [isDailyChallenge, dailyLevel]);
+  }, [isDailyChallenge, dailyLevel, router]);
 
   // Save progress whenever level changes
   useEffect(() => {
@@ -104,8 +111,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     if(isDailyChallenge) {
         const todayKey = getTodaysDateKey();
         localStorage.setItem('dailyChallengeCompletion', todayKey);
-        // TODO: Save to Firestore Leaderboard
-        console.log("Daily Challenge Solved! Time:", time); // Placeholder
         setTimeout(() => setGameState("SOLVED_COMPLETE"), 2000); // Go to a final state
         return;
     }

@@ -564,25 +564,28 @@ const generateQuadrantRule: SymbolPatternGenerator = (gridSize, levelIndex, vari
     { cat: 'shape' as const, list: SHAPE_SYM },
   ];
 
-  const midpoint = Math.floor(size / 2);
+  const midpoint = size / 2;
 
   for (let r = 0; r < size; r++) {
     for (let c = 0; c < size; c++) {
       const idx = r * size + c;
       const base = correctGrid[idx];
-
-      // Determine quadrant index based on position relative to the midpoint
-      const qRow = r >= midpoint ? 1 : 0;
-      const qCol = c >= midpoint ? 1 : 0;
-      let qIndex = (qRow * 2 + qCol + variation) % families.length;
       
-      const fam = families[qIndex];
+      let qIndex;
+      // Handle odd-sized grids by assigning center to quadrant 0
+      if (r < midpoint && c < midpoint) qIndex = 0; // Top-left
+      else if (r < midpoint && c >= midpoint) qIndex = 1; // Top-right
+      else if (r >= midpoint && c < midpoint) qIndex = 2; // Bottom-left
+      else qIndex = 3; // Bottom-right
+      
+      const famIndex = (qIndex + variation) % families.length;
+      const fam = families[famIndex];
       const sym = fam.list[(r + c + 2 * variation) % fam.list.length];
 
       correctGrid[idx] = makeTile(
         base,
         sym,
-        COLORS[(qIndex + r + variation) % COLORS.length],
+        COLORS[(famIndex + r + variation) % COLORS.length],
         fam.cat
       );
     }

@@ -17,6 +17,7 @@ import { useSound } from "@/contexts/sound-context";
 import { playSound } from "@/lib/sounds";
 import { trackEvent } from '@/lib/analytics';
 import { DailyChallengeCountdown } from '@/components/daily-challenge-countdown';
+import { getTodaysDateKey } from '@/lib/daily-challenge';
 
 
 function shuffle<T>(array: T[]): T[] {
@@ -47,6 +48,7 @@ export default function Home() {
   const [wordSwapHighestLevel, setWordSwapHighestLevel] = useState(0);
   const [symbolHighestLevel, setSymbolHighestLevel] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDailyChallengeCompleted, setIsDailyChallengeCompleted] = useState(false);
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
   const { isSoundOn } = useSound();
@@ -82,6 +84,13 @@ export default function Home() {
     if (savedSymbolLevel) {
         setSymbolHighestLevel(parseInt(savedSymbolLevel, 10));
     }
+
+    const todayKey = getTodaysDateKey();
+    const lastCompletion = localStorage.getItem('dailyChallengeCompletion');
+    if (lastCompletion === todayKey) {
+      setIsDailyChallengeCompleted(true);
+    }
+
 
     setIsLoading(false);
   }, []);
@@ -170,13 +179,13 @@ export default function Home() {
                     <Flame className="h-10 w-10 text-primary shrink-0" />
                     <div className="flex-grow text-left">
                       <h3 className="font-bold font-headline text-lg">Daily Challenge</h3>
-                      <p className="text-sm text-muted-foreground">A new curated puzzle every day. Can you solve it?</p>
+                      <p className="text-sm text-muted-foreground">{isDailyChallengeCompleted ? 'Completed! Come back tomorrow.' : 'A new curated puzzle every day.'}</p>
                     </div>
                   </div>
                   <div className='w-full'>
-                    <Button asChild className="w-full bg-gradient-to-r from-orange-400 to-rose-400 text-white shadow-lg">
+                    <Button asChild className="w-full bg-gradient-to-r from-orange-400 to-rose-400 text-white shadow-lg" disabled={isDailyChallengeCompleted}>
                       <Link href="/games/daily-challenge" onClick={() => { playSound("ui", isSoundOn); trackEvent('daily_challenge_start'); }}>
-                        Play Daily Challenge
+                        {isDailyChallengeCompleted ? 'Solved Today' : 'Play Daily Challenge'}
                       </Link>
                     </Button>
                     <DailyChallengeCountdown />

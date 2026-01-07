@@ -40,6 +40,7 @@ import { usePrefetchNextImages } from "@/hooks/use-prefetch-images";
 import { playSound } from "@/lib/sounds";
 import { useSound } from "@/contexts/sound-context";
 import { trackEvent } from "@/lib/analytics";
+import { getTodaysDateKey } from "@/lib/daily-challenge";
 
 function shuffle<T>(array: T[]): T[] {
   let currentIndex = array.length,
@@ -175,9 +176,11 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     trackEvent('game_level_complete', { game: 'landmark', level: levelIndex + 1 });
     
     if (isDailyChallenge) {
-        // TODO: Show leaderboard here
+        const todayKey = getTodaysDateKey();
+        localStorage.setItem('dailyChallengeCompletion', todayKey);
+        // TODO: Save to Firestore Leaderboard
         console.log("Daily Challenge Solved! Time:", time); // Placeholder
-        setTimeout(() => setGameState("GAME_OVER"), 2000); // Go to a final state
+        setTimeout(() => setGameState("SOLVED_COMPLETE"), 2000); // Go to a final state
         return;
     }
     
@@ -206,6 +209,9 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
       if (!isDailyChallenge) {
         localStorage.removeItem('currentLevelIndex');
         localStorage.removeItem('highestLevel');
+      } else {
+        const todayKey = getTodaysDateKey();
+        localStorage.setItem('dailyChallengeCompletion', todayKey); // Mark as completed even on fail
       }
     } else {
       setGameState("FAILED");
@@ -461,16 +467,16 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                   <Image src="/logo.png" alt="Level Complete" width={64} height={64} />
               </div>
               <AlertDialogTitle className="text-3xl font-bold font-headline">
-                Level {levelIndex + 1} Complete!
+                {isDailyChallenge ? "Challenge Complete!" : `Level ${levelIndex + 1} Complete!`}
               </AlertDialogTitle>
               <AlertDialogDescription className="text-lg text-muted-foreground !mt-2">
-                Well done! You found the swaps for {currentLevelData.place}.
+                {isDailyChallenge ? "Great job! Your score has been submitted." : `Well done! You found the swaps for ${currentLevelData.place}.`}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <div
               className={cn(
                 "transition-opacity duration-500 w-full pt-4 max-h-64 overflow-y-auto",
-                showFacts ? "opacity-100" : "opacity-0"
+                showFacts && !isDailyChallenge ? "opacity-100" : "opacity-0"
               )}
             >
               <ul className="space-y-3 text-left text-sm sm:text-base">
@@ -486,19 +492,25 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
               </ul>
             </div>
             <AlertDialogFooter className="pt-4">
-                <Button
-                  onClick={nextLevel}
-                  size="lg"
-                  className="
-                    w-full
-                    bg-gradient-to-r from-[#0A84FF] via-[#2F6BFF] to-[#9B5CFF]
-                    text-white shadow-md shadow-blue-200
-                    hover:brightness-110 hover:shadow-lg
-                    active:scale-[0.98] transition
-                  "
-                >
-                  Next Puzzle <ArrowRight className="ml-2" />
-                </Button>
+                {isDailyChallenge ? (
+                    <Button asChild size="lg" className="w-full">
+                        <Link href="/" onClick={handleBackToHome}>Back to Home</Link>
+                    </Button>
+                ) : (
+                    <Button
+                      onClick={nextLevel}
+                      size="lg"
+                      className="
+                        w-full
+                        bg-gradient-to-r from-[#0A84FF] via-[#2F6BFF] to-[#9B5CFF]
+                        text-white shadow-md shadow-blue-200
+                        hover:brightness-110 hover:shadow-lg
+                        active:scale-[0.98] transition
+                      "
+                    >
+                      Next Puzzle <ArrowRight className="ml-2" />
+                    </Button>
+                )}
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

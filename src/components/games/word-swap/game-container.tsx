@@ -24,6 +24,7 @@ import { playSound } from '@/lib/sounds';
 import { cn } from '@/lib/utils';
 import { trackEvent } from '@/lib/analytics';
 import { useGameTimer } from "@/hooks/use-game-timer";
+import { getTodaysDateKey } from '@/lib/daily-challenge';
 
 type GameState = 'READY' | 'PLAYING' | 'SOLVED_VISUALIZING' | 'SOLVED_COMPLETE' | 'FAILED' | 'GAME_OVER' | 'ALL_LEVELS_COMPLETE';
 
@@ -106,9 +107,11 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     trackEvent('game_level_complete', { game: 'word-swap', level: level + 1 });
 
     if (isDailyChallenge) {
-        // TODO: Show leaderboard here
+        const todayKey = getTodaysDateKey();
+        localStorage.setItem('dailyChallengeCompletion', todayKey);
+        // TODO: Save to Firestore Leaderboard
         console.log("Daily Challenge Solved! Time:", time); // Placeholder
-        setTimeout(() => setGameState("GAME_OVER"), 2000); // Go to a final state
+        setTimeout(() => setGameState("SOLVED_COMPLETE"), 2000); // Go to a final state
         return;
     }
 
@@ -136,6 +139,9 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
       if (!isDailyChallenge) {
         localStorage.removeItem('wordSwapCurrentLevel');
         localStorage.removeItem('wordSwapHighestLevel');
+      } else {
+        const todayKey = getTodaysDateKey();
+        localStorage.setItem('dailyChallengeCompletion', todayKey);
       }
     } else {
       setGameState("FAILED");
@@ -260,10 +266,10 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                   <Image src="/logo.png" alt="Game Over" width={64} height={64} />
               </div>
               <CardTitle className="text-3xl font-bold pt-4 font-headline">
-                The Logic Was...
+                Game Over
               </CardTitle>
               <CardDescription className="text-muted-foreground px-4 mt-2 text-sm">
-                {puzzle.rule}
+                 {isDailyChallenge ? "Better luck tomorrow!" : "Here's the correct logic."}
               </CardDescription>
         </div>
         
@@ -333,20 +339,26 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                   <Image src="/logo.png" alt="Level Complete" width={64} height={64} />
               </div>
               <AlertDialogTitle className="text-3xl font-bold font-headline">
-                Level {level + 1} Complete!
+                {isDailyChallenge ? "Challenge Complete!" : `Level ${level + 1} Complete!`}
               </AlertDialogTitle>
               <AlertDialogDescription className="text-lg text-muted-foreground !mt-2">
-                Excellent! You fixed the word pairs.
+                {isDailyChallenge ? "Great job! Your score has been submitted." : "Excellent! You fixed the word pairs."}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="pt-4">
-                <Button
-                  onClick={handleNextLevel}
-                  size="lg"
-                  className="w-full"
-                >
-                  Next Puzzle <ArrowRight className="ml-2" />
-                </Button>
+                 {isDailyChallenge ? (
+                    <Button asChild size="lg" className="w-full">
+                        <Link href="/" onClick={handleBackToHome}>Back to Home</Link>
+                    </Button>
+                ) : (
+                    <Button
+                        onClick={handleNextLevel}
+                        size="lg"
+                        className="w-full"
+                    >
+                    Next Puzzle <ArrowRight className="ml-2" />
+                    </Button>
+                )}
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

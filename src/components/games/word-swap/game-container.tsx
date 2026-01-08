@@ -59,8 +59,11 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const [currentHint, setCurrentHint] = useState('');
   const { time, reset: resetTimer } = useGameTimer(gameState === 'PLAYING');
   const [showAlreadyCompleted, setShowAlreadyCompleted] = useState(false);
-  const [snippet] = useState(alluringSnippets[Math.floor(Math.random() * alluringSnippets.length)]);
+  const [snippet, setSnippet] = useState('');
 
+  useEffect(() => {
+    setSnippet(alluringSnippets[Math.floor(Math.random() * alluringSnippets.length)]);
+  }, []);
 
   const loadPuzzle = (currentLevel: number, retries: number) => {
     setIsLoading(true);
@@ -83,11 +86,13 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   useEffect(() => {
     if (isDailyChallenge) {
         const todayKey = getTodaysDateKey();
-        if (localStorage.getItem('dailyChallengeCompletion') === todayKey) {
+        if (localStorage.getItem(`dailyChallengeCompletion:${todayKey}`) === '1') {
             setShowAlreadyCompleted(true);
+            setIsLoading(false);
             return;
         }
-        setLevel(dailyLevel);
+        const safeDaily = Math.max(0, Math.min(dailyLevel, TOTAL_LEVELS - 1));
+        setLevel(safeDaily);
     } else {
         const savedLevel = localStorage.getItem('wordSwapCurrentLevel');
         const savedHighestLevel = localStorage.getItem('wordSwapHighestLevel');
@@ -129,7 +134,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
 
     if (isDailyChallenge) {
         const todayKey = getTodaysDateKey();
-        localStorage.setItem('dailyChallengeCompletion', todayKey);
+        localStorage.setItem(`dailyChallengeCompletion:${todayKey}`, '1');
     }
 
     setTimeout(() => {
@@ -151,7 +156,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
 
     if (isDailyChallenge) {
       const todayKey = getTodaysDateKey();
-      localStorage.setItem('dailyChallengeCompletion', todayKey); // Mark as completed even on fail
+      localStorage.setItem(`dailyChallengeCompletion:${todayKey}`, '1'); // Mark as completed even on fail
       setGameState("GAME_OVER");
     } else {
         const newMistakeCount = mistakeCount + 1;
@@ -219,7 +224,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   if (isLoading || !puzzle) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center">
-         <AlertDialog open={showAlreadyCompleted} onOpenChange={setShowAlreadyCompleted}>
+        <AlertDialog open={showAlreadyCompleted}>
             <AlertDialogContent>
                 <AlertDialogHeader>
                 <AlertDialogTitle>Challenge Already Completed</AlertDialogTitle>

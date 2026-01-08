@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -21,7 +22,7 @@ export function DailyChallengeCountdown() {
         const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
         const minutes = Math.floor((difference / 1000 / 60) % 60);
         const seconds = Math.floor((difference / 1000) % 60);
-        setTimeLeft(`Resets in ${hours}h ${minutes}m ${seconds}s`);
+        setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
       } else {
         setTimeLeft('New challenge available!');
       }
@@ -32,7 +33,7 @@ export function DailyChallengeCountdown() {
 
   return (
     <p className="text-xs text-muted-foreground mt-2 text-center">
-      {timeLeft}
+      Resets in {timeLeft}
     </p>
   );
 }

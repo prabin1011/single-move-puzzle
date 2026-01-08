@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -18,7 +19,7 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { generateSymbolPuzzle, getSymbolLevelConfig, getSymbolHints, type SymbolPuzzle, TOTAL_SYMBOL_LEVELS } from '@/lib/symbol-puzzles';
-import PuzzleBoard from './puzzle-board';
+import PuzzleBoard from '../puzzle-board';
 import { Loader2, RefreshCw, Info, Play, ArrowRight, PartyPopper, Sigma } from 'lucide-react';
 import { useSound } from '@/contexts/sound-context';
 import { playSound } from '@/lib/sounds';
@@ -26,7 +27,7 @@ import { cn } from '@/lib/utils';
 import { trackEvent } from '@/lib/analytics';
 import { useGameTimer } from "@/hooks/use-game-timer";
 import { getTodaysDateKey } from '@/lib/daily-challenge';
-import { DailyChallengeCountdown } from '@/components/daily-challenge-countdown';
+import { DailyLeaderboard } from '@/components/daily-leaderboard';
 
 type GameState = 'READY' | 'PLAYING' | 'SOLVED_VISUALIZING' | 'SOLVED_COMPLETE' | 'FAILED' | 'GAME_OVER' | 'ALL_LEVELS_COMPLETE';
 
@@ -48,19 +49,20 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const [retryCount, setRetryCount] = useState(0);
   const { isSoundOn } = useSound();
   const [currentHint, setCurrentHint] = useState('');
-  const { time, reset: resetTimer } = useGameTimer(gameState === 'PLAYING');
+  const { time, reset: resetTimer, getDuration } = useGameTimer(gameState === 'PLAYING');
   const [showAlreadyCompleted, setShowAlreadyCompleted] = useState(false);
 
   // Load progress on mount
   useEffect(() => {
     if (isDailyChallenge) {
         const todayKey = getTodaysDateKey();
-        if (localStorage.getItem('dailyChallengeCompletion') === todayKey) {
+        if (localStorage.getItem(`dailyChallengeCompletion:${todayKey}`) === "1") {
             setShowAlreadyCompleted(true);
             setIsLoading(false);
             return;
         }
-        setLevel(dailyLevel);
+        const safeDaily = Math.max(0, Math.min(dailyLevel, TOTAL_SYMBOL_LEVELS - 1));
+        setLevel(safeDaily);
     } else {
         const savedLevel = localStorage.getItem('symbolCurrentLevel');
         const savedHighestLevel = localStorage.getItem('symbolHighestLevel');
@@ -84,14 +86,17 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const puzzle = useMemo(() => {
       if(isLoading) return null;
       const currentLevel = isDailyChallenge ? dailyLevel : level;
-      let seed = retryCount;
-       if (isDailyChallenge && puzzleSeed) {
-        seed = puzzleSeed.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) + retryCount;
+      let seed = isDailyChallenge && puzzleSeed ? puzzleSeed : `${retryCount}`;
+      
+      let numericSeed = 0;
+      for (let i = 0; i < seed.length; i++) {
+        numericSeed += seed.charCodeAt(i);
       }
-      const newPuzzle = generateSymbolPuzzle(currentLevel, seed);
+      
+      const newPuzzle = generateSymbolPuzzle(currentLevel, numericSeed);
       
       const hints = getSymbolHints(currentLevel);
-      setCurrentHint(hints[seed % hints.length]);
+      setCurrentHint(hints[numericSeed % hints.length]);
       
       return newPuzzle;
   }, [level, retryCount, dailyLevel, isDailyChallenge, puzzleSeed, isLoading]);
@@ -111,11 +116,13 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const handleSuccess = () => {
     playSound('success', isSoundOn);
     setGameState('SOLVED_VISUALIZING');
+    const duration = getDuration();
     trackEvent('game_level_complete', { game: 'symbol-puzzle', level: level + 1 });
     
     if (isDailyChallenge) {
         const todayKey = getTodaysDateKey();
-        localStorage.setItem('dailyChallengeCompletion', todayKey);
+        localStorage.setItem(`dailyChallengeCompletion:${todayKey}`, "1");
+        // TODO: Save score to Firestore
     }
     
     setTimeout(() => {
@@ -136,7 +143,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     trackEvent('game_level_fail', { game: 'symbol-puzzle', level: level + 1 });
     if (isDailyChallenge) {
         const todayKey = getTodaysDateKey();
-        localStorage.setItem('dailyChallengeCompletion', todayKey); // Mark as completed even on fail
+        localStorage.setItem(`dailyChallengeCompletion:${todayKey}`, "1");
         setGameState("GAME_OVER");
     } else {
         const newMistakeCount = mistakeCount + 1;
@@ -354,17 +361,13 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 {isDailyChallenge ? "Challenge Complete!" : `Level ${effectiveLevel + 1} Complete!`}
               </AlertDialogTitle>
               <AlertDialogDescription className="text-lg text-muted-foreground !mt-2">
-                {isDailyChallenge ? "Great job! Your score has been submitted." : "Excellent! You found the logical flaw."}
+                {isDailyChallenge ? `You solved it in ${getDuration()} seconds!` : "Excellent! You found the logical flaw."}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="pt-4 flex flex-col gap-2">
                 {isDailyChallenge ? (
                      <>
-                        <div className="text-center p-4 rounded-lg bg-secondary">
-                            <h3 className="font-bold font-headline text-lg">Today's Stats</h3>
-                            <p className="text-muted-foreground text-sm mt-1">23 players played today. Only 30% managed to solve it!</p>
-                            <DailyChallengeCountdown />
-                        </div>
+                        <DailyLeaderboard date={getTodaysDateKey()} currentUserTime={getDuration()} />
                         <Button asChild size="lg" className="w-full">
                             <Link href="/" onClick={handleBackToHome}>Back to Home</Link>
                         </Button>
@@ -394,11 +397,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter className="pt-4 flex flex-col gap-2">
-                    <div className="text-center p-4 rounded-lg bg-secondary">
-                        <h3 className="font-bold font-headline text-lg">Today's Stats</h3>
-                        <p className="text-muted-foreground text-sm mt-1">Another 20% of players didn't dare to complete the puzzle!</p>
-                        <DailyChallengeCountdown />
-                    </div>
+                    <DailyLeaderboard date={getTodaysDateKey()} />
                     <Button asChild size="lg" className="w-full">
                         <Link href="/" onClick={handleBackToHome}>Back to Home</Link>
                     </Button>

@@ -227,7 +227,7 @@ const makeMixedGenerator = (
 
 /* ---------- level table: 50 levels ---------- */
 
-const mathLevels: MathLevel[] = (() => {
+export const mathLevels: MathLevel[] = (() => {
   const levels: MathLevel[] = [];
 
   // Level 1 – baby addition tutorial
@@ -349,5 +349,3 @@ export function getHint(_puzzle: MathPuzzle, level: number): string {
   const config = getMathPuzzleConfig(level);
   return config.hint;
 }
-
-    

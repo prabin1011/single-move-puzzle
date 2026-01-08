@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -17,8 +18,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { generatePuzzle, getHint, type MathPuzzle, getMathPuzzleConfig } from '@/lib/math-puzzles';
-import PuzzleBoard from './puzzle-board';
+import { generatePuzzle, getHint, type MathPuzzle, getMathPuzzleConfig, mathLevels } from '@/lib/math-puzzles';
+import PuzzleBoard from '../puzzle-board';
 import { Loader2, RefreshCw, Info, Play, ArrowRight, PartyPopper, BrainCircuit, Plus, Minus, X, Divide } from 'lucide-react';
 import { useSound } from '@/contexts/sound-context';
 import { playSound } from '@/lib/sounds';
@@ -27,7 +28,7 @@ import type { TileValue } from '@/lib/math-puzzles';
 import { trackEvent } from '@/lib/analytics';
 import { useGameTimer } from "@/hooks/use-game-timer";
 import { getTodaysDateKey } from '@/lib/daily-challenge';
-import { DailyChallengeCountdown } from '@/components/daily-challenge-countdown';
+import { DailyLeaderboard } from '@/components/daily-leaderboard';
 
 type GameState = 'READY' | 'PLAYING' | 'SOLVED_VISUALIZING' | 'SOLVED_COMPLETE' | 'FAILED' | 'GAME_OVER' | 'ALL_LEVELS_COMPLETE';
 
@@ -48,19 +49,20 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const [isLoading, setIsLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
   const { isSoundOn } = useSound();
-  const { time, reset: resetTimer, stop: stopTimer } = useGameTimer(gameState === 'PLAYING');
+  const { time, reset: resetTimer, getDuration } = useGameTimer(gameState === 'PLAYING');
   const [showAlreadyCompleted, setShowAlreadyCompleted] = useState(false);
 
   // Load progress on mount
   useEffect(() => {
     if (isDailyChallenge) {
         const todayKey = getTodaysDateKey();
-        if (localStorage.getItem('dailyChallengeCompletion') === todayKey) {
+        if (localStorage.getItem(`dailyChallengeCompletion:${todayKey}`) === "1") {
             setShowAlreadyCompleted(true);
             setIsLoading(false);
             return;
         }
-        setLevel(dailyLevel); 
+        const safeDaily = Math.max(0, Math.min(dailyLevel, mathLevels.length - 1));
+        setLevel(safeDaily);
     } else {
         const savedLevel = localStorage.getItem('mathCurrentLevel');
         const savedHighestLevel = localStorage.getItem('mathHighestLevel');
@@ -91,10 +93,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   
   const puzzle = useMemo(() => {
     const currentLevel = isDailyChallenge ? dailyLevel : level;
-    let seed = retryCount;
-    if (isDailyChallenge && puzzleSeed) {
-        seed = puzzleSeed.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) + retryCount;
-    }
+    let seed = isDailyChallenge && puzzleSeed ? puzzleSeed : `${retryCount}`;
     return generatePuzzle(currentLevel, seed);
   }, [level, retryCount, dailyLevel, isDailyChallenge, puzzleSeed]);
 
@@ -102,16 +101,18 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const handleSuccess = () => {
     playSound('success', isSoundOn);
     setGameState('SOLVED_VISUALIZING');
+    const duration = getDuration();
     trackEvent('game_level_complete', { game: 'math', level: level + 1 });
 
     if (isDailyChallenge) {
         const todayKey = getTodaysDateKey();
-        localStorage.setItem('dailyChallengeCompletion', todayKey);
+        localStorage.setItem(`dailyChallengeCompletion:${todayKey}`, "1");
+        // TODO: Save score
     }
 
     setTimeout(() => {
         // There are 50 levels, indexed 0-49
-        if (level >= 49 && !isDailyChallenge) { 
+        if (level >= mathLevels.length - 1 && !isDailyChallenge) { 
             playSound('win', isSoundOn);
             trackEvent('game_all_levels_complete', { game: 'math' });
             setGameState('ALL_LEVELS_COMPLETE');
@@ -129,7 +130,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
 
     if (isDailyChallenge) {
         const todayKey = getTodaysDateKey();
-        localStorage.setItem('dailyChallengeCompletion', todayKey); // Mark as completed even on fail
+        localStorage.setItem(`dailyChallengeCompletion:${todayKey}`, "1");
         setGameState("GAME_OVER");
     } else {
         const newMistakeCount = mistakeCount + 1;
@@ -357,17 +358,13 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 {isDailyChallenge ? "Challenge Complete!" : `Level ${effectiveLevel + 1} Complete!`}
               </AlertDialogTitle>
               <AlertDialogDescription className="text-lg text-muted-foreground !mt-2">
-                {isDailyChallenge ? "Great job! Your score has been submitted." : "Great job! You solved the equation."}
+                {isDailyChallenge ? `You solved it in ${getDuration()} seconds!` : "Great job! You solved the equation."}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="pt-4 flex flex-col gap-2">
                 {isDailyChallenge ? (
                     <>
-                        <div className="text-center p-4 rounded-lg bg-secondary">
-                            <h3 className="font-bold font-headline text-lg">Today's Stats</h3>
-                            <p className="text-muted-foreground text-sm mt-1">23 players played today. Only 30% managed to solve it!</p>
-                            <DailyChallengeCountdown />
-                        </div>
+                        <DailyLeaderboard date={getTodaysDateKey()} currentUserTime={getDuration()} />
                         <Button asChild size="lg" className="w-full">
                             <Link href="/" onClick={handleBackToHome}>Back to Home</Link>
                         </Button>
@@ -397,11 +394,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter className="pt-4 flex flex-col gap-2">
-                    <div className="text-center p-4 rounded-lg bg-secondary">
-                        <h3 className="font-bold font-headline text-lg">Today's Stats</h3>
-                        <p className="text-muted-foreground text-sm mt-1">Another 20% of players didn't dare to complete the puzzle!</p>
-                        <DailyChallengeCountdown />
-                    </div>
+                    <DailyLeaderboard date={getTodaysDateKey()} />
                     <Button asChild size="lg" className="w-full">
                         <Link href="/" onClick={handleBackToHome}>Back to Home</Link>
                     </Button>

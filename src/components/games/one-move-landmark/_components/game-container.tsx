@@ -4,7 +4,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
-import PuzzleBoard from "./puzzle-board";
+import PuzzleBoard from "../puzzle-board";
 import { Button } from "@/components/ui/button";
 import {
   Card,

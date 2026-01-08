@@ -5,6 +5,12 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth, useUser } from '@/firebase';
@@ -180,9 +186,18 @@ export default function Home() {
                     </Button>
                   </div>
                 </Card>
-                <div className="mt-2">
-                   <DailyLeaderboard date={getTodaysDateKey()} />
-                </div>
+                <Accordion type="single" collapsible className="w-full mt-2">
+                  <AccordionItem value="leaderboard" className="border-none">
+                    <AccordionTrigger className="p-0 [&[data-state=open]>svg]:hidden">
+                      <div className="w-full">
+                        <DailyLeaderboard date={getTodaysDateKey()} isCollapsible={true} />
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <DailyLeaderboard date={getTodaysDateKey()} />
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
               </div>
 
 
@@ -333,7 +348,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
-
-    

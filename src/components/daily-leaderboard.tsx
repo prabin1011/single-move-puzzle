@@ -3,7 +3,7 @@
 
 import { useCollection, useUser, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, limit, addDoc } from 'firebase/firestore';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ChevronDown } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useEffect, useMemo } from 'react';
@@ -13,9 +13,10 @@ import { cn } from '@/lib/utils';
 interface DailyLeaderboardProps {
   date: string;
   currentUserTime?: number;
+  isCollapsible?: boolean;
 }
 
-export function DailyLeaderboard({ date, currentUserTime }: DailyLeaderboardProps) {
+export function DailyLeaderboard({ date, currentUserTime, isCollapsible = false }: DailyLeaderboardProps) {
   const firestore = useFirestore();
   const { user } = useUser();
   const leaderboardCollectionRef = collection(firestore, `dailyLeaderboards/${date}/entries`);
@@ -50,6 +51,21 @@ export function DailyLeaderboard({ date, currentUserTime }: DailyLeaderboardProp
       addDoc(leaderboardCollectionRef, entry);
     }
   }, [currentUserTime, user, hasUserSubmitted, leaderboardCollectionRef, firestore]);
+
+  if (isCollapsible) {
+    return (
+      <Card className="w-full text-left">
+        <CardHeader className="flex flex-row items-center justify-between p-2">
+            <div>
+                <CardTitle className="text-sm font-headline">Today's Leaderboard</CardTitle>
+                <CardDescription className="text-xs">Top 10 players</CardDescription>
+            </div>
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+      </Card>
+    )
+  }
+
 
   if (isLoading) {
     return (
@@ -102,5 +118,3 @@ export function DailyLeaderboard({ date, currentUserTime }: DailyLeaderboardProp
     </Card>
   );
 }
-
-    

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -16,6 +17,7 @@ import { SoundToggle } from '@/components/sound-toggle';
 import { useSound } from "@/contexts/sound-context";
 import { playSound } from "@/lib/sounds";
 import { trackEvent } from '@/lib/analytics';
+import { DailyChallengeCountdown } from '@/components/daily-challenge-countdown';
 
 function shuffle<T>(array: T[]): T[] {
   let currentIndex = array.length,
@@ -168,6 +170,7 @@ export default function Home() {
                     <div className="flex-grow text-left">
                       <h3 className="font-bold font-headline text-lg">Daily Challenge</h3>
                       <p className="text-sm text-muted-foreground">A new curated puzzle every day.</p>
+                       <DailyChallengeCountdown />
                     </div>
                   </div>
                   <div className='w-full'>

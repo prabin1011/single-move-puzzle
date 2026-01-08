@@ -33,6 +33,13 @@ type GameState = 'READY' | 'PLAYING' | 'SOLVED_VISUALIZING' | 'SOLVED_COMPLETE' 
 const MAX_MISTAKES = 0; // Game over on first mistake
 const TOTAL_LEVELS = 100; // Updated to 100 levels
 
+const alluringSnippets = [
+    "🔥 2,345 players have already tried today's puzzle!",
+    "🧠 Only 28% of players have solved it so far. Can you?",
+    "🏆 The current top score is 12 seconds. Think you can beat it?",
+    "🤔 This puzzle is proving to be a real head-scratcher.",
+];
+
 interface GameContainerProps {
   isDailyChallenge?: boolean;
   dailyLevel?: number;
@@ -52,6 +59,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const [currentHint, setCurrentHint] = useState('');
   const { time, reset: resetTimer } = useGameTimer(gameState === 'PLAYING');
   const [showAlreadyCompleted, setShowAlreadyCompleted] = useState(false);
+  const [snippet] = useState(alluringSnippets[Math.floor(Math.random() * alluringSnippets.length)]);
 
 
   const loadPuzzle = (currentLevel: number, retries: number) => {
@@ -381,7 +389,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                     <>
                         <div className="text-center p-4 rounded-lg bg-secondary">
                             <h3 className="font-bold font-headline text-lg">Today's Stats</h3>
-                            <p className="text-muted-foreground text-sm mt-1">23 players played today. Only 30% managed to solve it!</p>
+                            <p className="text-muted-foreground text-sm mt-1">{snippet}</p>
                             <DailyChallengeCountdown />
                         </div>
                         <Button asChild size="lg" className="w-full">
@@ -414,7 +422,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 <AlertDialogFooter className="pt-4 flex flex-col gap-2">
                     <div className="text-center p-4 rounded-lg bg-secondary">
                         <h3 className="font-bold font-headline text-lg">Today's Stats</h3>
-                        <p className="text-muted-foreground text-sm mt-1">Another 20% of players didn't dare to complete the puzzle!</p>
+                         <p className="text-muted-foreground text-sm mt-1">{snippet}</p>
                         <DailyChallengeCountdown />
                     </div>
                     <Button asChild size="lg" className="w-full">

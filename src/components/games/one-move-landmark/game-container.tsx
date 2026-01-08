@@ -225,23 +225,28 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     trackEvent('game_level_complete', { game: 'landmark', level: levelIndex + 1 });
     
     if (isDailyChallenge && user && firestore) {
-        const todayKey = getTodaysDateKey();
-        const completionKey = `dailyChallengeCompletion:${todayKey}`;
-        if (localStorage.getItem(completionKey) === "1") return; // Already submitted
-        localStorage.setItem(completionKey, "1");
+      const todayKey = getTodaysDateKey();
+      const completionKey = `dailyChallengeCompletion:${todayKey}`;
+      
+      // Prevent duplicate submissions if the user somehow gets here again
+      if (localStorage.getItem(completionKey) === "1") return;
 
-        const leaderboardRef = collection(firestore, `dailyLeaderboards/${todayKey}/entries`);
-        try {
-            await addDoc(leaderboardRef, {
-                userId: user.uid,
-                userName: user.displayName || `Player ${user.uid.slice(0, 4)}`,
-                timeTaken: duration,
-                hintsUsed: currentHintIndex > 0,
-                timestamp: serverTimestamp(),
-            });
-        } catch (error) {
-            console.error("Failed to write leaderboard entry:", error);
-        }
+      const leaderboardRef = collection(firestore, `dailyLeaderboards/${todayKey}/entries`);
+      
+      try {
+        await addDoc(leaderboardRef, {
+            userId: user.uid,
+            userName: user.displayName || `Player ${user.uid.slice(0, 4)}`,
+            timeTaken: duration,
+            hintsUsed: currentHintIndex > 0,
+            timestamp: serverTimestamp(),
+        });
+        // IMPORTANT: Only set the completion flag AFTER the write is successful
+        localStorage.setItem(completionKey, "1");
+      } catch (error) {
+        console.error("Failed to write leaderboard entry:", error);
+        // Optionally, inform the user that the score submission failed
+      }
     }
     
     setTimeout(() => {

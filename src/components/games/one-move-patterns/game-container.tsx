@@ -129,7 +129,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
         const todayKey = getTodaysDateKey();
         const completionKey = `dailyChallengeCompletion:${todayKey}`;
         if (localStorage.getItem(completionKey) === "1") return;
-        localStorage.setItem(completionKey, "1");
 
         const leaderboardRef = collection(firestore, `dailyLeaderboards/${todayKey}/entries`);
         try {
@@ -140,6 +139,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 hintsUsed: currentHint !== '', // A simple check if a hint was generated
                 timestamp: serverTimestamp(),
             });
+            localStorage.setItem(completionKey, "1");
         } catch (error) {
             console.error("Failed to write leaderboard entry:", error);
         }

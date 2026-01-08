@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -19,7 +18,7 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { generatePuzzle, getHint, type MathPuzzle, getMathPuzzleConfig, mathLevels } from '@/lib/math-puzzles';
-import PuzzleBoard from '../puzzle-board';
+import PuzzleBoard from '@/components/games/one-move-math/puzzle-board';
 import { Loader2, RefreshCw, Info, Play, ArrowRight, PartyPopper, BrainCircuit, Plus, Minus, X, Divide } from 'lucide-react';
 import { useSound } from '@/contexts/sound-context';
 import { playSound } from '@/lib/sounds';

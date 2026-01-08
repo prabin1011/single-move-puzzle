@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -19,7 +18,7 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { generateSymbolPuzzle, getSymbolLevelConfig, getSymbolHints, type SymbolPuzzle, TOTAL_SYMBOL_LEVELS } from '@/lib/symbol-puzzles';
-import PuzzleBoard from '../puzzle-board';
+import PuzzleBoard from '@/components/games/symbol-puzzle/puzzle-board';
 import { Loader2, RefreshCw, Info, Play, ArrowRight, PartyPopper, Sigma } from 'lucide-react';
 import { useSound } from '@/contexts/sound-context';
 import { playSound } from '@/lib/sounds';

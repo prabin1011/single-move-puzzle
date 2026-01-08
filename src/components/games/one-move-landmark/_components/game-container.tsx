@@ -1,10 +1,9 @@
 
-
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
-import PuzzleBoard from "../puzzle-board";
+import PuzzleBoard from "@/components/games/one-move-landmark/puzzle-board";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -71,7 +70,7 @@ interface GameContainerProps {
   puzzleSeed?: string;
 }
 
-export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0, puzzleSeed = '0' }: GameContainerProps) {
+export default function GameContainer({ isDailyChallenge = false, dailyLevel = '0', puzzleSeed = '0' }: GameContainerProps) {
   const router = useRouter();
   const [levels, setLevels] = useState<Level[]>([]);
   const [levelIndex, setLevelIndex] = useState(0);
@@ -103,7 +102,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
       }
       // For daily challenge, we use the passed-in level and the initial unshuffled levels.
       const max = Math.max(1, initialLevels.length);
-      const safeDaily = Math.max(0, Math.min(dailyLevel, max - 1));
+      const safeDaily = Math.max(0, Math.min(parseInt(dailyLevel), max - 1));
       setLevelIndex(safeDaily);
       setLevels(initialLevels); 
     } else {
@@ -145,12 +144,12 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
 
   const currentLevelData = useMemo(() => {
     if (isComponentLoading || levels.length === 0) return null;
-    const index = isDailyChallenge ? dailyLevel : levelIndex;
+    const index = isDailyChallenge ? parseInt(dailyLevel) : levelIndex;
     if (index >= levels.length) return null;
     return levels[index];
   }, [levelIndex, levels, isComponentLoading, isDailyChallenge, dailyLevel]);
   
-  const { grid: currentGridSize } = getLevelConfig(isDailyChallenge ? dailyLevel : levelIndex);
+  const { grid: currentGridSize } = getLevelConfig(isDailyChallenge ? parseInt(dailyLevel) : levelIndex);
 
   // Generate the puzzle for the current level
   const currentPuzzle = useMemo(() => {

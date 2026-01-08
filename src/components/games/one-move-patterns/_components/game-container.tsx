@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -19,7 +18,7 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { generatePatternPuzzle, getPatternPuzzleConfig, type PatternPuzzle, patternLevels } from '@/lib/pattern-puzzles';
-import PuzzleBoard from '../puzzle-board';
+import PuzzleBoard from '@/components/games/one-move-patterns/puzzle-board';
 import { Loader2, RefreshCw, CheckCircle, Info, Play, ArrowRight, PartyPopper, Shapes, Square, Circle, Triangle } from 'lucide-react';
 import { useSound } from '@/contexts/sound-context';
 import { playSound } from '@/lib/sounds';

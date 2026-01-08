@@ -46,7 +46,7 @@ export function DailyLeaderboard({ date, currentUserTime, isCollapsible = false 
         userName: user.displayName || 'Anonymous',
         timeTaken: currentUserTime,
         hintsUsed: false, // Assuming no hints for now
-        timestamp: new Date().toISOString(),
+        timestamp: new Date(),
       };
       addDoc(leaderboardCollectionRef, entry);
     }

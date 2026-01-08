@@ -45,7 +45,6 @@ import { playSound } from "@/lib/sounds";
 import { useSound } from "@/contexts/sound-context";
 import { trackEvent } from "@/lib/analytics";
 import { getTodaysDateKey } from "@/lib/daily-challenge";
-import { DailyChallengeCountdown } from "@/components/daily-challenge-countdown";
 import { DailyLeaderboard } from "@/components/daily-leaderboard";
 
 
@@ -175,7 +174,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   // Play a gentle chime whenever preview starts
   useEffect(() => {
     if (gameState === "PREVIEW") {
-      playSound("success", isSoundOn); // soft “preview started” chime
+      playSound("start", isSoundOn); // Use the calmer "start" sound
     }
   }, [gameState, isSoundOn]);
 
@@ -301,7 +300,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   };
   
   const handleStart = () => {
-    playSound("ui", isSoundOn);
+    playSound("start", isSoundOn);
     trackEvent('puzzle_start', { game: 'landmark', level: levelIndex + 1 });
     setGameState("PREVIEW");
     resetTimer();
@@ -719,5 +718,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     </Card>
   );
 }
+
+    
 
     

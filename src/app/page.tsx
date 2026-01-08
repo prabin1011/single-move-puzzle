@@ -18,6 +18,8 @@ import { useSound } from "@/contexts/sound-context";
 import { playSound } from "@/lib/sounds";
 import { trackEvent } from '@/lib/analytics';
 import { DailyChallengeCountdown } from '@/components/daily-challenge-countdown';
+import { DailyLeaderboard } from '@/components/daily-leaderboard';
+import { getTodaysDateKey } from '@/lib/daily-challenge';
 
 function shuffle<T>(array: T[]): T[] {
   let currentIndex = array.length,
@@ -164,19 +166,25 @@ export default function Home() {
           <CardContent className="space-y-6 pt-6">
             <div className="grid grid-cols-1 gap-4 px-6">
               
-              <Card className="p-4 flex flex-col items-center gap-4 bg-primary/10 border-primary/50 text-center">
-                <Flame className="h-10 w-10 text-primary shrink-0" />
-                <div className="flex-grow">
-                  <h3 className="font-bold font-headline text-lg">Daily Challenge</h3>
-                  <p className="text-sm text-muted-foreground">A new curated puzzle every day.</p>
-                  <DailyChallengeCountdown />
+              <div>
+                <Card className="p-4 flex flex-col items-center gap-4 bg-primary/10 border-primary/50 text-center">
+                  <Flame className="h-10 w-10 text-primary shrink-0" />
+                  <div className="flex-grow">
+                    <h3 className="font-bold font-headline text-lg">Daily Challenge</h3>
+                    <p className="text-sm text-muted-foreground">A new curated puzzle every day.</p>
+                    <DailyChallengeCountdown />
+                  </div>
+                  <div className='w-full'>
+                    <Button asChild className="w-full" onClick={() => trackEvent('daily_challenge_start')}>
+                      <Link href="/games/daily-challenge">Play Today's Puzzle</Link>
+                    </Button>
+                  </div>
+                </Card>
+                <div className="mt-2">
+                   <DailyLeaderboard date={getTodaysDateKey()} />
                 </div>
-                <div className='w-full'>
-                  <Button asChild className="w-full" onClick={() => trackEvent('daily_challenge_start')}>
-                    <Link href="/games/daily-challenge">Play Today's Puzzle</Link>
-                  </Button>
-                </div>
-              </Card>
+              </div>
+
 
               {/* Game 1: One Move Landmark */}
               <Card className="p-4 flex flex-col sm:flex-row items-center gap-4">
@@ -325,5 +333,7 @@ export default function Home() {
     </div>
   );
 }
+
+    
 
     

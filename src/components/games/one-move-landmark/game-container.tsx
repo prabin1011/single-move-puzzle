@@ -45,7 +45,6 @@ import { playSound } from "@/lib/sounds";
 import { useSound } from "@/contexts/sound-context";
 import { trackEvent } from "@/lib/analytics";
 import { getTodaysDateKey } from "@/lib/daily-challenge";
-import { DailyLeaderboard } from "@/components/daily-leaderboard";
 import { useUser, useFirestore } from "@/firebase";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 

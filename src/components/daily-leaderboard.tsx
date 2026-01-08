@@ -7,16 +7,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DailyChallengeCountdown } from './daily-challenge-countdown';
 import { cn } from '@/lib/utils';
-import { useDailyLeaderboard } from '@/hooks/use-daily-leaderboard';
+import type { LeaderboardEntry, WithId } from '@/hooks/use-daily-leaderboard';
 
 interface DailyLeaderboardProps {
   date: string;
   isCollapsible?: boolean;
+  entries: WithId<LeaderboardEntry>[];
+  loading: boolean;
 }
 
-export function DailyLeaderboard({ date, isCollapsible = false }: DailyLeaderboardProps) {
+export function DailyLeaderboard({ date, isCollapsible = false, entries, loading: isLoading }: DailyLeaderboardProps) {
   const { user } = useUser();
-  const { entries, loading: isLoading } = useDailyLeaderboard();
 
   if (isCollapsible) {
     return (

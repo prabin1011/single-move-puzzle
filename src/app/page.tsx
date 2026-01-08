@@ -64,7 +64,8 @@ export default function Home() {
   const { user, isUserLoading } = useUser();
   const { isSoundOn } = useSound();
 
-  const { entries: dailyPlayers, loading: leaderboardLoading } = useDailyLeaderboard();
+  const todaysDateKey = getTodaysDateKey();
+  const { entries: dailyPlayers, loading: leaderboardLoading } = useDailyLeaderboard(todaysDateKey);
   const dailyPlayerCount = dailyPlayers.length;
   
   useEffect(() => {
@@ -203,11 +204,11 @@ export default function Home() {
                   <AccordionItem value="leaderboard" className="border-none">
                     <AccordionTrigger className="p-0 [&[data-state=open]>svg]:hidden">
                       <div className="w-full">
-                        <DailyLeaderboard date={getTodaysDateKey()} isCollapsible={true} />
+                        <DailyLeaderboard date={todaysDateKey} isCollapsible={true} entries={dailyPlayers} loading={leaderboardLoading} />
                       </div>
                     </AccordionTrigger>
                     <AccordionContent>
-                      <DailyLeaderboard date={getTodaysDateKey()} />
+                      <DailyLeaderboard date={todaysDateKey} entries={dailyPlayers} loading={leaderboardLoading} />
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>

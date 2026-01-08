@@ -99,7 +99,8 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   useEffect(() => {
     if (isDailyChallenge) {
       const todayKey = getTodaysDateKey();
-      if (localStorage.getItem(`dailyChallengeCompletion:${todayKey}`) === "1") {
+      const completionKey = `dailyChallengeCompletion:${todayKey}`;
+      if (localStorage.getItem(completionKey) === "1") {
         setShowAlreadyCompleted(true);
         setIsComponentLoading(false);
         return;
@@ -225,12 +226,15 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     
     if (isDailyChallenge && user && firestore) {
         const todayKey = getTodaysDateKey();
-        localStorage.setItem(`dailyChallengeCompletion:${todayKey}`, "1");
+        const completionKey = `dailyChallengeCompletion:${todayKey}`;
+        if (localStorage.getItem(completionKey) === "1") return; // Already submitted
+        localStorage.setItem(completionKey, "1");
+
         const leaderboardRef = collection(firestore, `dailyLeaderboards/${todayKey}/entries`);
         try {
             await addDoc(leaderboardRef, {
                 userId: user.uid,
-                userName: user.displayName || 'Anonymous',
+                userName: user.displayName || `Player ${user.uid.slice(0, 4)}`,
                 timeTaken: duration,
                 hintsUsed: currentHintIndex > 0,
                 timestamp: serverTimestamp(),

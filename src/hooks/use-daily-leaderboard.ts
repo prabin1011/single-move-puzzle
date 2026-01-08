@@ -1,10 +1,9 @@
 
 'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { collection, onSnapshot, query, orderBy, DocumentData } from "firebase/firestore";
 import { useFirestore, useMemoFirebase } from "@/firebase";
-import { getTodaysDateKey } from "@/lib/daily-challenge";
 import type { WithId } from '@/firebase';
 
 export interface LeaderboardEntry {
@@ -15,25 +14,24 @@ export interface LeaderboardEntry {
   timestamp: any;
 }
 
-export function useDailyLeaderboard() {
+export function useDailyLeaderboard(dateKey: string) {
   const firestore = useFirestore();
   const [entries, setEntries] = useState<WithId<LeaderboardEntry>[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const todayKey = getTodaysDateKey();
-
   const leaderboardQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
+    if (!firestore || !dateKey) return null;
     return query(
-      collection(firestore, `dailyLeaderboards/${todayKey}/entries`),
+      collection(firestore, `dailyLeaderboards/${dateKey}/entries`),
       orderBy("timeTaken", "asc")
     );
-  }, [firestore, todayKey]);
+  }, [firestore, dateKey]);
 
 
   useEffect(() => {
     if (!leaderboardQuery) {
       setLoading(false);
+      setEntries([]);
       return;
     };
 

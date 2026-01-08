@@ -207,11 +207,14 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     return (
         <AlertDialog open={true}>
             <AlertDialogContent>
-                <AlertDialogHeader>
-                <AlertDialogTitle>Challenge Already Completed</AlertDialogTitle>
-                <AlertDialogDescription>
-                    You've already solved or attempted today's challenge. Come back tomorrow for a new one!
-                </AlertDialogDescription>
+                <AlertDialogHeader className="items-center text-center">
+                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-secondary overflow-hidden mb-4">
+                        <Image src="/logo.png" alt="One Move Puzzle Logo" width={64} height={64} />
+                    </div>
+                    <AlertDialogTitle>Challenge Already Completed</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        You've already solved or attempted today's challenge. Come back tomorrow for a new one!
+                    </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogAction asChild>

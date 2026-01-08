@@ -616,7 +616,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
           </div>
         )}
 
-      </CardFooter>
+      </CardContent>
 
       <CardFooter className="flex flex-col items-center justify-center p-6 space-y-4 min-h-[110px] relative">
         {gameState === "READY" && (

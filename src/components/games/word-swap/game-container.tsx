@@ -393,7 +393,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 onFail={() => {}}
                 isReadOnly={true}
                 relationType={puzzleConfig.relation}
-                showSolution={true}
             />
         )}
          <AlertDialog open={gameState === 'SOLVED_COMPLETE'}>

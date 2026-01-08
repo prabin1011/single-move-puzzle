@@ -354,7 +354,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 onSuccess={() => {}}
                 onFail={() => {}}
                 isReadOnly={true}
-                showSolution={true}
             />
         )}
         { gameState === 'READY' && (

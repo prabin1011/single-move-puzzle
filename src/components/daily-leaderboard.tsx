@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useEffect, useMemo } from 'react';
 import { DailyChallengeCountdown } from './daily-challenge-countdown';
+import { cn } from '@/lib/utils';
 
 interface DailyLeaderboardProps {
   date: string;

@@ -395,16 +395,9 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
             </AlertDialogHeader>
             <AlertDialogFooter className="pt-4 flex flex-col gap-2">
                  {isDailyChallenge ? (
-                    <>
-                        <div className="text-center p-4 rounded-lg bg-secondary">
-                            <h3 className="font-bold font-headline text-lg">Today's Stats</h3>
-                            <p className="text-muted-foreground text-sm mt-1">{snippet}</p>
-                            <DailyChallengeCountdown />
-                        </div>
-                        <Button asChild size="lg" className="w-full">
-                            <Link href="/" onClick={handleBackToHome}>Back to Home</Link>
-                        </Button>
-                    </>
+                    <Button asChild size="lg" className="w-full">
+                        <Link href="/" onClick={handleBackToHome}>Back to Home</Link>
+                    </Button>
                 ) : (
                     <Button
                         onClick={handleNextLevel}
@@ -429,11 +422,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter className="pt-4 flex flex-col gap-2">
-                    <div className="text-center p-4 rounded-lg bg-secondary">
-                        <h3 className="font-bold font-headline text-lg">Today's Stats</h3>
-                         <p className="text-muted-foreground text-sm mt-1">{snippet}</p>
-                        <DailyChallengeCountdown />
-                    </div>
                     <Button asChild size="lg" className="w-full">
                         <Link href="/" onClick={handleBackToHome}>Back to Home</Link>
                     </Button>

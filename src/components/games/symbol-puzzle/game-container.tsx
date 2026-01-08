@@ -27,7 +27,6 @@ import { cn } from '@/lib/utils';
 import { trackEvent } from '@/lib/analytics';
 import { useGameTimer } from "@/hooks/use-game-timer";
 import { getTodaysDateKey } from '@/lib/daily-challenge';
-import { DailyLeaderboard } from '@/components/daily-leaderboard';
 
 type GameState = 'READY' | 'PLAYING' | 'SOLVED_VISUALIZING' | 'SOLVED_COMPLETE' | 'FAILED' | 'GAME_OVER' | 'ALL_LEVELS_COMPLETE';
 
@@ -369,12 +368,9 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
             </AlertDialogHeader>
             <AlertDialogFooter className="pt-4 flex flex-col gap-2">
                 {isDailyChallenge ? (
-                     <>
-                        <DailyLeaderboard date={getTodaysDateKey()} currentUserTime={getDuration()} />
-                        <Button asChild size="lg" className="w-full">
-                            <Link href="/" onClick={handleBackToHome}>Back to Home</Link>
-                        </Button>
-                    </>
+                    <Button asChild size="lg" className="w-full">
+                        <Link href="/" onClick={handleBackToHome}>Back to Home</Link>
+                    </Button>
                 ) : (
                     <Button
                     onClick={handleNextLevel}
@@ -400,7 +396,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter className="pt-4 flex flex-col gap-2">
-                    <DailyLeaderboard date={getTodaysDateKey()} />
                     <Button asChild size="lg" className="w-full">
                         <Link href="/" onClick={handleBackToHome}>Back to Home</Link>
                     </Button>
@@ -453,5 +448,3 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     </Card>
   );
 }
-
-    

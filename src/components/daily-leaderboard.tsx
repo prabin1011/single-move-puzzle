@@ -12,17 +12,20 @@ import { cn } from '@/lib/utils';
 
 interface DailyLeaderboardProps {
   date: string;
-  currentUserTime?: number;
   isCollapsible?: boolean;
 }
 
-export function DailyLeaderboard({ date, currentUserTime, isCollapsible = false }: DailyLeaderboardProps) {
+export function DailyLeaderboard({ date, isCollapsible = false }: DailyLeaderboardProps) {
   const firestore = useFirestore();
   const { user } = useUser();
-  const leaderboardCollectionRef = collection(firestore, `dailyLeaderboards/${date}/entries`);
+  const leaderboardCollectionRef = useMemoFirebase(() => {
+      if (!firestore) return null;
+      return collection(firestore, `dailyLeaderboards/${date}/entries`);
+  }, [firestore, date]);
 
   // Memoize the query to prevent re-renders
   const leaderboardQuery = useMemoFirebase(() => {
+    if (!leaderboardCollectionRef) return null;
     return query(leaderboardCollectionRef, orderBy('timeTaken', 'asc'), limit(10));
   }, [leaderboardCollectionRef]);
 
@@ -32,25 +35,6 @@ export function DailyLeaderboard({ date, currentUserTime, isCollapsible = false 
     timeTaken: number;
     hintsUsed: boolean;
   }>(leaderboardQuery);
-
-  const hasUserSubmitted = useMemo(() => {
-    if (!user || !entries) return false;
-    return entries.some(entry => entry.userId === user.uid);
-  }, [user, entries]);
-
-  // Submit score for the current user if they have a time and haven't submitted yet
-  useEffect(() => {
-    if (currentUserTime && user && !hasUserSubmitted && firestore) {
-      const entry = {
-        userId: user.uid,
-        userName: user.displayName || 'Anonymous',
-        timeTaken: currentUserTime,
-        hintsUsed: false, // Assuming no hints for now
-        timestamp: new Date(),
-      };
-      addDoc(leaderboardCollectionRef, entry);
-    }
-  }, [currentUserTime, user, hasUserSubmitted, leaderboardCollectionRef, firestore]);
 
   if (isCollapsible) {
     return (

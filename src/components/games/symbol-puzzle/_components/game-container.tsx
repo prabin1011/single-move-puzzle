@@ -18,7 +18,7 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { generateSymbolPuzzle, getSymbolLevelConfig, getSymbolHints, type SymbolPuzzle, TOTAL_SYMBOL_LEVELS } from '@/lib/symbol-puzzles';
-import PuzzleBoard from '@/components/games/symbol-puzzle/puzzle-board';
+import PuzzleBoard from '../puzzle-board';
 import { Loader2, RefreshCw, Info, Play, ArrowRight, PartyPopper, Sigma } from 'lucide-react';
 import { useSound } from '@/contexts/sound-context';
 import { playSound } from '@/lib/sounds';
@@ -26,7 +26,8 @@ import { cn } from '@/lib/utils';
 import { trackEvent } from '@/lib/analytics';
 import { useGameTimer } from "@/hooks/use-game-timer";
 import { getTodaysDateKey } from '@/lib/daily-challenge';
-import { DailyLeaderboard } from '@/components/daily-leaderboard';
+import { useUser, useFirestore } from "@/firebase";
+import { addDoc, collection } from "firebase/firestore";
 
 type GameState = 'READY' | 'PLAYING' | 'SOLVED_VISUALIZING' | 'SOLVED_COMPLETE' | 'FAILED' | 'GAME_OVER' | 'ALL_LEVELS_COMPLETE';
 
@@ -50,6 +51,8 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const [currentHint, setCurrentHint] = useState('');
   const { time, reset: resetTimer, getDuration } = useGameTimer(gameState === 'PLAYING');
   const [showAlreadyCompleted, setShowAlreadyCompleted] = useState(false);
+  const { user } = useUser();
+  const firestore = useFirestore();
 
   // Load progress on mount
   useEffect(() => {
@@ -112,16 +115,23 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   }, [level, isLoading, highestLevel, isDailyChallenge]);
 
 
-  const handleSuccess = () => {
+  const handleSuccess = async () => {
     playSound('success', isSoundOn);
     setGameState('SOLVED_VISUALIZING');
     const duration = getDuration();
     trackEvent('game_level_complete', { game: 'symbol-puzzle', level: level + 1 });
     
-    if (isDailyChallenge) {
+    if (isDailyChallenge && user && firestore) {
         const todayKey = getTodaysDateKey();
         localStorage.setItem(`dailyChallengeCompletion:${todayKey}`, "1");
-        // TODO: Save score to Firestore
+        const leaderboardRef = collection(firestore, `dailyLeaderboards/${todayKey}/entries`);
+        await addDoc(leaderboardRef, {
+            userId: user.uid,
+            userName: user.displayName || 'Anonymous',
+            timeTaken: duration,
+            hintsUsed: currentHint !== '',
+            timestamp: new Date(),
+        });
     }
     
     setTimeout(() => {
@@ -188,7 +198,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   }
   
   const handleStart = () => {
-    playSound("ui", isSoundOn);
+    playSound("start", isSoundOn);
     trackEvent('puzzle_start', { game: 'symbol-puzzle', level: level + 1 });
     setGameState("PLAYING");
     resetTimer();
@@ -363,17 +373,14 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 {isDailyChallenge ? "Challenge Complete!" : `Level ${effectiveLevel + 1} Complete!`}
               </AlertDialogTitle>
               <AlertDialogDescription className="text-lg text-muted-foreground !mt-2">
-                {isDailyChallenge ? `You solved it in ${getDuration()} seconds!` : "Excellent! You found the logical flaw."}
+                {isDailyChallenge ? "Your score has been submitted." : "Excellent! You found the logical flaw."}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="pt-4 flex flex-col gap-2">
                 {isDailyChallenge ? (
-                     <>
-                        <DailyLeaderboard date={getTodaysDateKey()} currentUserTime={getDuration()} />
-                        <Button asChild size="lg" className="w-full">
-                            <Link href="/" onClick={handleBackToHome}>Back to Home</Link>
-                        </Button>
-                    </>
+                    <Button asChild size="lg" className="w-full">
+                        <Link href="/" onClick={handleBackToHome}>Back to Home</Link>
+                    </Button>
                 ) : (
                     <Button
                     onClick={handleNextLevel}
@@ -399,7 +406,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter className="pt-4 flex flex-col gap-2">
-                    <DailyLeaderboard date={getTodaysDateKey()} />
                     <Button asChild size="lg" className="w-full">
                         <Link href="/" onClick={handleBackToHome}>Back to Home</Link>
                     </Button>
@@ -452,5 +458,3 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     </Card>
   );
 }
-
-    

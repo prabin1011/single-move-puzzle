@@ -27,7 +27,8 @@ import { cn } from '@/lib/utils';
 import { trackEvent } from '@/lib/analytics';
 import { useGameTimer } from "@/hooks/use-game-timer";
 import { getTodaysDateKey } from '@/lib/daily-challenge';
-import { DailyChallengeCountdown } from '@/components/daily-challenge-countdown';
+import { useUser, useFirestore } from "@/firebase";
+import { addDoc, collection } from "firebase/firestore";
 
 type GameState = 'READY' | 'PLAYING' | 'SOLVED_VISUALIZING' | 'SOLVED_COMPLETE' | 'FAILED' | 'GAME_OVER' | 'ALL_LEVELS_COMPLETE';
 
@@ -58,9 +59,11 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const [retryCount, setRetryCount] = useState(0);
   const { isSoundOn } = useSound();
   const [currentHint, setCurrentHint] = useState('');
-  const { time, reset: resetTimer } = useGameTimer(gameState === 'PLAYING');
+  const { time, reset: resetTimer, getDuration } = useGameTimer(gameState === 'PLAYING');
   const [showAlreadyCompleted, setShowAlreadyCompleted] = useState(false);
   const [snippet, setSnippet] = useState('');
+  const { user } = useUser();
+  const firestore = useFirestore();
 
   useEffect(() => {
     setSnippet(alluringSnippets[Math.floor(Math.random() * alluringSnippets.length)]);
@@ -128,14 +131,23 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   }, [level, retryCount, dailyLevel, isDailyChallenge, puzzleSeed]);
 
 
-  const handleSuccess = () => {
+  const handleSuccess = async () => {
     playSound('success', isSoundOn);
     setGameState('SOLVED_VISUALIZING');
+    const duration = getDuration();
     trackEvent('game_level_complete', { game: 'word-swap', level: level + 1 });
 
-    if (isDailyChallenge) {
+    if (isDailyChallenge && user && firestore) {
         const todayKey = getTodaysDateKey();
         localStorage.setItem(`dailyChallengeCompletion:${todayKey}`, '1');
+        const leaderboardRef = collection(firestore, `dailyLeaderboards/${todayKey}/entries`);
+        await addDoc(leaderboardRef, {
+            userId: user.uid,
+            userName: user.displayName || 'Anonymous',
+            timeTaken: duration,
+            hintsUsed: currentHint !== '',
+            timestamp: new Date(),
+        });
     }
 
     setTimeout(() => {
@@ -204,7 +216,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   }
   
   const handleStart = () => {
-    playSound("ui", isSoundOn);
+    playSound("start", isSoundOn);
     trackEvent('puzzle_start', { game: 'word-swap', level: level + 1 });
     setGameState("PLAYING");
     resetTimer();
@@ -390,7 +402,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 {isDailyChallenge ? "Challenge Complete!" : `Level ${effectiveLevel + 1} Complete!`}
               </AlertDialogTitle>
               <AlertDialogDescription className="text-lg text-muted-foreground !mt-2">
-                {isDailyChallenge ? "Great job! Your score has been submitted." : "Excellent! You fixed the word pairs."}
+                {isDailyChallenge ? "Your score has been submitted." : "Excellent! You fixed the word pairs."}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="pt-4 flex flex-col gap-2">

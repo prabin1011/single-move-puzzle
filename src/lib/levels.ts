@@ -1,6 +1,6 @@
 
 import { PlaceHolderImages } from './placeholder-images';
-import { generateHint } from './hint-engine';
+import { generateHints } from './hint-engine';
 
 export interface Level {
   id: string;
@@ -676,43 +676,69 @@ export function getImageUrl(
 }
 
 
-export const generateRandomSwap = (gridSize: number): [number, number] => {
+export const generateRandomSwap = (gridSize: number, seed?: number): [number, number] => {
   const totalTiles = gridSize * gridSize;
-  let index1 = Math.floor(Math.random() * totalTiles);
-  let index2 = Math.floor(Math.random() * totalTiles);
+  
+  const rng = seed ? mulberry32(seed) : Math.random;
+
+  let index1 = Math.floor(rng() * totalTiles);
+  let index2 = Math.floor(rng() * totalTiles);
   while (index1 === index2) {
-    index2 = Math.floor(Math.random() * totalTiles);
+    index2 = Math.floor(rng() * totalTiles);
   }
   return [index1, index2];
 };
 
-export const generatePuzzle = (imageId: string, grid: number, retryCount = 0) => {
+// mulberry32, a simple PRNG
+function mulberry32(a: number) {
+    return function() {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    }
+}
+
+export const generatePuzzle = (imageId: string, grid: number, seed?: string) => {
   const level = allLevels.find(l => l.imageId === imageId);
   if (!level) {
     throw new Error(`Could not find level with imageId: ${imageId}`);
   }
   
-  // Use a combination of round and retry count to vary images even on retry
-  const round = typeof window !== 'undefined' ? parseInt(localStorage.getItem('gameRound') || '0', 10) : 0;
-  const effectiveRound = round + retryCount;
+  let round = 0;
+  let numericSeed: number | undefined = undefined;
+
+  if (seed) {
+    // Deterministic generation for daily challenges
+    let h = 1779033703, i, c;
+    for (i = 0; i < seed.length; i++) {
+        c = seed.charCodeAt(i);
+        h = (h ^ c) * 16777619;
+    }
+    numericSeed = h;
+    round = numericSeed;
+  } else if (typeof window !== 'undefined') {
+    // Random round for regular play
+    round = parseInt(localStorage.getItem('gameRound') || '0', 10);
+  }
 
   const { url: imageUrl, hint: imageHint, facts } = getImageUrl(
     level.imageId,
     level.variations,
-    effectiveRound
+    round
   );
   
   const solvedBoard = Array.from({ length: grid * grid }, (_, i) => i);
   const scrambledBoard = [...solvedBoard];
 
-  const swappedIndices = generateRandomSwap(grid);
+  const swappedIndices = generateRandomSwap(grid, numericSeed);
   const [index1, index2] = swappedIndices;
   [scrambledBoard[index1], scrambledBoard[index2]] = [
     scrambledBoard[index2],
     scrambledBoard[index1],
   ];
 
-  const proceduralHint = generateHint(grid, swappedIndices);
+  const proceduralHints = generateHints(grid, swappedIndices);
 
   return {
     solvedBoard,
@@ -720,7 +746,7 @@ export const generatePuzzle = (imageId: string, grid: number, retryCount = 0) =>
     swapped: swappedIndices,
     imageUrl: imageUrl,
     imageHint: imageHint,
-    hint: proceduralHint,
-    facts: facts, // Pass the selected facts to the puzzle
+    hints: proceduralHints,
+    facts: facts,
   };
 };

@@ -1,3 +1,4 @@
+
 /**
  * Converts a tile's linear index into its row and column.
  * Rows and columns are 1-based for user-friendliness.
@@ -63,49 +64,44 @@ function findFactors(num: number): [number, number][] {
     return factors;
 }
 
-
 /**
  * Generates a procedural hint for one of the swapped tiles.
  * @param grid The size of the puzzle grid.
  * @param swappedIndices An array containing the two swapped indices.
- * @returns A string containing the hint.
+ * @returns An array of two hint strings.
  */
-export function generateHint(grid: number, swappedIndices: number[]): string {
-  // Randomly pick one of the two swapped tiles to give a hint for.
+export function generateHints(grid: number, swappedIndices: number[]): string[] {
+  // Pick one of the two swapped tiles to give a hint for.
   const targetIndex = swappedIndices[Math.floor(Math.random() * 2)];
   const { row, col } = getCoords(targetIndex, grid);
+  
+  const hints: string[] = [];
 
-  // Randomly choose a hint type.
-  const hintType = Math.floor(Math.random() * 4);
-
-  switch (hintType) {
-    // Case 0: Direct coordinate hint.
-    case 0:
-      return `One of the tiles is in Row ${row}, Column ${col}.`;
-
-    // Case 1: Mathematical hint for the row.
-    case 1:
-      return `For one tile: ${generateMathProblem(row, 'Row')}.`;
-
-    // Case 2: Mathematical hint for the column.
-    case 2:
-      return `For one tile: ${generateMathProblem(col, 'Column')}.`;
-    
-    // Case 3: Positional hint
-    case 3:
-      const positions = [];
-      if (row === 1) positions.push('top');
-      if (row === grid) positions.push('bottom');
-      if (col === 1) positions.push('left');
-      if (col === grid) positions.push('right');
-      if (positions.length > 0) {
-        const side = positions[Math.floor(Math.random() * positions.length)];
-        return `One of the tiles is on the ${side} edge of the puzzle.`;
-      }
-      // Fallback if not on an edge
-      return `One tile is in the upper half of the puzzle (Row <= ${Math.ceil(grid/2)}).`;
-
-    default:
-      return `One of the tiles is in Row ${row}, Column ${col}.`;
+  // Hint 1: Vague positional hint
+  const positions = [];
+  if (row === 1) positions.push('top');
+  if (row === grid) positions.push('bottom');
+  if (col === 1) positions.push('left');
+  if (col === grid) positions.push('right');
+  
+  if (positions.length > 0) {
+    const side = positions[Math.floor(Math.random() * positions.length)];
+    hints.push(`One of the tiles is on the ${side} edge of the puzzle.`);
+  } else {
+    // Fallback if not on an edge
+    hints.push(`One tile is in the upper half of the puzzle (Row <= ${Math.ceil(grid/2)}).`);
   }
+
+  // Hint 2: Specific quadrant hint
+  const getQuadrant = (r: number, c: number, g: number) => {
+    const mid = Math.ceil(g / 2);
+    if (r <= mid && c <= mid) return "top-left";
+    if (r <= mid && c > mid) return "top-right";
+    if (r > mid && c <= mid) return "bottom-left";
+    return "bottom-right";
+  };
+  const quadrant = getQuadrant(row, col, grid);
+  hints.push(`A swapped tile can be found in the ${quadrant} quadrant.`);
+
+  return hints;
 }

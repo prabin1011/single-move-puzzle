@@ -1,21 +1,85 @@
-// Simple pseudo-random number generator based on a seed (date string)
-export const seededRandom = (seed: string) => {
-  let h1 = 1779033703, h2 = 3144134277,
-      h3 = 1013904242, h4 = 2773480762;
-  for (let i = 0, k; i < seed.length; i++) {
-      k = seed.charCodeAt(i);
-      h1 = h2 ^ Math.imul(h1, k);
-      h2 = h3 ^ Math.imul(h2, k);
-      h3 = h4 ^ Math.imul(h3, k);
-      h4 = h1 ^ Math.imul(h4, k);
-  }
-  return (h1>>>0) / 4294967296;
+
+// src/lib/daily-challenge.ts
+
+export type DailyGame = "landmark" | "math" | "patterns" | "symbol-puzzle";
+
+// Choose ONE. If you want the same puzzle globally, use UTC.
+// If you want it to follow a specific timezone, set it here.
+const DAILY_TIMEZONE: "UTC" = "UTC";
+
+export function getTodaysDateKey(): string {
+  const now = new Date();
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: DAILY_TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(now);
+
+  const y = parts.find(p => p.type === "year")?.value ?? "0000";
+  const m = parts.find(p => p.type === "month")?.value ?? "00";
+  const d = parts.find(p => p.type === "day")?.value ?? "00";
+  return `${y}-${m}-${d}`; // deterministic day key
 }
 
-export const getTodaysDateKey = () => {
-  const now = new Date();
-  const year = now.getUTCFullYear();
-  const month = String(now.getUTCMonth() + 1).padStart(2, '0');
-  const day = String(now.getUTCDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
+// Small deterministic hash (FNV-1a 32-bit)
+function hash32(str: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return h >>> 0;
+}
+
+// Deterministic pseudo-random from a uint32 seed
+function mulberry32(seed: number) {
+  return () => {
+    let t = (seed += 0x6d2b79f5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+export function pickDailyChallenge(args: {
+  dateKey?: string;                 // for testing
+  landmarkLevelCount: number;       // levels.length
+  mathLevelCount: number;           // 50
+  patternsLevelCount: number;       // 50
+  symbolLevelCount: number;         // TOTAL_SYMBOL_LEVELS
+}) {
+  const dateKey = args.dateKey ?? getTodaysDateKey();
+  const seedBase = hash32(`daily:${dateKey}`);
+
+  const games: DailyGame[] = ["landmark", "math", "patterns", "symbol-puzzle"]; // word-swap excluded
+  const rng = mulberry32(seedBase);
+
+  const game = games[Math.floor(rng() * games.length)];
+
+  const maxByGame: Record<DailyGame, number> = {
+    landmark: Math.max(1, args.landmarkLevelCount),
+    math: Math.max(1, args.mathLevelCount),
+    patterns: Math.max(1, args.patternsLevelCount),
+    "symbol-puzzle": Math.max(1, args.symbolLevelCount),
+  };
+
+  const max = maxByGame[game];
+
+  // Pick from 40–50 range, or highest available if fewer.
+  // Levels are 0-indexed in your containers.
+  const start = 39; // = level 40 (human)
+  const end = 49;   // = level 50 (human)
+
+  const clampedStart = Math.min(start, max - 1);
+  const clampedEnd = Math.min(end, max - 1);
+
+  // deterministic pick inside [clampedStart..clampedEnd]
+  const span = Math.max(1, clampedEnd - clampedStart + 1);
+  const level = clampedStart + Math.floor(rng() * span);
+
+  // A stable seed string (used by game containers to derive numeric seed)
+  const puzzleSeed = `daily:${dateKey}:${game}:L${level}`;
+
+  return { dateKey, game, level, puzzleSeed };
+}

@@ -21,7 +21,7 @@ import { levels as landmarkLevels } from '@/lib/levels';
 import { mathLevels } from '@/lib/math-puzzles';
 import { patternLevels } from '@/lib/pattern-puzzles';
 import { wordSwapLevels } from '@/lib/word-swap-puzzles';
-import { symbolLevels } from '@/lib/symbol-puzzles';
+import { TOTAL_SYMBOL_LEVELS } from '@/lib/symbol-puzzles';
 import type { Level } from '@/lib/levels';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { SoundToggle } from '@/components/sound-toggle';

@@ -46,6 +46,8 @@ import { useSound } from "@/contexts/sound-context";
 import { trackEvent } from "@/lib/analytics";
 import { getTodaysDateKey } from "@/lib/daily-challenge";
 import { DailyLeaderboard } from "@/components/daily-leaderboard";
+import { useUser, useFirestore } from "@/firebase";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 
 
 function shuffle<T>(array: T[]): T[] {
@@ -82,6 +84,8 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const { isSoundOn } = useSound();
   const [showAlreadyCompleted, setShowAlreadyCompleted] = useState(false);
   const [currentHintIndex, setCurrentHintIndex] = useState(0);
+  const { user } = useUser();
+  const firestore = useFirestore();
 
   const [gameState, setGameState] = useState<
     "READY" | "PREVIEW" | "PLAYING" | "SOLVED_VISUALIZING" | "SOLVED_COMPLETE" | "FAILED" | "GAME_OVER" | "ALL_LEVELS_COMPLETE"
@@ -220,10 +224,17 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     const duration = getDuration();
     trackEvent('game_level_complete', { game: 'landmark', level: levelIndex + 1 });
     
-    if (isDailyChallenge) {
+    if (isDailyChallenge && user && firestore) {
         const todayKey = getTodaysDateKey();
         localStorage.setItem(`dailyChallengeCompletion:${todayKey}`, "1");
-        // TODO: Save score to Firestore
+        const leaderboardRef = collection(firestore, `dailyLeaderboards/${todayKey}/entries`);
+        await addDoc(leaderboardRef, {
+            userId: user.uid,
+            userName: user.displayName || 'Anonymous',
+            timeTaken: duration,
+            hintsUsed: currentHintIndex > 0,
+            timestamp: serverTimestamp(),
+        });
     }
     
     setTimeout(() => {
@@ -524,7 +535,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 {isDailyChallenge ? "Challenge Complete!" : `Level ${levelIndex + 1} Complete!`}
               </AlertDialogTitle>
               <AlertDialogDescription className="text-lg text-muted-foreground !mt-2">
-                {isDailyChallenge ? `You solved it in ${getDuration()} seconds!` : `Well done!`}
+                {isDailyChallenge ? "Your score has been submitted." : `Well done!`}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <div

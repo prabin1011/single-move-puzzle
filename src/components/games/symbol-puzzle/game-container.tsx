@@ -27,6 +27,8 @@ import { cn } from '@/lib/utils';
 import { trackEvent } from '@/lib/analytics';
 import { useGameTimer } from "@/hooks/use-game-timer";
 import { getTodaysDateKey } from '@/lib/daily-challenge';
+import { useUser, useFirestore } from "@/firebase";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 
 type GameState = 'READY' | 'PLAYING' | 'SOLVED_VISUALIZING' | 'SOLVED_COMPLETE' | 'FAILED' | 'GAME_OVER' | 'ALL_LEVELS_COMPLETE';
 
@@ -50,6 +52,8 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const [currentHint, setCurrentHint] = useState('');
   const { time, reset: resetTimer, getDuration } = useGameTimer(gameState === 'PLAYING');
   const [showAlreadyCompleted, setShowAlreadyCompleted] = useState(false);
+  const { user } = useUser();
+  const firestore = useFirestore();
 
   // Load progress on mount
   useEffect(() => {
@@ -112,16 +116,23 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   }, [level, isLoading, highestLevel, isDailyChallenge]);
 
 
-  const handleSuccess = () => {
+  const handleSuccess = async () => {
     playSound('success', isSoundOn);
     setGameState('SOLVED_VISUALIZING');
     const duration = getDuration();
     trackEvent('game_level_complete', { game: 'symbol-puzzle', level: level + 1 });
     
-    if (isDailyChallenge) {
+    if (isDailyChallenge && user && firestore) {
         const todayKey = getTodaysDateKey();
         localStorage.setItem(`dailyChallengeCompletion:${todayKey}`, "1");
-        // TODO: Save score to Firestore
+        const leaderboardRef = collection(firestore, `dailyLeaderboards/${todayKey}/entries`);
+        await addDoc(leaderboardRef, {
+            userId: user.uid,
+            userName: user.displayName || 'Anonymous',
+            timeTaken: duration,
+            hintsUsed: currentHint !== '',
+            timestamp: serverTimestamp(),
+        });
     }
     
     setTimeout(() => {
@@ -188,7 +199,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   }
   
   const handleStart = () => {
-    playSound("ui", isSoundOn);
+    playSound("start", isSoundOn);
     trackEvent('puzzle_start', { game: 'symbol-puzzle', level: level + 1 });
     setGameState("PLAYING");
     resetTimer();
@@ -363,7 +374,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 {isDailyChallenge ? "Challenge Complete!" : `Level ${effectiveLevel + 1} Complete!`}
               </AlertDialogTitle>
               <AlertDialogDescription className="text-lg text-muted-foreground !mt-2">
-                {isDailyChallenge ? `You solved it in ${getDuration()} seconds!` : "Excellent! You found the logical flaw."}
+                {isDailyChallenge ? "Your score has been submitted." : "Excellent! You found the logical flaw."}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="pt-4 flex flex-col gap-2">

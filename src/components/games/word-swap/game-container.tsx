@@ -28,7 +28,7 @@ import { trackEvent } from '@/lib/analytics';
 import { useGameTimer } from "@/hooks/use-game-timer";
 import { getTodaysDateKey } from '@/lib/daily-challenge';
 import { useUser, useFirestore } from "@/firebase";
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 
 type GameState = 'READY' | 'PLAYING' | 'SOLVED_VISUALIZING' | 'SOLVED_COMPLETE' | 'FAILED' | 'GAME_OVER' | 'ALL_LEVELS_COMPLETE';
 
@@ -146,7 +146,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
             userName: user.displayName || 'Anonymous',
             timeTaken: duration,
             hintsUsed: currentHint !== '',
-            timestamp: new Date(),
+            timestamp: serverTimestamp(),
         });
     }
 
@@ -374,7 +374,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                     const allBanks: Record<string, { pairs: { left: string, right: string }[] }> = {
                         'syn_easy': bankSynEasy, 'syn_verbs': bankSynVerbs,
                         'syn_emotion': bankSynEmotion, 'ant_basic': bankAntBasic,
-                        'ant_emotion': bankAntEmotion, 'ant_abstract': bankAntAbstract,
+                        'ant_emotion': bankAntEmotion, 'ant_abstract': bankAbstract,
                         'cat_objects': bankCategoryObjects, 'cat_time_place': bankCategoryTimePlace,
                         'cat_abstract': bankCategoryAbstract, 'plural_forms': bankPlural,
                         'past_tense': bankPastTense, 'noun_adj': bankNounAdj,

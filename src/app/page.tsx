@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth, useUser } from '@/firebase';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
-import { Loader2, Landmark, Calculator, Shapes, BookText, Sigma, Flame } from 'lucide-react';
+import { Loader2, Landmark, Calculator, Shapes, BookText, Sigma, Flame, Trophy } from 'lucide-react';
 import { levels } from '@/lib/levels';
 import type { Level } from '@/lib/levels';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -184,6 +184,12 @@ export default function Home() {
                 <div className="flex-grow text-center sm:text-left">
                   <h3 className="font-bold font-headline text-lg">Landmark Puzzle</h3>
                   <p className="text-sm text-muted-foreground">Guess the swapped tiles in famous landmark photos.</p>
+                  {landmarkHighestLevel > 0 && (
+                    <div className="text-xs text-muted-foreground/80 mt-1 font-semibold flex items-center justify-center sm:justify-start gap-1">
+                      <Trophy className="h-3 w-3" />
+                      Highest Level: {landmarkHighestLevel}
+                    </div>
+                  )}
                 </div>
                 <div className="flex flex-col space-y-2 w-full sm:w-auto">
                   <Button onClick={() => handleNewGame('landmark')} className="w-full">New Game</Button>
@@ -203,6 +209,12 @@ export default function Home() {
                 <div className="flex-grow text-center sm:text-left">
                   <h3 className="font-bold font-headline text-lg">Math Puzzle</h3>
                   <p className="text-sm text-muted-foreground">Solve the math equation in just one move.</p>
+                  {mathHighestLevel > 0 && (
+                     <div className="text-xs text-muted-foreground/80 mt-1 font-semibold flex items-center justify-center sm:justify-start gap-1">
+                      <Trophy className="h-3 w-3" />
+                      Highest Level: {mathHighestLevel}
+                    </div>
+                  )}
                 </div>
                 <div className="flex flex-col space-y-2 w-full sm:w-auto">
                   <Button onClick={() => handleNewGame('math')} className="w-full">New Game</Button>
@@ -222,6 +234,12 @@ export default function Home() {
                 <div className="flex-grow text-center sm:text-left">
                   <h3 className="font-bold font-headline text-lg">Patterns Puzzle</h3>
                   <p className="text-sm text-muted-foreground">Fix the broken pattern in just one move.</p>
+                  {patternsHighestLevel > 0 && (
+                    <div className="text-xs text-muted-foreground/80 mt-1 font-semibold flex items-center justify-center sm:justify-start gap-1">
+                      <Trophy className="h-3 w-3" />
+                      Highest Level: {patternsHighestLevel}
+                    </div>
+                  )}
                 </div>
                 <div className="flex flex-col space-y-2 w-full sm:w-auto">
                   <Button onClick={() => handleNewGame('patterns')} className="w-full">New Game</Button>
@@ -241,6 +259,12 @@ export default function Home() {
                 <div className="flex-grow text-center sm:text-left">
                   <h3 className="font-bold font-headline text-lg">Word Swap Puzzle</h3>
                   <p className="text-sm text-muted-foreground">Fix the broken word relationships in one move.</p>
+                   {wordSwapHighestLevel > 0 && (
+                    <div className="text-xs text-muted-foreground/80 mt-1 font-semibold flex items-center justify-center sm:justify-start gap-1">
+                      <Trophy className="h-3 w-3" />
+                      Highest Level: {wordSwapHighestLevel}
+                    </div>
+                  )}
                 </div>
                 <div className="flex flex-col space-y-2 w-full sm:w-auto">
                   <Button onClick={() => handleNewGame('word-swap')} className="w-full">New Game</Button>
@@ -260,6 +284,12 @@ export default function Home() {
                 <div className="flex-grow text-center sm:text-left">
                   <h3 className="font-bold font-headline text-lg">Symbol Puzzle</h3>
                   <p className="text-sm text-muted-foreground">Restore the logical sequence of abstract symbols.</p>
+                  {symbolHighestLevel > 0 && (
+                    <div className="text-xs text-muted-foreground/80 mt-1 font-semibold flex items-center justify-center sm:justify-start gap-1">
+                      <Trophy className="h-3 w-3" />
+                      Highest Level: {symbolHighestLevel}
+                    </div>
+                  )}
                 </div>
                 <div className="flex flex-col space-y-2 w-full sm:w-auto">
                   <Button onClick={() => handleNewGame('symbol-puzzle')} className="w-full">New Game</Button>
@@ -278,7 +308,7 @@ export default function Home() {
         </Card>
 
         <footer className="w-full max-w-md mt-8 text-center">
-          <div className="flex justify-center items-center gap-4 text-sm text-muted-foreground">
+          <div className="flex justify-center items-center gap-4 text-xs text-muted-foreground">
             <Link href="/about" className="hover:text-primary transition-colors" onClick={() => trackEvent('navigate_to_legal', { page: 'about' })}>About</Link>
             <span className="opacity-50">|</span>
             <Link href="/privacy" className="hover:text-primary transition-colors" onClick={() => trackEvent('navigate_to_legal', { page: 'privacy' })}>Privacy</Link>

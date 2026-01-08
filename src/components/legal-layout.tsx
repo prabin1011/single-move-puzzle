@@ -13,11 +13,11 @@ export default function LegalLayout({ title, children }: LegalLayoutProps) {
     <main className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-6">
       <Card className="w-full max-w-3xl">
         <CardHeader>
-          <CardTitle className="text-3xl font-headline text-center">
+          <CardTitle className="text-2xl font-headline text-center">
             {title}
           </CardTitle>
         </CardHeader>
-        <CardContent className="prose prose-sm sm:prose-base dark:prose-invert max-w-none">
+        <CardContent className="prose prose-sm dark:prose-invert max-w-none">
           {children}
         </CardContent>
       </Card>

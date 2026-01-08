@@ -524,7 +524,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 {isDailyChallenge ? "Challenge Complete!" : `Level ${levelIndex + 1} Complete!`}
               </AlertDialogTitle>
               <AlertDialogDescription className="text-lg text-muted-foreground !mt-2">
-                {isDailyChallenge ? `You solved it in ${getDuration()} seconds!` : `Well done! You found the swaps for ${currentLevelData!.place}.`}
+                {isDailyChallenge ? `You solved it in ${getDuration()} seconds!` : `Well done!`}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <div

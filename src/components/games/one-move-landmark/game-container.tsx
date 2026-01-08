@@ -4,7 +4,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
-import PuzzleBoard from "../puzzle-board";
+import PuzzleBoard from "./puzzle-board";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -34,6 +34,7 @@ import {
   PartyPopper,
   Check,
   HelpCircle,
+  Trophy
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -192,11 +193,14 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     return (
         <AlertDialog open={true}>
             <AlertDialogContent>
-                <AlertDialogHeader>
-                <AlertDialogTitle>Challenge Already Completed</AlertDialogTitle>
-                <AlertDialogDescription>
-                    You've already solved or attempted today's challenge. Come back tomorrow for a new one!
-                </AlertDialogDescription>
+                <AlertDialogHeader className="items-center text-center">
+                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-secondary overflow-hidden mb-4">
+                        <Image src="/logo.png" alt="One Move Puzzle Logo" width={64} height={64} />
+                    </div>
+                    <AlertDialogTitle>Challenge Already Completed</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        You've already solved or attempted today's challenge. Come back tomorrow for a new one!
+                    </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogAction asChild>
@@ -521,7 +525,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 {isDailyChallenge ? "Challenge Complete!" : `Level ${levelIndex + 1} Complete!`}
               </AlertDialogTitle>
               <AlertDialogDescription className="text-lg text-muted-foreground !mt-2">
-                {isDailyChallenge ? `You solved it in ${getDuration()} seconds!` : `Well done! You found the swaps for ${currentLevelData!.place}.`}
+                {isDailyChallenge ? `You solved it in ${getDuration()} seconds!` : `Well done!`}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <div
@@ -715,3 +719,5 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     </Card>
   );
 }
+
+    

@@ -2,10 +2,10 @@
 "use client";
 
 import { useMemo } from "react";
-import LandmarkGame from "@/components/games/one-move-landmark/_components/game-container";
-import MathGame from "@/components/games/one-move-math/_components/game-container";
-import PatternsGame from "@/components/games/one-move-patterns/_components/game-container";
-import SymbolGame from "@/components/games/symbol-puzzle/_components/game-container";
+import LandmarkGame from "@/components/games/one-move-landmark/game-container";
+import MathGame from "@/components/games/one-move-math/game-container";
+import PatternsGame from "@/components/games/one-move-patterns/game-container";
+import SymbolGame from "@/components/games/symbol-puzzle/game-container";
 import { levels as landmarkLevels } from "@/lib/levels";
 import { TOTAL_SYMBOL_LEVELS } from "@/lib/symbol-puzzles";
 import { pickDailyChallenge, getTodaysDateKey } from "@/lib/daily-challenge";

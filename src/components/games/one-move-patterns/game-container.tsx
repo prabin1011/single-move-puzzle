@@ -19,8 +19,8 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { generatePatternPuzzle, getPatternPuzzleConfig, type PatternPuzzle, patternLevels } from '@/lib/pattern-puzzles';
-import PuzzleBoard from '../puzzle-board';
-import { Loader2, RefreshCw, CheckCircle, Info, Play, ArrowRight, PartyPopper, Shapes, Square, Circle, Triangle } from 'lucide-react';
+import PuzzleBoard from './puzzle-board';
+import { Loader2, RefreshCw, CheckCircle, Info, Play, ArrowRight, PartyPopper, Shapes, Square, Circle, Triangle, Trophy } from 'lucide-react';
 import { useSound } from '@/contexts/sound-context';
 import { playSound } from '@/lib/sounds';
 import { cn } from '@/lib/utils';
@@ -222,11 +222,14 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     return (
         <AlertDialog open={true}>
             <AlertDialogContent>
-                <AlertDialogHeader>
-                <AlertDialogTitle>Challenge Already Completed</AlertDialogTitle>
-                <AlertDialogDescription>
-                    You've already solved or attempted today's challenge. Come back tomorrow for a new one!
-                </AlertDialogDescription>
+                <AlertDialogHeader className="items-center text-center">
+                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-secondary overflow-hidden mb-4">
+                        <Image src="/logo.png" alt="One Move Puzzle Logo" width={64} height={64} />
+                    </div>
+                    <AlertDialogTitle>Challenge Already Completed</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        You've already solved or attempted today's challenge. Come back tomorrow for a new one!
+                    </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogAction asChild>
@@ -452,3 +455,5 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     </Card>
   );
 }
+
+    

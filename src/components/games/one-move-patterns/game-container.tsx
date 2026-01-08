@@ -128,13 +128,17 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
         const todayKey = getTodaysDateKey();
         localStorage.setItem(`dailyChallengeCompletion:${todayKey}`, "1");
         const leaderboardRef = collection(firestore, `dailyLeaderboards/${todayKey}/entries`);
-        await addDoc(leaderboardRef, {
-            userId: user.uid,
-            userName: user.displayName || 'Anonymous',
-            timeTaken: duration,
-            hintsUsed: currentHint !== '', // A simple check if a hint was generated
-            timestamp: serverTimestamp(),
-        });
+        try {
+            await addDoc(leaderboardRef, {
+                userId: user.uid,
+                userName: user.displayName || 'Anonymous',
+                timeTaken: duration,
+                hintsUsed: currentHint !== '', // A simple check if a hint was generated
+                timestamp: serverTimestamp(),
+            });
+        } catch (error) {
+            console.error("Failed to write leaderboard entry:", error);
+        }
     }
 
     setTimeout(() => {

@@ -177,7 +177,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   // Play a gentle chime whenever preview starts
   useEffect(() => {
     if (gameState === "PREVIEW") {
-      playSound("start", isSoundOn); // Use the calmer "start" sound
+      playSound("start", isSoundOn);
     }
   }, [gameState, isSoundOn]);
 
@@ -227,13 +227,17 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
         const todayKey = getTodaysDateKey();
         localStorage.setItem(`dailyChallengeCompletion:${todayKey}`, "1");
         const leaderboardRef = collection(firestore, `dailyLeaderboards/${todayKey}/entries`);
-        await addDoc(leaderboardRef, {
-            userId: user.uid,
-            userName: user.displayName || 'Anonymous',
-            timeTaken: duration,
-            hintsUsed: currentHintIndex > 0,
-            timestamp: serverTimestamp(),
-        });
+        try {
+            await addDoc(leaderboardRef, {
+                userId: user.uid,
+                userName: user.displayName || 'Anonymous',
+                timeTaken: duration,
+                hintsUsed: currentHintIndex > 0,
+                timestamp: serverTimestamp(),
+            });
+        } catch (error) {
+            console.error("Failed to write leaderboard entry:", error);
+        }
     }
     
     setTimeout(() => {
@@ -612,7 +616,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
           </div>
         )}
 
-      </CardContent>
+      </CardFooter>
 
       <CardFooter className="flex flex-col items-center justify-center p-6 space-y-4 min-h-[110px] relative">
         {gameState === "READY" && (

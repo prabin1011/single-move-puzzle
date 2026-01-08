@@ -13,8 +13,7 @@ import {
 } from "@/components/ui/accordion"
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAuth, useUser, useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, limit } from 'firebase/firestore';
+import { useAuth, useUser } from '@/firebase';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { Loader2, Landmark, Calculator, Shapes, BookText, Sigma, Flame, Trophy, Users } from 'lucide-react';
 import { levels as landmarkLevels } from '@/lib/levels';
@@ -31,6 +30,7 @@ import { trackEvent } from '@/lib/analytics';
 import { DailyChallengeCountdown } from '@/components/daily-challenge-countdown';
 import { DailyLeaderboard } from '@/components/daily-leaderboard';
 import { getTodaysDateKey } from '@/lib/daily-challenge';
+import { useDailyLeaderboard } from '@/hooks/use-daily-leaderboard';
 
 function shuffle<T>(array: T[]): T[] {
   let currentIndex = array.length,
@@ -54,7 +54,6 @@ function shuffle<T>(array: T[]): T[] {
 
 export default function Home() {
   const router = useRouter();
-  const firestore = useFirestore();
   const [landmarkHighestLevel, setLandmarkHighestLevel] = useState(0);
   const [mathHighestLevel, setMathHighestLevel] = useState(0);
   const [patternsHighestLevel, setPatternsHighestLevel] = useState(0);
@@ -65,15 +64,9 @@ export default function Home() {
   const { user, isUserLoading } = useUser();
   const { isSoundOn } = useSound();
 
-  const todaysDateKey = getTodaysDateKey();
-  const dailyLeaderboardCollectionRef = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return collection(firestore, `dailyLeaderboards/${todaysDateKey}/entries`);
-  }, [firestore, todaysDateKey]);
-
-  const { data: dailyPlayers } = useCollection(dailyLeaderboardCollectionRef);
-  const dailyPlayerCount = dailyPlayers?.length ?? 0;
-
+  const { entries: dailyPlayers, loading: leaderboardLoading } = useDailyLeaderboard();
+  const dailyPlayerCount = dailyPlayers.length;
+  
   useEffect(() => {
     if (isSoundOn) {
       playSound("start", true);
@@ -195,7 +188,7 @@ export default function Home() {
                      <div className="text-sm text-muted-foreground mt-1 font-semibold flex items-center justify-center sm:justify-center gap-2">
                         <div className="flex items-center gap-1">
                             <Users className="h-4 w-4" />
-                            <span>{dailyPlayerCount} {dailyPlayerCount === 1 ? 'Player' : 'Players'} Today</span>
+                            <span>{leaderboardLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : `${dailyPlayerCount} ${dailyPlayerCount === 1 ? 'Player' : 'Players'} Today`}</span>
                         </div>
                     </div>
                     <DailyChallengeCountdown />

@@ -1,14 +1,13 @@
 
 'use client';
 
-import { useCollection, useUser, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, limit, addDoc } from 'firebase/firestore';
+import { useUser } from '@/firebase';
 import { Loader2, ChevronDown } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useEffect, useMemo } from 'react';
 import { DailyChallengeCountdown } from './daily-challenge-countdown';
 import { cn } from '@/lib/utils';
+import { useDailyLeaderboard } from '@/hooks/use-daily-leaderboard';
 
 interface DailyLeaderboardProps {
   date: string;
@@ -16,25 +15,8 @@ interface DailyLeaderboardProps {
 }
 
 export function DailyLeaderboard({ date, isCollapsible = false }: DailyLeaderboardProps) {
-  const firestore = useFirestore();
   const { user } = useUser();
-  const leaderboardCollectionRef = useMemoFirebase(() => {
-      if (!firestore) return null;
-      return collection(firestore, `dailyLeaderboards/${date}/entries`);
-  }, [firestore, date]);
-
-  // Memoize the query to prevent re-renders
-  const leaderboardQuery = useMemoFirebase(() => {
-    if (!leaderboardCollectionRef) return null;
-    return query(leaderboardCollectionRef, orderBy('timeTaken', 'asc'), limit(10));
-  }, [leaderboardCollectionRef]);
-
-  const { data: entries, isLoading, error } = useCollection<{
-    userId: string;
-    userName: string;
-    timeTaken: number;
-    hintsUsed: boolean;
-  }>(leaderboardQuery);
+  const { entries, loading: isLoading } = useDailyLeaderboard();
 
   if (isCollapsible) {
     return (
@@ -60,10 +42,6 @@ export function DailyLeaderboard({ date, isCollapsible = false }: DailyLeaderboa
     );
   }
 
-  if (error) {
-    return <p className="text-sm text-destructive text-center p-4">Could not load leaderboard.</p>;
-  }
-
   return (
     <Card className="w-full">
       <CardHeader className="text-center pb-2">
@@ -81,7 +59,7 @@ export function DailyLeaderboard({ date, isCollapsible = false }: DailyLeaderboa
           </TableHeader>
           <TableBody>
             {entries && entries.length > 0 ? (
-              entries.map((entry, index) => (
+              entries.slice(0, 10).map((entry, index) => (
                 <TableRow key={entry.id} className={cn(user && entry.userId === user.uid && 'bg-primary/20')}>
                   <TableCell className="font-medium text-center">{index + 1}</TableCell>
                   <TableCell>{entry.userName}</TableCell>

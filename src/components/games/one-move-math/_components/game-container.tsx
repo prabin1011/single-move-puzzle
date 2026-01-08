@@ -464,3 +464,5 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     </Card>
   );
 }
+
+    

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { seededRandom, getTodaysDateKey } from '@/lib/daily-challenge';
@@ -7,7 +6,6 @@ import LandmarkGameContainer from '@/components/games/one-move-landmark/game-con
 import MathGameContainer from '@/components/games/one-move-math/game-container';
 import PatternsGameContainer from '@/components/games/one-move-patterns/game-container';
 import SymbolPuzzleGameContainer from '@/components/games/symbol-puzzle/game-container';
-import WordSwapGameContainer from '@/components/games/word-swap/game-container';
 
 const puzzleComponents = {
   'one-move-landmark': LandmarkGameContainer,
@@ -41,9 +39,11 @@ export default function DailyChallengeContainer() {
   const puzzleType = puzzleTypes[typeIndex];
 
   const maxLevelForType = maxLevels[puzzleType];
-  // Generate a level from the top 10 available for that game type.
+  const minLevel = Math.max(0, maxLevelForType - 10); // Use top 10 levels
+  
+  // Select a level from the top 10 available for that game type.
   const level =
-    maxLevelForType - Math.floor(seededRandom(dateKey + '-level') * 10);
+    minLevel + Math.floor(seededRandom(dateKey + '-level') * (maxLevelForType - minLevel));
 
   const PuzzleComponent = puzzleComponents[puzzleType];
 

@@ -162,8 +162,7 @@ export default function Home() {
           <CardContent className="space-y-6 pt-6">
             <div className="grid grid-cols-1 gap-4 px-6">
               
-              {/* Daily Challenge Card - Disabled */}
-              <Card className="p-4 flex flex-col items-center gap-4 bg-primary/10 border-primary/50 opacity-60">
+              <Card className="p-4 flex flex-col items-center gap-4 bg-primary/10 border-primary/50">
                   <div className="flex items-center gap-4 w-full">
                     <Flame className="h-10 w-10 text-primary shrink-0" />
                     <div className="flex-grow text-left">
@@ -172,8 +171,8 @@ export default function Home() {
                     </div>
                   </div>
                   <div className='w-full'>
-                    <Button className="w-full" disabled>
-                      Coming Soon
+                    <Button asChild className="w-full" onClick={() => trackEvent('daily_challenge_start')}>
+                      <Link href="/games/daily-challenge">Play Today's Puzzle</Link>
                     </Button>
                   </div>
               </Card>

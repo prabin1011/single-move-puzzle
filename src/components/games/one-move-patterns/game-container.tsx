@@ -36,16 +36,15 @@ const TOTAL_LEVELS = 50;
 interface GameContainerProps {
   isDailyChallenge?: boolean;
   dailyLevel?: number;
-  puzzleSeed?: number;
+  puzzleSeed?: string;
 }
 
-export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0, puzzleSeed = 0 }: GameContainerProps) {
+export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0, puzzleSeed = '0' }: GameContainerProps) {
   const router = useRouter();
   const [level, setLevel] = useState(0);
   const [highestLevel, setHighestLevel] = useState(0);
   const [mistakeCount, setMistakeCount] = useState(0);
   const [gameState, setGameState] = useState<GameState>('READY');
-  const [puzzle, setPuzzle] = useState<PatternPuzzle | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
   const { isSoundOn } = useSound();
@@ -53,24 +52,13 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const { time, reset: resetTimer } = useGameTimer(gameState === 'PLAYING');
   const [showAlreadyCompleted, setShowAlreadyCompleted] = useState(false);
 
-  const loadPuzzle = (currentLevel: number, retries: number) => {
-    setIsLoading(true);
-    const effectiveVariation = isDailyChallenge ? puzzleSeed : retries;
-    const newPuzzle = generatePatternPuzzle(currentLevel, effectiveVariation);
-    setPuzzle(newPuzzle);
-    
-    const config = getPatternPuzzleConfig(currentLevel);
-    setCurrentHint(config.hintLevels[retries % config.hintLevels.length]);
-    
-    setIsLoading(false);
-  };
-  
   // Load progress on mount
   useEffect(() => {
     if (isDailyChallenge) {
         const todayKey = getTodaysDateKey();
         if (localStorage.getItem('dailyChallengeCompletion') === todayKey) {
             setShowAlreadyCompleted(true);
+            setIsLoading(false);
             return;
         }
         setLevel(dailyLevel);
@@ -91,6 +79,21 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     setIsLoading(false);
   }, [isDailyChallenge, dailyLevel]);
 
+  const puzzle = useMemo(() => {
+      if (isLoading) return null;
+      const currentLevel = isDailyChallenge ? dailyLevel : level;
+      let seed = retryCount;
+      if (isDailyChallenge && puzzleSeed) {
+        seed = puzzleSeed.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) + retryCount;
+      }
+      const newPuzzle = generatePatternPuzzle(currentLevel, seed);
+      
+      const config = getPatternPuzzleConfig(currentLevel);
+      setCurrentHint(config.hintLevels[seed % config.hintLevels.length]);
+      
+      return newPuzzle;
+  }, [level, retryCount, dailyLevel, isDailyChallenge, puzzleSeed, isLoading]);
+
   // Save progress whenever level changes
   useEffect(() => {
     if (isLoading || isDailyChallenge) return;
@@ -101,11 +104,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
       localStorage.setItem('patternHighestLevel', newHighest.toString());
     }
   }, [level, highestLevel, isLoading, isDailyChallenge]);
-  
-  useEffect(() => {
-    const currentLevel = isDailyChallenge ? dailyLevel : level;
-    loadPuzzle(currentLevel, retryCount);
-  }, [level, retryCount, isDailyChallenge, dailyLevel, puzzleSeed]);
 
 
   const handleSuccess = () => {
@@ -177,7 +175,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     setMistakeCount(0);
     setRetryCount(0);
     setGameState("READY");
-    loadPuzzle(0, 0);
     localStorage.removeItem('patternCurrentLevel');
     localStorage.removeItem('patternHighestLevel');
   }
@@ -200,16 +197,24 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   }
 
   const effectiveLevel = isDailyChallenge ? dailyLevel : level;
-
+  
   if (isLoading || !puzzle) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center">
-        <AlertDialog open={showAlreadyCompleted} onOpenChange={setShowAlreadyCompleted}>
+        <Loader2 className="h-12 w-12 animate-spin" />
+        <p className="mt-4 text-muted-foreground">Loading Patterns...</p>
+      </div>
+    );
+  }
+
+    if (showAlreadyCompleted) {
+    return (
+        <AlertDialog open={true}>
             <AlertDialogContent>
                 <AlertDialogHeader>
                 <AlertDialogTitle>Challenge Already Completed</AlertDialogTitle>
                 <AlertDialogDescription>
-                    You've already solved today's challenge. Come back tomorrow for a new one!
+                    You've already solved or attempted today's challenge. Come back tomorrow for a new one!
                 </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -219,10 +224,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
-        <Loader2 className="h-12 w-12 animate-spin" />
-        <p className="mt-4 text-muted-foreground">Loading Patterns...</p>
-      </div>
-    );
+    )
   }
   
   const puzzleConfig = getPatternPuzzleConfig(effectiveLevel);
@@ -304,7 +306,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
       </CardHeader>
 
       <CardContent className={cn("flex flex-col items-center justify-center min-h-[256px] transition-opacity duration-500 px-2 sm:px-4")}>
-        {isLoading ? <Loader2 className="h-12 w-12 animate-spin" /> : <>
             { gameState === 'READY' && puzzle && (
                 <div className="w-full max-w-[256px] scale-90 opacity-50">
                     <PuzzleBoard
@@ -341,7 +342,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                     </div>
                 </div>
             )}
-        </>}
          <AlertDialog open={gameState === 'SOLVED_COMPLETE'}>
           <AlertDialogContent>
             <AlertDialogHeader className="items-center text-center">

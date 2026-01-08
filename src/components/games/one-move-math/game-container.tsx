@@ -36,36 +36,28 @@ const MAX_MISTAKES = 0; // Game over on first mistake
 interface GameContainerProps {
   isDailyChallenge?: boolean;
   dailyLevel?: number;
-  puzzleSeed?: number;
+  puzzleSeed?: string;
 }
 
-export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0, puzzleSeed = 0 }: GameContainerProps) {
+export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0, puzzleSeed = '0' }: GameContainerProps) {
   const router = useRouter();
   const [level, setLevel] = useState(0);
   const [highestLevel, setHighestLevel] = useState(0);
   const [mistakeCount, setMistakeCount] = useState(0);
   const [gameState, setGameState] = useState<GameState>('READY');
-  const [puzzle, setPuzzle] = useState<MathPuzzle | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
   const { isSoundOn } = useSound();
   const { time, reset: resetTimer, stop: stopTimer } = useGameTimer(gameState === 'PLAYING');
   const [showAlreadyCompleted, setShowAlreadyCompleted] = useState(false);
 
-  const loadPuzzle = (currentLevel: number, retries: number) => {
-    setIsLoading(true);
-    const effectiveVariation = isDailyChallenge ? puzzleSeed : retries;
-    const newPuzzle = generatePuzzle(currentLevel, effectiveVariation);
-    setPuzzle(newPuzzle);
-    setIsLoading(false);
-  };
-  
   // Load progress on mount
   useEffect(() => {
     if (isDailyChallenge) {
         const todayKey = getTodaysDateKey();
         if (localStorage.getItem('dailyChallengeCompletion') === todayKey) {
             setShowAlreadyCompleted(true);
+            setIsLoading(false);
             return;
         }
         setLevel(dailyLevel); 
@@ -97,9 +89,13 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     }
   }, [level, highestLevel, isLoading, isDailyChallenge]);
   
-  useEffect(() => {
+  const puzzle = useMemo(() => {
     const currentLevel = isDailyChallenge ? dailyLevel : level;
-    loadPuzzle(currentLevel, retryCount);
+    let seed = retryCount;
+    if (isDailyChallenge && puzzleSeed) {
+        seed = puzzleSeed.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) + retryCount;
+    }
+    return generatePuzzle(currentLevel, seed);
   }, [level, retryCount, dailyLevel, isDailyChallenge, puzzleSeed]);
 
 
@@ -174,7 +170,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     setMistakeCount(0);
     setRetryCount(0);
     setGameState("READY");
-    loadPuzzle(0, 0);
     localStorage.removeItem('mathCurrentLevel');
     localStorage.removeItem('mathHighestLevel');
   }
@@ -201,12 +196,20 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   if (isLoading || !puzzle) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center">
-        <AlertDialog open={showAlreadyCompleted} onOpenChange={setShowAlreadyCompleted}>
+        <Loader2 className="h-12 w-12 animate-spin" />
+        <p className="mt-4 text-muted-foreground">Loading Puzzle...</p>
+      </div>
+    );
+  }
+
+    if (showAlreadyCompleted) {
+    return (
+        <AlertDialog open={true}>
             <AlertDialogContent>
                 <AlertDialogHeader>
                 <AlertDialogTitle>Challenge Already Completed</AlertDialogTitle>
                 <AlertDialogDescription>
-                    You've already solved today's challenge. Come back tomorrow for a new one!
+                    You've already solved or attempted today's challenge. Come back tomorrow for a new one!
                 </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -216,10 +219,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
-        <Loader2 className="h-12 w-12 animate-spin" />
-        <p className="mt-4 text-muted-foreground">Loading Puzzle...</p>
-      </div>
-    );
+    )
   }
   
   const hint = getHint(puzzle, effectiveLevel);

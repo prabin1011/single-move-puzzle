@@ -65,10 +65,10 @@ const PREVIEW_TIME = 5; // 5 seconds to memorize
 interface GameContainerProps {
   isDailyChallenge?: boolean;
   dailyLevel?: number;
-  puzzleSeed?: number;
+  puzzleSeed?: string;
 }
 
-export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0, puzzleSeed = 0 }: GameContainerProps) {
+export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0, puzzleSeed = '0' }: GameContainerProps) {
   const router = useRouter();
   const [levels, setLevels] = useState<Level[]>([]);
   const [levelIndex, setLevelIndex] = useState(0);
@@ -95,6 +95,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
       const todayKey = getTodaysDateKey();
       if (localStorage.getItem('dailyChallengeCompletion') === todayKey) {
         setShowAlreadyCompleted(true);
+        setIsComponentLoading(false);
         return;
       }
       // For daily challenge, we use the passed-in level and the initial unshuffled levels.
@@ -149,9 +150,14 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   // Generate the puzzle for the current level
   const currentPuzzle = useMemo(() => {
     if (!currentLevelData) return null;
-    // Use the puzzleSeed for daily challenge to ensure the same puzzle instance for everyone.
-    const effectiveRetryCount = isDailyChallenge ? puzzleSeed : retryCount;
-    return generatePuzzle(currentLevelData.imageId, currentGridSize, effectiveRetryCount);
+    
+    let seed = retryCount;
+    if (isDailyChallenge && puzzleSeed) {
+        // Create a numeric seed from the string for daily challenge
+        seed = puzzleSeed.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) + retryCount;
+    }
+
+    return generatePuzzle(currentLevelData.imageId, currentGridSize, seed);
   }, [currentLevelData, currentGridSize, retryCount, isDailyChallenge, puzzleSeed]);
 
   // Game timer logic
@@ -171,15 +177,23 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   }, [gameState, isSoundOn]);
 
 
-  if (isComponentLoading || !currentLevelData || !currentPuzzle) {
+  if (isComponentLoading || (!currentLevelData || !currentPuzzle) && !showAlreadyCompleted) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center">
-        <AlertDialog open={showAlreadyCompleted} onOpenChange={setShowAlreadyCompleted}>
+        <Loader2 className="h-12 w-12 animate-spin" />
+        <p className="mt-4 text-muted-foreground">Loading Game...</p>
+      </div>
+    );
+  }
+  
+  if (showAlreadyCompleted) {
+    return (
+        <AlertDialog open={true}>
             <AlertDialogContent>
                 <AlertDialogHeader>
                 <AlertDialogTitle>Challenge Already Completed</AlertDialogTitle>
                 <AlertDialogDescription>
-                    You've already solved today's challenge. Come back tomorrow for a new one!
+                    You've already solved or attempted today's challenge. Come back tomorrow for a new one!
                 </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -189,14 +203,11 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
-        <Loader2 className="h-12 w-12 animate-spin" />
-        <p className="mt-4 text-muted-foreground">Loading Game...</p>
-      </div>
-    );
+    )
   }
 
-  const { imageUrl: currentImageUrl, hint, imageHint: currentImageHint, facts, solvedBoard } = currentPuzzle;
-  const { scrambledBoard, swapped } = currentPuzzle;
+  const { imageUrl: currentImageUrl, hint, imageHint: currentImageHint, facts, solvedBoard } = currentPuzzle!;
+  const { scrambledBoard, swapped } = currentPuzzle!;
 
   const handleSuccess = async () => {
     playSound('success', isSoundOn);
@@ -303,7 +314,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     trackEvent('navigate_to_home');
   }
 
-  const puzzleKey = `${currentLevelData.id}-${retryCount}`;
+  const puzzleKey = `${currentLevelData!.id}-${retryCount}`;
   const title = isDailyChallenge ? `Daily Challenge` : `Level ${levelIndex + 1}`;
   const subTitle = `${currentGridSize}x${currentGridSize} Grid`;
 
@@ -331,7 +342,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                     dark:bg-secondary/90 dark:border-transparent
                   "
                 >
-                  {isDailyChallenge ? currentLevelData.place : subTitle}
+                  {isDailyChallenge ? currentLevelData!.place : subTitle}
                 </CardDescription>
                 <CardDescription className="text-muted-foreground pt-3">
                   Click Start to memorize the image.
@@ -404,7 +415,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle className="font-headline">Hint for {currentLevelData.place}</AlertDialogTitle>
+                    <AlertDialogTitle className="font-headline">Hint for {currentLevelData!.place}</AlertDialogTitle>
                     <AlertDialogDescription asChild>
                        <div className="text-left text-base p-4 rounded-lg mt-2 bg-yellow-100/70 dark:bg-yellow-900/40 border border-yellow-200/70 dark:border-yellow-700/60">
                          {hint}
@@ -464,7 +475,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
             <Image
               key={currentImageUrl}
               src={currentImageUrl}
-              alt={currentLevelData.place}
+              alt={currentLevelData!.place}
               fill
               sizes="(max-width: 640px) 90vw, 300px"
               data-ai-hint={currentImageHint}
@@ -499,7 +510,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 {isDailyChallenge ? "Challenge Complete!" : `Level ${levelIndex + 1} Complete!`}
               </AlertDialogTitle>
               <AlertDialogDescription className="text-lg text-muted-foreground !mt-2">
-                {isDailyChallenge ? "Great job! Your score has been submitted." : `Well done! You found the swaps for ${currentLevelData.place}.`}
+                {isDailyChallenge ? "Great job! Your score has been submitted." : `Well done! You found the swaps for ${currentLevelData!.place}.`}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <div

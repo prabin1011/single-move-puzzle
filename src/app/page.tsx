@@ -13,9 +13,10 @@ import {
 } from "@/components/ui/accordion"
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAuth, useUser } from '@/firebase';
+import { useAuth, useUser, useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy, limit } from 'firebase/firestore';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
-import { Loader2, Landmark, Calculator, Shapes, BookText, Sigma, Flame, Trophy } from 'lucide-react';
+import { Loader2, Landmark, Calculator, Shapes, BookText, Sigma, Flame, Trophy, Users } from 'lucide-react';
 import { levels as landmarkLevels } from '@/lib/levels';
 import { mathLevels } from '@/lib/math-puzzles';
 import { patternLevels } from '@/lib/pattern-puzzles';
@@ -53,6 +54,7 @@ function shuffle<T>(array: T[]): T[] {
 
 export default function Home() {
   const router = useRouter();
+  const firestore = useFirestore();
   const [landmarkHighestLevel, setLandmarkHighestLevel] = useState(0);
   const [mathHighestLevel, setMathHighestLevel] = useState(0);
   const [patternsHighestLevel, setPatternsHighestLevel] = useState(0);
@@ -62,6 +64,15 @@ export default function Home() {
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
   const { isSoundOn } = useSound();
+
+  const todaysDateKey = getTodaysDateKey();
+  const dailyLeaderboardCollectionRef = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, `dailyLeaderboards/${todaysDateKey}/entries`);
+  }, [firestore, todaysDateKey]);
+
+  const { data: dailyPlayers } = useCollection(dailyLeaderboardCollectionRef);
+  const dailyPlayerCount = dailyPlayers?.length ?? 0;
 
   useEffect(() => {
     if (isSoundOn) {
@@ -181,7 +192,12 @@ export default function Home() {
                   <Flame className="h-10 w-10 text-primary shrink-0" />
                   <div className="flex-grow">
                     <h3 className="font-bold font-headline text-lg">Daily Challenge</h3>
-                    <p className="text-sm text-muted-foreground">A new curated puzzle every day.</p>
+                     <div className="text-sm text-muted-foreground mt-1 font-semibold flex items-center justify-center sm:justify-center gap-2">
+                        <div className="flex items-center gap-1">
+                            <Users className="h-4 w-4" />
+                            <span>{dailyPlayerCount} {dailyPlayerCount === 1 ? 'Player' : 'Players'} Today</span>
+                        </div>
+                    </div>
                     <DailyChallengeCountdown />
                   </div>
                   <div className='w-full'>
@@ -213,7 +229,7 @@ export default function Home() {
                   <p className="text-sm text-muted-foreground">Guess the swapped tiles in famous landmark photos.</p>
                    <div className="text-xs text-muted-foreground/80 mt-1 font-semibold flex items-center justify-center sm:justify-start gap-1">
                       <Trophy className="h-3 w-3" />
-                      {landmarkLevels.length} Levels
+                      Highest Level: {landmarkHighestLevel}
                     </div>
                 </div>
                 <div className="flex flex-col space-y-2 w-full sm:w-auto">
@@ -236,7 +252,7 @@ export default function Home() {
                   <p className="text-sm text-muted-foreground">Solve the math equation in just one move.</p>
                    <div className="text-xs text-muted-foreground/80 mt-1 font-semibold flex items-center justify-center sm:justify-start gap-1">
                       <Trophy className="h-3 w-3" />
-                       {mathLevels.length} Levels
+                       Highest Level: {mathHighestLevel}
                     </div>
                 </div>
                 <div className="flex flex-col space-y-2 w-full sm:w-auto">
@@ -259,7 +275,7 @@ export default function Home() {
                   <p className="text-sm text-muted-foreground">Fix the broken pattern in just one move.</p>
                     <div className="text-xs text-muted-foreground/80 mt-1 font-semibold flex items-center justify-center sm:justify-start gap-1">
                       <Trophy className="h-3 w-3" />
-                       {patternLevels.length} Levels
+                       Highest Level: {patternsHighestLevel}
                     </div>
                 </div>
                 <div className="flex flex-col space-y-2 w-full sm:w-auto">
@@ -282,7 +298,7 @@ export default function Home() {
                   <p className="text-sm text-muted-foreground">Fix the broken word relationships in one move.</p>
                    <div className="text-xs text-muted-foreground/80 mt-1 font-semibold flex items-center justify-center sm:justify-start gap-1">
                       <Trophy className="h-3 w-3" />
-                       {wordSwapLevels.length} Levels
+                       Highest Level: {wordSwapHighestLevel}
                     </div>
                 </div>
                 <div className="flex flex-col space-y-2 w-full sm:w-auto">
@@ -305,7 +321,7 @@ export default function Home() {
                   <p className="text-sm text-muted-foreground">Restore the logical sequence of abstract symbols.</p>
                   <div className="text-xs text-muted-foreground/80 mt-1 font-semibold flex items-center justify-center sm:justify-start gap-1">
                       <Trophy className="h-3 w-3" />
-                      {symbolLevels.length} Levels
+                      Highest Level: {symbolHighestLevel}
                     </div>
                 </div>
                 <div className="flex flex-col space-y-2 w-full sm:w-auto">

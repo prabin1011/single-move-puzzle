@@ -17,7 +17,7 @@ export default function LegalLayout({ title, children }: LegalLayoutProps) {
             {title}
           </CardTitle>
         </CardHeader>
-        <CardContent className="prose prose-sm dark:prose-invert max-w-none">
+        <CardContent className="prose prose-sm dark:prose-invert max-w-none text-sm">
           {children}
         </CardContent>
       </Card>
@@ -30,3 +30,5 @@ export default function LegalLayout({ title, children }: LegalLayoutProps) {
     </main>
   );
 }
+
+    

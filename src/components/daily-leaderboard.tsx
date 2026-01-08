@@ -102,3 +102,5 @@ export function DailyLeaderboard({ date, currentUserTime }: DailyLeaderboardProp
     </Card>
   );
 }
+
+    

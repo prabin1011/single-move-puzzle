@@ -1,15 +1,4 @@
-/**
- * Core Philosophy: This ruleset establishes a hybrid security model. User profile data is strictly private and owner-controlled, while landmark and daily puzzle data is publicly readable to allow the game client to fetch puzzle content. Leaderboards are publicly readable but writes are restricted.
- *
- * Data Structure: The data is organized into distinct, top-level collections for private profiles, public game content, and daily challenges. This flat structure prevents complex rule inheritance and simplifies security.
- *
- * Key Security Decisions:
- * - User privacy is paramount; a user can only read or write their own document in the /users collection. Listing all users is disabled to prevent data scraping.
- * - Landmark and Daily Puzzle content is public to read, allowing any client to fetch the data needed to construct puzzles.
- * - Writes to the /landmarks and /dailyPuzzles collections are disabled for clients to protect the integrity of the curated game content.
- * - Daily Leaderboard entries can only be created by the authenticated user for themselves and cannot be updated.
- * - The default security posture is to deny all access unless explicitly granted.
- */
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -71,17 +60,36 @@ service cloud.firestore {
     // Daily Leaderboards Collection
     // ===================================
 
-    /**
-     * @description Secures the daily leaderboard entries.
-     * @path /dailyLeaderboards/{date}/entries/{userId}
-     */
     match /dailyLeaderboards/{date}/entries/{userId} {
-        // Anyone can read leaderboard entries
-        allow get, list: if true;
-        
-        // A user can only create an entry for themselves. They cannot update or delete it.
-        allow create: if isOwner(userId);
-        allow update, delete: if false;
+      // Global read (anyone can view leaderboard)
+      allow get, list: if true;
+
+      // Create only your own entry, once, with validated fields
+      allow create: if isOwner(userId)
+        && !exists(/databases/$(database)/documents/dailyLeaderboards/$(date)/entries/$(userId))
+        && request.resource.data.keys().hasOnly([
+          "userId",
+          "timeTaken",
+          "hintsUsed",
+          "timestamp",
+          "userName"
+        ])
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.timeTaken is int
+        && request.resource.data.timeTaken > 0
+        && request.resource.data.timeTaken < 3600000 // < 1 hour (adjust)
+        && request.resource.data.hintsUsed is bool
+        && request.resource.data.userName is string
+        && request.resource.data.userName.size() <= 30
+        && request.resource.data.timestamp == request.time;
+
+      // No edits/deletes from client
+      allow update, delete: if false;
+    }
+
+     match /dailyLeaderboards/{date}/stats/{docId} {
+        allow get, list: if true;      // public read
+        allow write: if false;         // only server should update
     }
 
 
@@ -92,3 +100,5 @@ service cloud.firestore {
     }
   }
 }
+
+    

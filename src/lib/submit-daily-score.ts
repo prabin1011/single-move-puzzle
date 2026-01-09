@@ -30,14 +30,22 @@ export async function submitDailyScore({
 
   const entryRef = doc(firestore, `dailyLeaderboards/${todayKey}/entries/${entryId}`);
 
-  await setDoc(entryRef, {
-    userId: user.uid,
-    userName: user.displayName || `Player ${user.uid.slice(0, 4)}`,
-    gameId,
-    level: typeof level === "number" ? level : null,
-    timeTaken,
-    hintsUsed,
-    timestamp: serverTimestamp(),
-    clientDateISO: new Date().toISOString(),
-  });
+  const safeTimeTaken = Math.max(1, Math.floor(timeTaken));
+
+  try {
+    await setDoc(entryRef, {
+      userId: user.uid,
+      userName: user.displayName || `Player ${user.uid.slice(0, 4)}`,
+      gameId,
+      level: typeof level === "number" ? level : null,
+      timeTaken: safeTimeTaken,
+      hintsUsed,
+      timestamp: serverTimestamp(),
+      clientDateISO: new Date().toISOString(),
+    }, { merge: false });
+  } catch (e: any) {
+    console.error("Leaderboard save failed:", e?.code, e?.message, e);
+    // Re-throw the error so the calling component can handle it (e.g., show an alert)
+    throw e;
+  }
 }

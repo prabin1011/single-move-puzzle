@@ -53,6 +53,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const { isSoundOn } = useSound();
   const { time, reset: resetTimer, getDuration } = useGameTimer(gameState === 'PLAYING');
   const [showAlreadyCompleted, setShowAlreadyCompleted] = useState(false);
+  const [hintViewed, setHintViewed] = useState(false);
   const { user } = useUser();
   const firestore = useFirestore();
 
@@ -118,7 +119,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                     gameId: GAME_ID,
                     user,
                     timeTaken: duration,
-                    hintsUsed: false, // Math puzzles dont have hints yet
+                    hintsUsed: hintViewed, 
                     level: dailyLevel,
                 });
                 localStorage.setItem(completionKey, "1");
@@ -169,6 +170,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     playSound('ui', isSoundOn);
     setMistakeCount(0);
     setRetryCount(0);
+    setHintViewed(false);
     setLevel(prev => prev + 1);
     setGameState('READY');
   };
@@ -188,6 +190,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     setHighestLevel(0);
     setMistakeCount(0);
     setRetryCount(0);
+    setHintViewed(false);
     setGameState("READY");
     localStorage.removeItem('mathCurrentLevel');
     localStorage.removeItem('mathHighestLevel');
@@ -202,6 +205,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
 
   const handleViewHint = () => {
     trackEvent('hint_viewed', { game: 'math', level: level + 1 });
+    setHintViewed(true);
   }
 
   const handleBackToHome = () => {

@@ -46,7 +46,7 @@ import { useSound } from "@/contexts/sound-context";
 import { trackEvent } from "@/lib/analytics";
 import { getTodaysDateKey } from "@/lib/daily-challenge";
 import { useUser, useFirestore } from "@/firebase";
-import { submitDailyScore } from "@/lib/submit-daily-score";
+import { submitDailyScore } from '@/lib/submit-daily-score';
 
 function shuffle<T>(array: T[]): T[] {
   let currentIndex = array.length,
@@ -83,6 +83,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const { isSoundOn } = useSound();
   const [showAlreadyCompleted, setShowAlreadyCompleted] = useState(false);
   const [currentHintIndex, setCurrentHintIndex] = useState(0);
+  const [hintViewed, setHintViewed] = useState(false);
   const { user } = useUser();
   const firestore = useFirestore();
 
@@ -230,10 +231,10 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                   gameId: GAME_ID,
                   user,
                   timeTaken: duration,
-                  hintsUsed: currentHintIndex > 0,
+                  hintsUsed: hintViewed,
                   level: dailyLevel,
               });
-              // Only set flag after successful write
+              // Only set AFTER successful write
               localStorage.setItem(completionKey, "1");
           } catch (e) {
               console.error("Daily score submission failed:", e);
@@ -299,6 +300,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     setHighestLevel(0);
     setMistakeCount(0);
     setRetryCount(0);
+    setHintViewed(false);
     setShowFacts(false);
     setGameState("READY");
   }
@@ -312,6 +314,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     setShowFacts(false);
     setRetryCount(0);
     setCurrentHintIndex(0);
+    setHintViewed(false);
     setMistakeCount(0);
   };
   
@@ -332,6 +335,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
 
   const handleViewHint = () => {
     trackEvent('hint_viewed', { game: 'landmark', level: levelIndex + 1 });
+    setHintViewed(true);
     if(currentHintIndex < hints.length -1) {
         setCurrentHintIndex(currentHintIndex + 1);
     }

@@ -29,7 +29,8 @@ service cloud.firestore {
         && data.userName is string
         && data.userName.size() <= 30
         && (data.level is int || data.level == null)
-        && data.clientDateISO is string;
+        && data.clientDateISO is string
+        && data.timestamp == request.time;
     }
 
     // User Profiles Collection

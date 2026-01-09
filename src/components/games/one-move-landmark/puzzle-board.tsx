@@ -5,12 +5,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { playSound } from '@/lib/sounds';
 import { useSound } from '@/contexts/sound-context';
+import type { Tile, Solution } from '@/lib/levels';
 
 interface PuzzleBoardProps {
   imageUrl: string;
   grid: number;
-  boardState: number[];
-  swappedIndices: number[];
+  boardState: Tile[];
+  solution: Solution;
   onSuccess: () => void;
   onFail: () => void;
   isReadOnly?: boolean;
@@ -20,7 +21,7 @@ export default function PuzzleBoard({
   imageUrl,
   grid,
   boardState,
-  swappedIndices,
+  solution,
   onSuccess,
   onFail,
   isReadOnly = false,
@@ -30,74 +31,78 @@ export default function PuzzleBoard({
   const [showSolution, setShowSolution] = useState(false);
   const { isSoundOn } = useSound();
   
-  // Use a state for puzzle size to make it adaptable if needed in future
   const [puzzleSize, setPuzzleSize] = useState(300);
 
-  // Effect to adjust puzzle size based on window width for responsiveness
   useEffect(() => {
     const handleResize = () => {
-      // 32px for padding on body, 32px for padding on card, 32px for safety margin
       const newSize = window.innerWidth - 32 - 32 - 32;
       setPuzzleSize(Math.min(300, newSize));
     };
-
     handleResize();
     window.addEventListener('resize', handleResize);
-
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const TILE_SIZE = puzzleSize / grid;
 
-  const handleTileClick = (boardIndex: number) => {
-    if (isReadOnly || selectedIndices.length >= 2 || showSolution) {
-      return;
+  const checkSolution = useCallback(() => {
+    if (solution.type === 'swap') {
+        const [first, second] = selectedIndices;
+        const isCorrectSwap = solution.indices.includes(first) && solution.indices.includes(second);
+
+        if (isCorrectSwap) {
+            playSound("swap", isSoundOn);
+            const newBoard = [...board];
+            const [firstIndex, secondIndex] = selectedIndices;
+            [newBoard[firstIndex], newBoard[secondIndex]] = [newBoard[secondIndex], newBoard[firstIndex]];
+            setBoard(newBoard);
+            setTimeout(() => onSuccess(), 500);
+        } else {
+            setShowSolution(true);
+            setTimeout(() => onFail(), 1500); 
+        }
     }
+    // Note: Rotation logic is handled directly in handleTileClick
+  }, [selectedIndices, solution, onSuccess, onFail, board, isSoundOn]);
+
+  const handleTileClick = (boardIndex: number) => {
+    if (isReadOnly || showSolution) return;
     
     playSound('click', isSoundOn);
-    // If the clicked tile is already selected, deselect it
-    if (selectedIndices.includes(boardIndex)) {
-      setSelectedIndices(selectedIndices.filter(i => i !== boardIndex));
-    } else {
-      // Otherwise, add it to the selection
-      setSelectedIndices([...selectedIndices, boardIndex]);
+
+    if (solution.type === 'rotate') {
+        if (board[boardIndex].rotation === 0) { // Can't rotate a correct tile
+             onFail();
+             return;
+        }
+
+        const newBoard = [...board];
+        const currentRotation = newBoard[boardIndex].rotation;
+        const newRotation = (currentRotation + 90) % 360;
+        newBoard[boardIndex].rotation = newRotation;
+        setBoard(newBoard);
+
+        if (boardIndex === solution.index && newRotation === 0) {
+            onSuccess();
+        } else if (newRotation === 0) { // Rotated the wrong tile back to normal
+            onFail();
+        }
+    } else if (solution.type === 'swap') {
+        if (selectedIndices.includes(boardIndex)) {
+          setSelectedIndices(selectedIndices.filter(i => i !== boardIndex));
+        } else {
+          setSelectedIndices([...selectedIndices, boardIndex]);
+        }
     }
   };
 
-  const checkSolution = useCallback(() => {
-      const [first, second] = selectedIndices;
-      const isCorrectSwap = 
-        (swappedIndices.includes(first) && swappedIndices.includes(second));
-
-      if (isCorrectSwap) {
-        playSound("swap", isSoundOn);
-        // Perform the final correct swap visually
-        const newBoard = [...board];
-        const [firstIndex, secondIndex] = selectedIndices;
-        [newBoard[firstIndex], newBoard[secondIndex]] = [newBoard[secondIndex], newBoard[firstIndex]];
-        setBoard(newBoard);
-
-        setTimeout(() => {
-            onSuccess();
-        }, 500);
-
-      } else {
-        setShowSolution(true);
-        setTimeout(() => {
-          onFail();
-        }, 1500); 
-      }
-  }, [selectedIndices, swappedIndices, onSuccess, onFail, board, isSoundOn]);
-
-  // Effect to handle the check logic
   useEffect(() => {
-    if (selectedIndices.length === 2) {
-      const timer = setTimeout(checkSolution, 300); // Small delay to show selection
+    if (solution.type === 'swap' && selectedIndices.length === 2) {
+      const timer = setTimeout(checkSolution, 300);
       return () => clearTimeout(timer);
     }
-  }, [selectedIndices, checkSolution]);
+  }, [selectedIndices, solution.type, checkSolution]);
   
-  // Reset component state when the underlying puzzle changes via key prop
   useEffect(() => {
     setBoard(boardState);
     setSelectedIndices([]);
@@ -115,27 +120,27 @@ export default function PuzzleBoard({
           height: `${puzzleSize}px`,
         }}
       >
-        {board.map((tileValue, boardIndex) => {
-          const row = Math.floor(tileValue / grid);
-          const col = tileValue % grid;
+        {board.map((tile, boardIndex) => {
+          const row = Math.floor(tile.originalIndex / grid);
+          const col = tile.originalIndex % grid;
           const isSelected = selectedIndices.includes(boardIndex);
-          const shouldHighlight = showSolution && swappedIndices.includes(boardIndex);
+          
+          let shouldHighlight = false;
+          if (showSolution && solution.type === 'swap') {
+              shouldHighlight = solution.indices.includes(boardIndex);
+          } else if (showSolution && solution.type === 'rotate') {
+              shouldHighlight = solution.index === boardIndex;
+          }
 
           return (
             <div
               key={boardIndex}
               onClick={() => handleTileClick(boardIndex)}
               className={cn(
-                // smooth transform-only animation (no layout thrash)
                 'relative overflow-hidden rounded-sm transition-all duration-300 ease-out',
                 !isReadOnly && !showSolution && 'cursor-pointer',
-              
-                // VERY visible green glow + slight scale
                 isSelected && 'z-10 scale-[1.06] tile-glow',
-              
-                // wrong tiles when showing the solution
-                shouldHighlight &&
-                  'z-10 ring-4 ring-red-500 ring-offset-2 ring-offset-background animate-pulse'
+                shouldHighlight && 'z-10 ring-4 ring-red-500 ring-offset-2 ring-offset-background animate-pulse'
               )}
               style={{
                 width: `${TILE_SIZE}px`,
@@ -143,15 +148,17 @@ export default function PuzzleBoard({
                 backgroundImage: `url('${imageUrl}')`,
                 backgroundSize: `${puzzleSize}px ${puzzleSize}px`,
                 backgroundPosition: `-${col * TILE_SIZE}px -${row * TILE_SIZE}px`,
+                transform: `rotate(${tile.rotation}deg)`,
               }}
             />
           );
         })}
       </div>
        <div className="h-6 text-center mt-2">
-          {!isReadOnly && !showSolution && selectedIndices.length === 0 && <p className="text-sm text-muted-foreground">Select the first tile to swap.</p>}
-          {!isReadOnly && !showSolution && selectedIndices.length === 1 && <p className="text-sm text-muted-foreground">Select the second tile to swap.</p>}
-          {showSolution && <p className="text-sm text-error animate-pulse">That wasn't it. Showing correct swap...</p>}
+          {!isReadOnly && !showSolution && solution.type === 'swap' && selectedIndices.length === 0 && <p className="text-sm text-muted-foreground">Select the first tile to swap.</p>}
+          {!isReadOnly && !showSolution && solution.type === 'swap' && selectedIndices.length === 1 && <p className="text-sm text-muted-foreground">Select the second tile to swap.</p>}
+          {!isReadOnly && !showSolution && solution.type === 'rotate' && <p className="text-sm text-muted-foreground">Click the rotated tile to fix it.</p>}
+          {showSolution && <p className="text-sm text-error animate-pulse">That wasn't it. Showing correct move...</p>}
           {isReadOnly && !showSolution && <p className="text-sm text-muted-foreground">&nbsp;</p>}
        </div>
     </div>

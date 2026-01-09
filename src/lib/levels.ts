@@ -13,6 +13,26 @@ export interface Level {
   variations: number;
 }
 
+export type Solution =
+  | { type: 'swap'; indices: [number, number] }
+  | { type: 'rotate'; index: number; correctRotation: number };
+
+
+export interface Tile {
+  originalIndex: number;
+  rotation: 0 | 90 | 180 | 270;
+}
+
+export interface Puzzle {
+  solvedBoard: Tile[];
+  scrambledBoard: Tile[];
+  solution: Solution;
+  imageUrl: string;
+  imageHint: string;
+  hints: string[];
+  facts: string[];
+}
+
 const allLevels: Level[] = [
   // 49 Levels
   {
@@ -675,21 +695,7 @@ export function getImageUrl(
   return { url, hint, facts };
 }
 
-
-export const generateRandomSwap = (gridSize: number, seed?: number): [number, number] => {
-  const totalTiles = gridSize * gridSize;
-  
-  const rng = seed ? mulberry32(seed) : Math.random;
-
-  let index1 = Math.floor(rng() * totalTiles);
-  let index2 = Math.floor(rng() * totalTiles);
-  while (index1 === index2) {
-    index2 = Math.floor(rng() * totalTiles);
-  }
-  return [index1, index2];
-};
-
-// mulberry32, a simple PRNG
+// mulberry32, a simple PRNG for deterministic "randomness"
 function mulberry32(a: number) {
     return function() {
       a |= 0; a = a + 0x6D2B79F5 | 0;
@@ -699,7 +705,8 @@ function mulberry32(a: number) {
     }
 }
 
-export const generatePuzzle = (imageId: string, grid: number, seed?: string) => {
+
+export const generatePuzzle = (imageId: string, grid: number, seed?: string): Puzzle => {
   const level = allLevels.find(l => l.imageId === imageId);
   if (!level) {
     throw new Error(`Could not find level with imageId: ${imageId}`);
@@ -707,18 +714,18 @@ export const generatePuzzle = (imageId: string, grid: number, seed?: string) => 
   
   let round = 0;
   let numericSeed: number | undefined = undefined;
+  let rng = Math.random;
 
   if (seed) {
-    // Deterministic generation for daily challenges
     let h = 1779033703, i, c;
     for (i = 0; i < seed.length; i++) {
         c = seed.charCodeAt(i);
         h = (h ^ c) * 16777619;
     }
     numericSeed = h;
+    rng = mulberry32(numericSeed);
     round = numericSeed;
   } else if (typeof window !== 'undefined') {
-    // Random round for regular play
     round = parseInt(localStorage.getItem('gameRound') || '0', 10);
   }
 
@@ -728,22 +735,40 @@ export const generatePuzzle = (imageId: string, grid: number, seed?: string) => 
     round
   );
   
-  const solvedBoard = Array.from({ length: grid * grid }, (_, i) => i);
-  const scrambledBoard = [...solvedBoard];
+  const totalTiles = grid * grid;
+  const solvedBoard: Tile[] = Array.from({ length: totalTiles }, (_, i) => ({ originalIndex: i, rotation: 0 }));
+  
+  let scrambledBoard: Tile[] = solvedBoard.map(t => ({...t}));
+  let solution: Solution;
+  let proceduralHints: string[];
 
-  const swappedIndices = generateRandomSwap(grid, numericSeed);
-  const [index1, index2] = swappedIndices;
-  [scrambledBoard[index1], scrambledBoard[index2]] = [
-    scrambledBoard[index2],
-    scrambledBoard[index1],
-  ];
+  // Decide whether to make a swap or a rotation puzzle
+  if (rng() > 0.3) { // 70% chance for a swap puzzle
+    const index1 = Math.floor(rng() * totalTiles);
+    let index2 = Math.floor(rng() * totalTiles);
+    while (index1 === index2) {
+      index2 = Math.floor(rng() * totalTiles);
+    }
+    
+    [scrambledBoard[index1], scrambledBoard[index2]] = [scrambledBoard[index2], scrambledBoard[index1]];
+    solution = { type: 'swap', indices: [index1, index2] };
+    proceduralHints = generateHints(grid, solution.indices);
 
-  const proceduralHints = generateHints(grid, swappedIndices);
+  } else { // 30% chance for a rotation puzzle
+    const index = Math.floor(rng() * totalTiles);
+    const possibleRotations: (90 | 180 | 270)[] = [90, 180, 270];
+    const rotation = possibleRotations[Math.floor(rng() * possibleRotations.length)];
+    scrambledBoard[index].rotation = rotation;
+    
+    solution = { type: 'rotate', index, correctRotation: 0 };
+    proceduralHints = generateHints(grid, [solution.index]);
+  }
+
 
   return {
     solvedBoard,
     scrambledBoard,
-    swapped: swappedIndices,
+    solution,
     imageUrl: imageUrl,
     imageHint: imageHint,
     hints: proceduralHints,

@@ -144,7 +144,7 @@ const allLevels: Level[] = [
     country: 'China',
     facts: [
         ['It is not a single continuous wall but a system of defenses.', 'Sticky rice flour was used in the binding material for the bricks.', 'It is not, as is commonly believed, visible from the moon with the naked eye.'],
-        ["The wall is the longest man-made structure in the world.", "Much of the wall was built during the Ming Dynasty (1368-1644).", "The wall also served as a transportation corridor and for border control."]
+        ["The wall is the longest man-made structure in the world.", "Much of the wall was built during the Ming Dynasty (1368-144).", "The wall also served as a transportation corridor and for border control."]
     ],
     category: 'nature',
     visualComplexity: 'high',
@@ -747,8 +747,8 @@ function chooseRotation(rng: () => number): 90 | 180 | 270 {
 }
 
 function getDifficultyProfile(levelIndex: number, visualComplexity: Level["visualComplexity"]) {
-  const hard = levelIndex >= 2;
-  const veryHard = levelIndex >= 6;
+  const hard = levelIndex >= 1; // Level 2+
+  const veryHard = levelIndex >= 5; // Level 6+
 
   const rotateChance =
     visualComplexity === "low" ? (hard ? 0.45 : 0.30) :
@@ -762,7 +762,12 @@ function getDifficultyProfile(levelIndex: number, visualComplexity: Level["visua
   return { rotateChance, symmetryChance, maxHints };
 }
 
-export const generatePuzzle = (imageId: string, grid: number, seed?: string): Puzzle => {
+export const generatePuzzle = (
+    imageId: string,
+    grid: number,
+    levelIndex: number,
+    seed?: string
+): Puzzle => {
   const level = allLevels.find((l) => l.imageId === imageId);
   if (!level) throw new Error(`Could not find level with imageId: ${imageId}`);
 
@@ -790,13 +795,18 @@ export const generatePuzzle = (imageId: string, grid: number, seed?: string): Pu
   }));
 
   const scrambledBoard: Tile[] = solvedBoard.map((t) => ({ ...t }));
-  const approxLevelIndex = grid <= 3 ? 0 : grid === 4 ? 3 : 6;
-  const profile = getDifficultyProfile(approxLevelIndex, level.visualComplexity);
-  const roll = rng();
+  const profile = getDifficultyProfile(levelIndex, level.visualComplexity);
+  
   let solution: Solution;
   let proceduralHints: string[] = [];
+  
+  const rotateW = profile.rotateChance;
+  const symmetryW = profile.symmetryChance;
+  
+  const r = rng();
 
-  if (roll < profile.rotateChance) {
+  if (r < rotateW) {
+    // ROTATE
     const index = Math.floor(rng() * totalTiles);
     const rotation = chooseRotation(rng);
     scrambledBoard[index].rotation = rotation;
@@ -804,37 +814,36 @@ export const generatePuzzle = (imageId: string, grid: number, seed?: string): Pu
     solution = { type: "rotate", index, correctRotation: 0 };
     proceduralHints = generateHints(grid, [index]);
 
-  } else {
-    const roll2 = rng();
-    if (roll2 < profile.symmetryChance) {
-      const pick = pickNonSelfMirroredIndex(rng, grid);
-      const i1 = pick.idx;
-      const i2 = pick.mir;
+  } else if (r < rotateW + symmetryW) {
+    // SYMMETRY SWAP
+    const pick = pickNonSelfMirroredIndex(rng, grid);
+    const i1 = pick.idx;
+    const i2 = pick.mir;
 
-      [scrambledBoard[i1], scrambledBoard[i2]] = [scrambledBoard[i2], scrambledBoard[i1]];
+    [scrambledBoard[i1], scrambledBoard[i2]] = [scrambledBoard[i2], scrambledBoard[i1]];
 
-      solution = { type: "symmetry-swap", indices: [i1, i2], axis: pick.axis };
+    solution = { type: "symmetry-swap", indices: [i1, i2], axis: pick.axis };
 
-      const base = generateHints(grid, [i1, i2]);
-      const symmetryLine =
+    const base = generateHints(grid, [i1, i2]);
+    const symmetryLine =
         pick.axis === "vertical"
-          ? "Look for a mistake across the vertical mirror line (left ↔ right)."
-          : "Look for a mistake across the horizontal mirror line (top ↔ bottom).";
-      proceduralHints = [symmetryLine, ...base];
+        ? "Look for a mistake across the vertical mirror line (left ↔ right)."
+        : "Look for a mistake across the horizontal mirror line (top ↔ bottom).";
+    proceduralHints = [symmetryLine, ...base];
 
-    } else {
-      const index1 = Math.floor(rng() * totalTiles);
-      let index2 = Math.floor(rng() * totalTiles);
-      while (index2 === index1) index2 = Math.floor(rng() * totalTiles);
+  } else {
+    // NORMAL SWAP
+    const index1 = Math.floor(rng() * totalTiles);
+    let index2 = Math.floor(rng() * totalTiles);
+    while (index2 === index1) index2 = Math.floor(rng() * totalTiles);
 
-      [scrambledBoard[index1], scrambledBoard[index2]] = [
-        scrambledBoard[index2],
-        scrambledBoard[index1],
-      ];
+    [scrambledBoard[index1], scrambledBoard[index2]] = [
+      scrambledBoard[index2],
+      scrambledBoard[index1],
+    ];
 
-      solution = { type: "swap", indices: [index1, index2] };
-      proceduralHints = generateHints(grid, solution.indices);
-    }
+    solution = { type: "swap", indices: [index1, index2] };
+    proceduralHints = generateHints(grid, solution.indices);
   }
 
   proceduralHints = proceduralHints.slice(0, profile.maxHints);

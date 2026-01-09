@@ -66,8 +66,8 @@ const MAX_MISTAKES = 0;
 const GAME_ID = "landmark" as const;
 
 const getPreviewTime = (levelIndex: number) => {
-  if (levelIndex >= 6) return 2;
-  if (levelIndex >= 2) return 3;
+  if (levelIndex >= 5) return 2; // Level 6+
+  if (levelIndex >= 1) return 3; // Level 2+
   return 5;
 };
 
@@ -164,8 +164,8 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const currentPuzzle = useMemo((): Puzzle | null => {
     if (!currentLevelData) return null;
     let seed = isDailyChallenge && puzzleSeed ? puzzleSeed : `${retryCount}`;
-    return generatePuzzle(currentLevelData.imageId, currentGridSize, seed);
-  }, [currentLevelData, currentGridSize, retryCount, isDailyChallenge, puzzleSeed]);
+    return generatePuzzle(currentLevelData.imageId, currentGridSize, effectiveLevel, seed);
+  }, [currentLevelData, currentGridSize, retryCount, isDailyChallenge, puzzleSeed, effectiveLevel]);
 
   useEffect(() => {
     if (gameState === 'PREVIEW' && time >= previewTime) {

@@ -66,9 +66,10 @@ const MAX_MISTAKES = 0;
 const GAME_ID = "landmark" as const;
 
 const getPreviewTime = (levelIndex: number) => {
-  if (levelIndex >= 5) return 2; // Level 6+
-  if (levelIndex >= 1) return 3; // Level 2+
-  return 5;
+  if (levelIndex >= 12) return 1; // Level 13+
+  if (levelIndex >= 5) return 2;  // Level 6+
+  if (levelIndex >= 1) return 3;  // Level 2+
+  return 4; // Level 1
 };
 
 interface GameContainerProps {
@@ -87,7 +88,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const [retryCount, setRetryCount] = useState(0);
   const { isSoundOn } = useSound();
   const [showAlreadyCompleted, setShowAlreadyCompleted] = useState(false);
-  const [currentHintIndex, setCurrentHintIndex] = useState(0);
   const [hintViewed, setHintViewed] = useState(false);
   const { user } = useUser();
   const firestore = useFirestore();
@@ -241,9 +241,9 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
             level: dailyLevel,
           });
           localStorage.setItem(completionKey, "1");
-        } catch (e: any) {
-          console.error("Daily score submission failed:", e?.code, e?.message, e);
-          alert("Your score could not be saved. Please check your internet connection and try again.");
+        } catch (e) {
+          console.error("Daily score submit failed:", e);
+          alert("Score submission failed. Please check internet and try again.");
         }
       }
     }
@@ -318,7 +318,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     setGameState("READY");
     setShowFacts(false);
     setRetryCount(0);
-    setCurrentHintIndex(0);
     setHintViewed(false);
     setMistakeCount(0);
   };
@@ -341,9 +340,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const handleViewHint = () => {
     trackEvent('hint_viewed', { game: 'landmark', level: levelIndex + 1 });
     setHintViewed(true);
-    if(currentHintIndex < hints.length -1) {
-        setCurrentHintIndex(currentHintIndex + 1);
-    }
   };
   
   const handleBackToHome = () => {
@@ -452,12 +448,12 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 <CardDescription className="text-muted-foreground">
                 You have {isDailyChallenge ? 1 : (MAX_MISTAKES - mistakeCount + 1)} chance remaining.
                 </CardDescription>
-                {levelIndex >= 0 && (
+                {hints.length > 0 && (
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
                     <Button variant="outline" size="sm" className="mx-auto mt-2" onClick={handleViewHint}>
                         <HelpCircle className="mr-2 h-4 w-4" /> 
-                        {currentHintIndex > 0 ? `Hint ${currentHintIndex + 1}` : 'Hint'}
+                        Hint
                     </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
@@ -465,7 +461,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                         <AlertDialogTitle className="font-headline">Hint for {currentLevelData!.place}</AlertDialogTitle>
                         <AlertDialogDescription asChild>
                         <div className="text-left text-base p-4 rounded-lg mt-2 bg-yellow-100/70 dark:bg-yellow-900/40 border border-yellow-200/70 dark:border-yellow-700/60">
-                            {hints[currentHintIndex]}
+                            {hints[0]}
                         </div>
                         </AlertDialogDescription>
                     </AlertDialogHeader>

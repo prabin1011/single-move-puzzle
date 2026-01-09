@@ -747,26 +747,89 @@ function chooseRotation(rng: () => number): 90 | 180 | 270 {
 }
 
 function getDifficultyProfile(levelIndex: number, visualComplexity: Level["visualComplexity"]) {
-  const hard = levelIndex >= 1; // Level 2+
+  const hard = levelIndex >= 1;     // Level 2+
   const veryHard = levelIndex >= 5; // Level 6+
+  const insane = levelIndex >= 12;  // Level 13+ (optional)
 
-  const rotateChance =
-    visualComplexity === "low" ? (hard ? 0.45 : 0.30) :
-    visualComplexity === "medium" ? (hard ? 0.35 : 0.25) :
-    (hard ? 0.25 : 0.15);
+  const baseRotate =
+    visualComplexity === "low" ? 0.40 :
+    visualComplexity === "medium" ? 0.32 :
+    0.24;
 
-  const symmetryChance = hard ? 0.45 : 0.0;
+  const rotateChance = insane ? baseRotate + 0.25
+    : veryHard ? baseRotate + 0.18
+    : hard ? baseRotate + 0.10
+    : baseRotate;
 
-  const maxHints = hard ? (veryHard ? 1 : 2) : 3;
+  const symmetryChance = insane ? 0.55
+    : veryHard ? 0.45
+    : hard ? 0.30
+    : 0.0;
 
-  return { rotateChance, symmetryChance, maxHints };
+  const maxHints = insane ? 0 : veryHard ? 1 : hard ? 2 : 3;
+
+  return {
+    rotateChance: Math.min(0.85, rotateChance),
+    symmetryChance: Math.min(0.70, symmetryChance),
+    maxHints,
+  };
+}
+
+
+function clamp(n: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, n));
+}
+
+function neighbors(idx: number, grid: number): number[] {
+  const { row, col } = idxToRowCol(idx, grid);
+  const out: number[] = [];
+  if (row > 0) out.push(rowColToIdx(row - 1, col, grid));
+  if (row < grid - 1) out.push(rowColToIdx(row + 1, col, grid));
+  if (col > 0) out.push(rowColToIdx(row, col - 1, grid));
+  if (col < grid - 1) out.push(rowColToIdx(row, col + 1, grid));
+  return out;
+}
+
+function pickNearIndex(rng: () => number, grid: number, baseIdx: number, radius: number) {
+  const { row, col } = idxToRowCol(baseIdx, grid);
+  const rMin = clamp(row - radius, 0, grid - 1);
+  const rMax = clamp(row + radius, 0, grid - 1);
+  const cMin = clamp(col - radius, 0, grid - 1);
+  const cMax = clamp(col + radius, 0, grid - 1);
+
+  for (let tries = 0; tries < 30; tries++) {
+    const rr = rMin + Math.floor(rng() * (rMax - rMin + 1));
+    const cc = cMin + Math.floor(rng() * (cMax - cMin + 1));
+    const idx = rowColToIdx(rr, cc, grid);
+    if (idx !== baseIdx) return idx;
+  }
+
+  const n = neighbors(baseIdx, grid);
+  return n[Math.floor(rng() * n.length)];
+}
+
+function pickHardSwapPair(rng: () => number, grid: number, levelIndex: number) {
+  const total = grid * grid;
+  const i1 = Math.floor(rng() * total);
+
+  if (levelIndex >= 1) {
+    const n = neighbors(i1, grid);
+    if (n.length) {
+      const i2 = n[Math.floor(rng() * n.length)];
+      return [i1, i2] as [number, number];
+    }
+  }
+
+  const radius = levelIndex >= 5 ? 2 : 1;
+  const i2 = pickNearIndex(rng, grid, i1, radius);
+  return [i1, i2] as [number, number];
 }
 
 export const generatePuzzle = (
-    imageId: string,
-    grid: number,
-    levelIndex: number,
-    seed?: string
+  imageId: string,
+  grid: number,
+  levelIndex: number,
+  seed?: string
 ): Puzzle => {
   const level = allLevels.find((l) => l.imageId === imageId);
   if (!level) throw new Error(`Could not find level with imageId: ${imageId}`);
@@ -795,6 +858,7 @@ export const generatePuzzle = (
   }));
 
   const scrambledBoard: Tile[] = solvedBoard.map((t) => ({ ...t }));
+  
   const profile = getDifficultyProfile(levelIndex, level.visualComplexity);
   
   let solution: Solution;
@@ -832,10 +896,8 @@ export const generatePuzzle = (
     proceduralHints = [symmetryLine, ...base];
 
   } else {
-    // NORMAL SWAP
-    const index1 = Math.floor(rng() * totalTiles);
-    let index2 = Math.floor(rng() * totalTiles);
-    while (index2 === index1) index2 = Math.floor(rng() * totalTiles);
+    // NORMAL SWAP (harder: nearby swaps)
+    const [index1, index2] = pickHardSwapPair(rng, grid, levelIndex);
 
     [scrambledBoard[index1], scrambledBoard[index2]] = [
       scrambledBoard[index2],

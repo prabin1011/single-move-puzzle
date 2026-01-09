@@ -3,23 +3,19 @@ type LandmarkCategory = 'architecture' | 'nature' | 'sky' | 'city' | 'interior' 
 
 interface LevelConfig {
     grid: number;
-    categories: LandmarkCategory[];
-    timer?: boolean;
 }
 
 /**
  * Defines the difficulty curve of the game.
- * Maps a player's level to a specific grid size and allowed image categories.
- * @param level The player's current level number (0-indexed).
+ * Maps a player's level to a specific grid size.
+ * @param levelIndex The player's current level number (0-indexed).
  * @returns {LevelConfig} The configuration for that level.
  */
-export function getLevelConfig(level: number): LevelConfig {
-    if (level < 5) return { grid: 3, categories: ['all'] }; // Levels 1-5
-    if (level < 15) return { grid: 4, categories: ['architecture', 'city', 'nature'] }; // Levels 6-15
-    if (level < 30) return { grid: 5, categories: ['architecture', 'interior', 'high'] }; // Levels 16-30
-    if (level < 50) return { grid: 6, categories: ['architecture', 'high'] }; // Levels 31-50
-    // For levels 51+, introduce a timer as an added challenge
-    return { grid: 6, categories: ['architecture'], timer: true }; // Levels 51+
+export function getLevelConfig(levelIndex: number): LevelConfig {
+    if (levelIndex >= 10) return { grid: 6 }; // Level 11+
+    if (levelIndex >= 4) return { grid: 5 };  // Level 5-10
+    if (levelIndex >= 1) return { grid: 4 };  // Level 2-4
+    return { grid: 3 }; // Level 1
 }
 
 /**

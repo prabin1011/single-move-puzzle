@@ -28,11 +28,12 @@ import { trackEvent } from '@/lib/analytics';
 import { useGameTimer } from "@/hooks/use-game-timer";
 import { getTodaysDateKey } from '@/lib/daily-challenge';
 import { useUser, useFirestore } from "@/firebase";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { submitDailyScore } from '@/lib/submit-daily-score';
 
 type GameState = 'READY' | 'PLAYING' | 'SOLVED_VISUALIZING' | 'SOLVED_COMPLETE' | 'FAILED' | 'GAME_OVER' | 'ALL_LEVELS_COMPLETE';
 
-const MAX_MISTAKES = 0; // Game over on first mistake
+const MAX_MISTAKES = 0;
+const GAME_ID = "symbol-puzzle" as const;
 
 interface GameContainerProps {
   isDailyChallenge?: boolean;
@@ -55,11 +56,10 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const { user } = useUser();
   const firestore = useFirestore();
 
-  // Load progress on mount
   useEffect(() => {
     if (isDailyChallenge) {
         const todayKey = getTodaysDateKey();
-        const completionKey = `dailyChallengeCompletion:${todayKey}`;
+        const completionKey = `dailyChallengeCompletion:${todayKey}:${GAME_ID}`;
         if (localStorage.getItem(completionKey) === "1") {
             setShowAlreadyCompleted(true);
             setIsLoading(false);
@@ -106,7 +106,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   }, [level, retryCount, dailyLevel, isDailyChallenge, puzzleSeed, isLoading]);
 
 
-  // Save progress whenever level changes
   useEffect(() => {
     if (isLoading || isDailyChallenge) return;
     localStorage.setItem('symbolCurrentLevel', level.toString());
@@ -125,21 +124,23 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     
     if (isDailyChallenge && user && firestore) {
         const todayKey = getTodaysDateKey();
-        const completionKey = `dailyChallengeCompletion:${todayKey}`;
-        if (localStorage.getItem(completionKey) === "1") return;
-
-        const leaderboardRef = collection(firestore, `dailyLeaderboards/${todayKey}/entries`);
-        try {
-            await addDoc(leaderboardRef, {
-                userId: user.uid,
-                userName: user.displayName || `Player ${user.uid.slice(0, 4)}`,
-                timeTaken: duration,
-                hintsUsed: currentHint !== '',
-                timestamp: serverTimestamp(),
-            });
-            localStorage.setItem(completionKey, "1");
-        } catch (error) {
-            console.error("Failed to write leaderboard entry:", error);
+        const completionKey = `dailyChallengeCompletion:${todayKey}:${GAME_ID}`;
+        if (localStorage.getItem(completionKey) !== "1") {
+            try {
+                await submitDailyScore({
+                    firestore,
+                    todayKey,
+                    gameId: GAME_ID,
+                    user,
+                    timeTaken: duration,
+                    hintsUsed: currentHint !== '',
+                    level: dailyLevel,
+                });
+                localStorage.setItem(completionKey, "1");
+            } catch (e) {
+                console.error("Daily score submission failed:", e);
+                alert("Your score could not be saved. Please check your internet connection and try again.");
+            }
         }
     }
     
@@ -161,7 +162,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     trackEvent('game_level_fail', { game: 'symbol-puzzle', level: level + 1 });
     if (isDailyChallenge) {
         const todayKey = getTodaysDateKey();
-        localStorage.setItem(`dailyChallengeCompletion:${todayKey}`, "1");
+        localStorage.setItem(`dailyChallengeCompletion:${todayKey}:${GAME_ID}`, "1");
         setGameState("GAME_OVER");
     } else {
         const newMistakeCount = mistakeCount + 1;

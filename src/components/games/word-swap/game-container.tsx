@@ -28,27 +28,21 @@ import { trackEvent } from '@/lib/analytics';
 import { useGameTimer } from "@/hooks/use-game-timer";
 import { getTodaysDateKey } from '@/lib/daily-challenge';
 import { useUser, useFirestore } from "@/firebase";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { submitDailyScore } from '@/lib/submit-daily-score';
 
 type GameState = 'READY' | 'PLAYING' | 'SOLVED_VISUALIZING' | 'SOLVED_COMPLETE' | 'FAILED' | 'GAME_OVER' | 'ALL_LEVELS_COMPLETE';
 
-const MAX_MISTAKES = 0; // Game over on first mistake
-const TOTAL_LEVELS = 100; // Updated to 100 levels
-
-const alluringSnippets = [
-    "🔥 2,345 players have already tried today's puzzle!",
-    "🧠 Only 28% of players have solved it so far. Can you?",
-    "🏆 The current top score is 12 seconds. Think you can beat it?",
-    "🤔 This puzzle is proving to be a real head-scratcher.",
-];
+const MAX_MISTAKES = 0;
+const TOTAL_LEVELS = 100;
+const GAME_ID = "word-swap" as const;
 
 interface GameContainerProps {
   isDailyChallenge?: boolean;
   dailyLevel?: number;
-  puzzleSeed?: number;
+  puzzleSeed?: string;
 }
 
-export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0, puzzleSeed = 0 }: GameContainerProps) {
+export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0, puzzleSeed = "0" }: GameContainerProps) {
   const router = useRouter();
   const [level, setLevel] = useState(0);
   const [highestLevel, setHighestLevel] = useState(0);
@@ -61,17 +55,12 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const [currentHint, setCurrentHint] = useState('');
   const { time, reset: resetTimer, getDuration } = useGameTimer(gameState === 'PLAYING');
   const [showAlreadyCompleted, setShowAlreadyCompleted] = useState(false);
-  const [snippet, setSnippet] = useState('');
   const { user } = useUser();
   const firestore = useFirestore();
 
-  useEffect(() => {
-    setSnippet(alluringSnippets[Math.floor(Math.random() * alluringSnippets.length)]);
-  }, []);
-
   const loadPuzzle = (currentLevel: number, retries: number) => {
     setIsLoading(true);
-    const effectiveVariation = isDailyChallenge ? puzzleSeed : retries;
+    const effectiveVariation = isDailyChallenge ? parseInt(puzzleSeed, 36) : retries;
     const newPuzzle = generatePuzzle(currentLevel, effectiveVariation);
     setPuzzle(newPuzzle);
     
@@ -86,11 +75,10 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     setIsLoading(false);
   };
   
-  // Load progress on mount
   useEffect(() => {
     if (isDailyChallenge) {
         const todayKey = getTodaysDateKey();
-        const completionKey = `dailyChallengeCompletion:${todayKey}`;
+        const completionKey = `dailyChallengeCompletion:${todayKey}:${GAME_ID}`;
         if (localStorage.getItem(completionKey) === '1') {
             setShowAlreadyCompleted(true);
             setIsLoading(false);
@@ -115,7 +103,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
      setIsLoading(false);
   }, [isDailyChallenge, dailyLevel]);
 
-  // Save progress whenever level changes
   useEffect(() => {
     if (isLoading || isDailyChallenge) return;
     localStorage.setItem('wordSwapCurrentLevel', level.toString());
@@ -140,21 +127,23 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
 
     if (isDailyChallenge && user && firestore) {
         const todayKey = getTodaysDateKey();
-        const completionKey = `dailyChallengeCompletion:${todayKey}`;
-        if (localStorage.getItem(completionKey) === '1') return;
-
-        const leaderboardRef = collection(firestore, `dailyLeaderboards/${todayKey}/entries`);
-        try {
-            await addDoc(leaderboardRef, {
-                userId: user.uid,
-                userName: user.displayName || `Player ${user.uid.slice(0, 4)}`,
-                timeTaken: duration,
-                hintsUsed: currentHint !== '',
-                timestamp: serverTimestamp(),
-            });
-            localStorage.setItem(completionKey, '1');
-        } catch (error) {
-            console.error("Failed to write leaderboard entry:", error);
+        const completionKey = `dailyChallengeCompletion:${todayKey}:${GAME_ID}`;
+        if (localStorage.getItem(completionKey) !== '1') {
+            try {
+                await submitDailyScore({
+                    firestore,
+                    todayKey,
+                    gameId: GAME_ID,
+                    user,
+                    timeTaken: duration,
+                    hintsUsed: currentHint !== '',
+                    level: dailyLevel,
+                });
+                localStorage.setItem(completionKey, '1');
+            } catch (e) {
+                console.error("Daily score submission failed:", e);
+                alert("Your score could not be saved. Please check your internet connection and try again.");
+            }
         }
     }
 
@@ -177,7 +166,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
 
     if (isDailyChallenge) {
       const todayKey = getTodaysDateKey();
-      localStorage.setItem(`dailyChallengeCompletion:${todayKey}`, '1'); // Mark as completed even on fail
+      localStorage.setItem(`dailyChallengeCompletion:${todayKey}:${GAME_ID}`, '1');
       setGameState("GAME_OVER");
     } else {
         const newMistakeCount = mistakeCount + 1;
@@ -382,7 +371,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                     const allBanks: Record<string, { pairs: { left: string, right: string }[] }> = {
                         'syn_easy': bankSynEasy, 'syn_verbs': bankSynVerbs,
                         'syn_emotion': bankSynEmotion, 'ant_basic': bankAntBasic,
-                        'ant_emotion': bankAntEmotion, 'ant_abstract': bankAbstract,
+                        'ant_emotion': bankAntEmotion, 'ant_abstract': bankAntAbstract,
                         'cat_objects': bankCategoryObjects, 'cat_time_place': bankCategoryTimePlace,
                         'cat_abstract': bankCategoryAbstract, 'plural_forms': bankPlural,
                         'past_tense': bankPastTense, 'noun_adj': bankNounAdj,

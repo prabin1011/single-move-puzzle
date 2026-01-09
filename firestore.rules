@@ -6,99 +6,79 @@ service cloud.firestore {
     // Helper Functions
     // ===================================
 
-    /**
-     * Checks if a user is authenticated via any method (including anonymous).
-     */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /**
-     * Checks if the currently authenticated user's UID matches the provided userId.
-     * This is the fundamental check for document ownership.
-     */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    function isValidLeaderboardEntry(data) {
+      return data.keys().hasOnly([
+          "userId", "userName", "timeTaken", "hintsUsed", "timestamp", 
+          "gameId", "level", "clientDateISO"
+        ])
+        && data.userId == request.auth.uid
+        && data.gameId is string
+        && (data.gameId == "landmark" || data.gameId == "math" || data.gameId == "patterns" || data.gameId == "symbol-puzzle" || data.gameId == "word-swap")
+        && data.timeTaken is int
+        && data.timeTaken > 0
+        && data.timeTaken < 3600000 // < 1 hour
+        && data.hintsUsed is bool
+        && data.userName is string
+        && data.userName.size() <= 30
+        && (data.level is int || data.level == null)
+        && data.clientDateISO is string;
     }
 
     // User Profiles Collection
     // ===================================
 
-    /**
-     * @description Manages access to user profile documents. Ensures users can only access their own data.
-     * @path /users/{userId}
-     */
     match /users/{userId} {
       allow read, write: if isOwner(userId);
-      allow list: if false; // Prevent enumeration of users
+      allow list: if false; 
     }
 
     // Landmarks Collection
     // ===================================
 
-    /**
-     * @description Secures the curated landmark content. Allows public reads for the game client but blocks all client-side writes.
-     * @path /landmarks/{landmarkId}
-     */
     match /landmarks/{landmarkId} {
       allow get, list: if true;
-      allow write: if false; // Protect curated content from client modification
+      allow write: if false;
     }
     
     // Daily Puzzles Collection
     // ===================================
 
-    /**
-     * @description Secures the curated daily puzzles. Allows public reads for game clients.
-     * @path /dailyPuzzles/{date}
-     */
     match /dailyPuzzles/{date} {
         allow get, list: if true;
-        allow write: if false; // Protect curated content
+        allow write: if false;
     }
 
     // Daily Leaderboards Collection
     // ===================================
 
-    match /dailyLeaderboards/{date}/entries/{userId} {
-      // Global read (anyone can view leaderboard)
+    match /dailyLeaderboards/{date}/entries/{entry} {
       allow get, list: if true;
 
-      // Create only your own entry, once, with validated fields
-      allow create: if isOwner(userId)
-        && !exists(/databases/$(database)/documents/dailyLeaderboards/$(date)/entries/$(userId))
-        && request.resource.data.keys().hasOnly([
-          "userId",
-          "timeTaken",
-          "hintsUsed",
-          "timestamp",
-          "userName"
-        ])
-        && request.resource.data.userId == request.auth.uid
-        && request.resource.data.timeTaken is int
-        && request.resource.data.timeTaken > 0
-        && request.resource.data.timeTaken < 3600000 // < 1 hour (adjust)
-        && request.resource.data.hintsUsed is bool
-        && request.resource.data.userName is string
-        && request.resource.data.userName.size() <= 30
-        && request.resource.data.timestamp == request.time;
-
-      // No edits/deletes from client
-      allow update, delete: if false;
+      // Allow a user to create or overwrite their own entry for a specific game.
+      // The document ID is now a composite key: {gameId}_{userId}
+      allow write: if isSignedIn()
+        && entry.split('_')[1] == request.auth.uid
+        && request.resource.data.gameId == entry.split('_')[0]
+        && isValidLeaderboardEntry(request.resource.data);
     }
 
      match /dailyLeaderboards/{date}/stats/{docId} {
-        allow get, list: if true;      // public read
-        allow write: if false;         // only server should update
+        allow get, list: if true;
+        allow write: if false;
     }
 
 
-    // DEPRECATED - This collection is no longer in use per the new data model.
-    // This is kept temporarily to show the transition, but would be removed.
+    // DEPRECATED
     match /leaderboardEntries/{leaderboardEntryId} {
         allow read, write: if false;
     }
   }
 }
-
-    

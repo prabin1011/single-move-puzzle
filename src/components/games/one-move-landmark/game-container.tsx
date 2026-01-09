@@ -46,8 +46,7 @@ import { useSound } from "@/contexts/sound-context";
 import { trackEvent } from "@/lib/analytics";
 import { getTodaysDateKey } from "@/lib/daily-challenge";
 import { useUser, useFirestore } from "@/firebase";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-
+import { submitDailyScore } from "@/lib/submit-daily-score";
 
 function shuffle<T>(array: T[]): T[] {
   let currentIndex = array.length,
@@ -63,8 +62,9 @@ function shuffle<T>(array: T[]): T[] {
 }
 
 
-const MAX_MISTAKES = 0; // Allows 0 mistakes, game over on the 1st.
-const PREVIEW_TIME = 5; // 5 seconds to memorize
+const MAX_MISTAKES = 0;
+const PREVIEW_TIME = 5;
+const GAME_ID = "landmark" as const;
 
 interface GameContainerProps {
   isDailyChallenge?: boolean;
@@ -95,17 +95,15 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
 
   usePrefetchNextImages(levelIndex, levels);
 
-  // Load progress and shuffled levels on mount
   useEffect(() => {
     if (isDailyChallenge) {
       const todayKey = getTodaysDateKey();
-      const completionKey = `dailyChallengeCompletion:${todayKey}`;
+      const completionKey = `dailyChallengeCompletion:${todayKey}:${GAME_ID}`;
       if (localStorage.getItem(completionKey) === "1") {
         setShowAlreadyCompleted(true);
         setIsComponentLoading(false);
         return;
       }
-      // For daily challenge, we use the passed-in level and the initial unshuffled levels.
       const max = Math.max(1, initialLevels.length);
       const safeDaily = Math.max(0, Math.min(dailyLevel, max - 1));
       setLevelIndex(safeDaily);
@@ -136,7 +134,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     setIsComponentLoading(false);
   }, [isDailyChallenge, dailyLevel]);
   
-  // Save progress whenever level changes
   useEffect(() => {
     if (isComponentLoading || isDailyChallenge) return;
     localStorage.setItem('currentLevelIndex', levelIndex.toString());
@@ -156,7 +153,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   
   const { grid: currentGridSize } = getLevelConfig(isDailyChallenge ? dailyLevel : levelIndex);
 
-  // Generate the puzzle for the current level
   const currentPuzzle = useMemo(() => {
     if (!currentLevelData) return null;
     
@@ -165,17 +161,15 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     return generatePuzzle(currentLevelData.imageId, currentGridSize, seed);
   }, [currentLevelData, currentGridSize, retryCount, isDailyChallenge, puzzleSeed]);
 
-  // Game timer logic
   useEffect(() => {
     if (gameState === 'PREVIEW' && time >= PREVIEW_TIME) {
       playSound("preview_done", isSoundOn);
       stopTimer();
       setGameState('PLAYING');
-      resetTimer(); // Reset timer for the playing phase
+      resetTimer();
     }
   }, [time, gameState, stopTimer, isSoundOn, resetTimer]);
 
-  // Play a gentle chime whenever preview starts
   useEffect(() => {
     if (gameState === "PREVIEW") {
       playSound("start", isSoundOn);
@@ -226,26 +220,25 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     
     if (isDailyChallenge && user && firestore) {
       const todayKey = getTodaysDateKey();
-      const completionKey = `dailyChallengeCompletion:${todayKey}`;
+      const completionKey = `dailyChallengeCompletion:${todayKey}:${GAME_ID}`;
       
-      // Prevent duplicate submissions if the user somehow gets here again
-      if (localStorage.getItem(completionKey) === "1") return;
-
-      const leaderboardRef = collection(firestore, `dailyLeaderboards/${todayKey}/entries`);
-      
-      try {
-        await addDoc(leaderboardRef, {
-            userId: user.uid,
-            userName: user.displayName || `Player ${user.uid.slice(0, 4)}`,
-            timeTaken: duration,
-            hintsUsed: currentHintIndex > 0,
-            timestamp: serverTimestamp(),
-        });
-        // IMPORTANT: Only set the completion flag AFTER the write is successful
-        localStorage.setItem(completionKey, "1");
-      } catch (error) {
-        console.error("Failed to write leaderboard entry:", error);
-        // Optionally, inform the user that the score submission failed
+      if (localStorage.getItem(completionKey) !== "1") {
+          try {
+              await submitDailyScore({
+                  firestore,
+                  todayKey,
+                  gameId: GAME_ID,
+                  user,
+                  timeTaken: duration,
+                  hintsUsed: currentHintIndex > 0,
+                  level: dailyLevel,
+              });
+              // Only set flag after successful write
+              localStorage.setItem(completionKey, "1");
+          } catch (e) {
+              console.error("Daily score submission failed:", e);
+              alert("Your score could not be saved. Please check your internet connection and try again.");
+          }
       }
     }
     
@@ -269,7 +262,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     
     if (isDailyChallenge) {
         const todayKey = getTodaysDateKey();
-        localStorage.setItem(`dailyChallengeCompletion:${todayKey}`, "1");
+        localStorage.setItem(`dailyChallengeCompletion:${todayKey}:${GAME_ID}`, "1");
         setGameState("GAME_OVER");
     } else {
         const newMistakeCount = mistakeCount + 1;
@@ -288,9 +281,9 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const resetForRetry = () => {
     playSound("ui", isSoundOn);
     trackEvent('puzzle_retry', { game: 'landmark', level: levelIndex + 1 });
-    setMistakeCount(0); // Reset mistake count for the retry
-    setRetryCount((prev) => prev + 1); // This will trigger puzzle regeneration via useMemo
-    setGameState("PREVIEW"); // Go back to preview for another look
+    setMistakeCount(0);
+    setRetryCount((prev) => prev + 1);
+    setGameState("PREVIEW");
     resetTimer();
   };
 
@@ -311,7 +304,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   }
 
   const nextLevel = () => {
-    if (isDailyChallenge) return; // No next level in daily challenge
+    if (isDailyChallenge) return;
     playSound("ui", isSoundOn);
     const newIndex = (levelIndex + 1);
     setLevelIndex(newIndex);
@@ -319,7 +312,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     setShowFacts(false);
     setRetryCount(0);
     setCurrentHintIndex(0);
-    setMistakeCount(0); // Reset mistakes for the new level
+    setMistakeCount(0);
   };
   
   const handleStart = () => {

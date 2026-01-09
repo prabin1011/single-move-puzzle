@@ -30,7 +30,7 @@ service cloud.firestore {
         && data.userName.size() <= 30
         && (data.level is int || data.level == null)
         && data.clientDateISO is string
-        && data.timestamp == request.time;
+        && data.timestamp is timestamp;
     }
 
     // User Profiles Collection
@@ -63,12 +63,14 @@ service cloud.firestore {
     match /dailyLeaderboards/{date}/entries/{entry} {
       allow get, list: if true;
 
-      // Allow a user to create or overwrite their own entry for a specific game.
-      // The document ID is now a composite key: {gameId}_{userId}
-      allow write: if isSignedIn()
+      // Allow a user to create (but not update) their own entry for a specific game.
+      // The document ID is a composite key: {gameId}_{userId}
+      allow create: if isSignedIn()
         && entry.split('_')[1] == request.auth.uid
         && request.resource.data.gameId == entry.split('_')[0]
         && isValidLeaderboardEntry(request.resource.data);
+      
+      allow update, delete: if false;
     }
 
      match /dailyLeaderboards/{date}/stats/{docId} {

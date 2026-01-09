@@ -63,8 +63,13 @@ function shuffle<T>(array: T[]): T[] {
 
 
 const MAX_MISTAKES = 0;
-const PREVIEW_TIME = 5;
 const GAME_ID = "landmark" as const;
+
+const getPreviewTime = (levelIndex: number) => {
+  if (levelIndex >= 6) return 2;
+  if (levelIndex >= 2) return 3;
+  return 5;
+};
 
 interface GameContainerProps {
   isDailyChallenge?: boolean;
@@ -92,6 +97,9 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   >("READY");
   const [showFacts, setShowFacts] = useState(false);
   
+  const effectiveLevel = isDailyChallenge ? dailyLevel : levelIndex;
+  const previewTime = getPreviewTime(effectiveLevel);
+
   const { time, reset: resetTimer, stop: stopTimer, getDuration } = useGameTimer(gameState === "PREVIEW" || gameState === 'PLAYING');
 
   usePrefetchNextImages(levelIndex, levels);
@@ -147,29 +155,26 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
 
   const currentLevelData = useMemo(() => {
     if (isComponentLoading || levels.length === 0) return null;
-    const index = isDailyChallenge ? dailyLevel : levelIndex;
-    if (index >= levels.length) return null;
-    return levels[index];
-  }, [levelIndex, levels, isComponentLoading, isDailyChallenge, dailyLevel]);
+    if (effectiveLevel >= levels.length) return null;
+    return levels[effectiveLevel];
+  }, [effectiveLevel, levels, isComponentLoading]);
   
-  const { grid: currentGridSize } = getLevelConfig(isDailyChallenge ? dailyLevel : levelIndex);
+  const { grid: currentGridSize } = getLevelConfig(effectiveLevel);
 
   const currentPuzzle = useMemo((): Puzzle | null => {
     if (!currentLevelData) return null;
-    
     let seed = isDailyChallenge && puzzleSeed ? puzzleSeed : `${retryCount}`;
-
     return generatePuzzle(currentLevelData.imageId, currentGridSize, seed);
   }, [currentLevelData, currentGridSize, retryCount, isDailyChallenge, puzzleSeed]);
 
   useEffect(() => {
-    if (gameState === 'PREVIEW' && time >= PREVIEW_TIME) {
+    if (gameState === 'PREVIEW' && time >= previewTime) {
       playSound("preview_done", isSoundOn);
       stopTimer();
       setGameState('PLAYING');
       resetTimer();
     }
-  }, [time, gameState, stopTimer, isSoundOn, resetTimer]);
+  }, [time, gameState, stopTimer, isSoundOn, resetTimer, previewTime]);
 
   useEffect(() => {
     if (gameState === "PREVIEW") {
@@ -212,8 +217,8 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     )
   }
 
-  const { imageUrl, hints, imageHint, facts, solvedBoard } = currentPuzzle;
-  const { scrambledBoard, solution } = currentPuzzle;
+  const { imageUrl, hints, imageHint, facts, solvedBoard, solution } = currentPuzzle;
+  const { scrambledBoard } = currentPuzzle;
 
   const handleSuccess = async () => {
     playSound('success', isSoundOn);
@@ -222,26 +227,25 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     trackEvent('game_level_complete', { game: 'landmark', level: levelIndex + 1 });
     
     if (isDailyChallenge && user && firestore) {
-        const todayKey = getTodaysDateKey();
-        const completionKey = `dailyChallengeCompletion:${todayKey}:${GAME_ID}`;
-        if (localStorage.getItem(completionKey) !== "1") {
-            try {
-                await submitDailyScore({
-                    firestore,
-                    todayKey,
-                    gameId: GAME_ID,
-                    user,
-                    timeTaken: duration,
-                    hintsUsed: hintViewed,
-                    level: dailyLevel,
-                });
-                // Only set AFTER successful write
-                localStorage.setItem(completionKey, "1");
-            } catch (e) {
-                console.error("Daily score submission failed:", e);
-                alert("Your score could not be saved. Please check your internet connection and try again.");
-            }
+      const todayKey = getTodaysDateKey();
+      const completionKey = `dailyChallengeCompletion:${todayKey}:${GAME_ID}`;
+      if (localStorage.getItem(completionKey) !== "1") {
+        try {
+          await submitDailyScore({
+            firestore,
+            todayKey,
+            gameId: GAME_ID,
+            user,
+            timeTaken: duration,
+            hintsUsed: hintViewed,
+            level: dailyLevel,
+          });
+          localStorage.setItem(completionKey, "1");
+        } catch (e: any) {
+          console.error("Daily score submission failed:", e?.code, e?.message, e);
+          alert("Your score could not be saved. Please check your internet connection and try again.");
         }
+      }
     }
     
     setTimeout(() => {
@@ -352,9 +356,12 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const title = isDailyChallenge ? `Daily Challenge` : `Level ${levelIndex + 1}`;
   const subTitle = `${currentGridSize}x${currentGridSize} Grid`;
   
-  const playInstructions = solution.type === 'swap'
-    ? 'Find the two swapped pieces.'
-    : 'Find the one rotated piece.';
+  const playInstructions =
+    solution.type === "swap"
+        ? "Find the two swapped pieces."
+        : solution.type === "symmetry-swap"
+        ? `Find the mirrored mistake (${solution.axis === "vertical" ? "left ↔ right" : "top ↔ bottom"}).`
+        : "Find the one rotated piece.";
 
   return (
      <main className="flex min-h-screen flex-col items-center justify-center p-4">
@@ -393,7 +400,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 <div className="absolute top-4 right-4">
                     <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
                     <p className="text-lg font-bold text-secondary-foreground">
-                        {PREVIEW_TIME - time}
+                        {previewTime - time}
                     </p>
                     <svg className="absolute inset-0 h-full w-full" viewBox="0 0 36 36">
                         <circle
@@ -407,7 +414,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                         <circle
                             className="stroke-current text-primary"
                             strokeWidth="4"
-                            strokeDasharray={`${((PREVIEW_TIME - time) / PREVIEW_TIME) * 100}, 100`}
+                            strokeDasharray={`${((previewTime - time) / previewTime) * 100}, 100`}
                             strokeLinecap="round"
                             transform="rotate(-90 18 18)"
                             fill="none"

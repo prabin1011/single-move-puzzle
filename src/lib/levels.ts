@@ -1,4 +1,3 @@
-
 import { PlaceHolderImages } from './placeholder-images';
 import { generateHints } from './hint-engine';
 
@@ -9,14 +8,14 @@ export interface Level {
   facts: string[][]; // Facts are now a nested array
   category: 'architecture' | 'nature' | 'sky' | 'city' | 'interior' | 'abstract';
   visualComplexity: 'low' | 'medium' | 'high';
-  imageId: string; 
+  imageId: string;
   variations: number;
 }
 
 export type Solution =
-  | { type: 'swap'; indices: [number, number] }
-  | { type: 'rotate'; index: number; correctRotation: number };
-
+  | { type: "swap"; indices: [number, number] }
+  | { type: "rotate"; index: number; correctRotation: number }
+  | { type: "symmetry-swap"; indices: [number, number]; axis: "vertical" | "horizontal" };
 
 export interface Tile {
   originalIndex: number;
@@ -671,7 +670,6 @@ export function getImageUrl(
 ): { url: string; hint: string; facts: string[] } {
   const level = allLevels.find((l) => l.imageId === imageId);
   if (!level) {
-    // Fallback to something that definitely exists
     return {
       url: `/images/eiffel-tower-1.jpg`,
       hint: "fallback",
@@ -683,50 +681,100 @@ export function getImageUrl(
     PlaceHolderImages.find((p) => p.id === imageId)?.imageHint ?? "landmark";
 
   const safeVariations = Math.max(1, availableVariations || 1);
-  const factIndex = round % level.facts.length;
+  const safeRound = (round >>> 0);
+
+  const factIndex = safeRound % level.facts.length;
   const facts = level.facts[factIndex] ?? level.facts[0];
 
-  // The new file convention is imageId-1.jpg, imageId-2.jpg, etc.
-  const variationIndex = round % safeVariations; // 0, 1, 2, ...
-  const fileVariantNumber = variationIndex + 1; // 1, 2, 3...
+  const variationIndex = safeRound % safeVariations;
+  const fileVariantNumber = variationIndex + 1;
 
   const url = `/images/${imageId}-${fileVariantNumber}.jpg`;
-
   return { url, hint, facts };
 }
 
-// mulberry32, a simple PRNG for deterministic "randomness"
 function mulberry32(a: number) {
-    return function() {
-      a |= 0; a = a + 0x6D2B79F5 | 0;
-      var t = Math.imul(a ^ a >>> 15, 1 | a);
-      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
-      return ((t ^ t >>> 14) >>> 0) / 4294967296;
-    }
+  return function () {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
 }
 
+function hashSeedToUint(seed: string): number {
+  let h = 1779033703;
+  for (let i = 0; i < seed.length; i++) {
+    h = (h ^ seed.charCodeAt(i)) * 16777619;
+  }
+  return (h >>> 0);
+}
+
+function idxToRowCol(idx: number, grid: number) {
+  return { row: Math.floor(idx / grid), col: idx % grid };
+}
+
+function rowColToIdx(row: number, col: number, grid: number) {
+  return row * grid + col;
+}
+
+function mirroredIndex(idx: number, grid: number, axis: "vertical" | "horizontal") {
+  const { row, col } = idxToRowCol(idx, grid);
+  if (axis === "vertical") {
+    return rowColToIdx(row, grid - 1 - col, grid);
+  }
+  return rowColToIdx(grid - 1 - row, col, grid);
+}
+
+function pickNonSelfMirroredIndex(rng: () => number, grid: number) {
+  const total = grid * grid;
+  for (let tries = 0; tries < 50; tries++) {
+    const idx = Math.floor(rng() * total);
+    const axis: "vertical" | "horizontal" = rng() < 0.5 ? "vertical" : "horizontal";
+    const mir = mirroredIndex(idx, grid, axis);
+    if (mir !== idx) return { idx, axis, mir };
+  }
+  const idx = 0;
+  const axis: "vertical" | "horizontal" = "vertical";
+  const mir = mirroredIndex(idx, grid, axis);
+  return { idx, axis, mir: mir === idx ? 1 : mir };
+}
+
+function chooseRotation(rng: () => number): 90 | 180 | 270 {
+  const opts: (90 | 180 | 270)[] = [90, 180, 270];
+  return opts[Math.floor(rng() * opts.length)];
+}
+
+function getDifficultyProfile(levelIndex: number, visualComplexity: Level["visualComplexity"]) {
+  const hard = levelIndex >= 2;
+  const veryHard = levelIndex >= 6;
+
+  const rotateChance =
+    visualComplexity === "low" ? (hard ? 0.45 : 0.30) :
+    visualComplexity === "medium" ? (hard ? 0.35 : 0.25) :
+    (hard ? 0.25 : 0.15);
+
+  const symmetryChance = hard ? 0.45 : 0.0;
+
+  const maxHints = hard ? (veryHard ? 1 : 2) : 3;
+
+  return { rotateChance, symmetryChance, maxHints };
+}
 
 export const generatePuzzle = (imageId: string, grid: number, seed?: string): Puzzle => {
-  const level = allLevels.find(l => l.imageId === imageId);
-  if (!level) {
-    throw new Error(`Could not find level with imageId: ${imageId}`);
-  }
-  
+  const level = allLevels.find((l) => l.imageId === imageId);
+  if (!level) throw new Error(`Could not find level with imageId: ${imageId}`);
+
   let round = 0;
-  let numericSeed: number | undefined = undefined;
   let rng = Math.random;
 
   if (seed) {
-    let h = 1779033703, i, c;
-    for (i = 0; i < seed.length; i++) {
-        c = seed.charCodeAt(i);
-        h = (h ^ c) * 16777619;
-    }
-    numericSeed = h;
+    const numericSeed = hashSeedToUint(seed);
     rng = mulberry32(numericSeed);
     round = numericSeed;
-  } else if (typeof window !== 'undefined') {
-    round = parseInt(localStorage.getItem('gameRound') || '0', 10);
+  } else if (typeof window !== "undefined") {
+    round = parseInt(localStorage.getItem("gameRound") || "0", 10) >>> 0;
   }
 
   const { url: imageUrl, hint: imageHint, facts } = getImageUrl(
@@ -734,44 +782,70 @@ export const generatePuzzle = (imageId: string, grid: number, seed?: string): Pu
     level.variations,
     round
   );
-  
+
   const totalTiles = grid * grid;
-  const solvedBoard: Tile[] = Array.from({ length: totalTiles }, (_, i) => ({ originalIndex: i, rotation: 0 }));
-  
-  let scrambledBoard: Tile[] = solvedBoard.map(t => ({...t}));
+  const solvedBoard: Tile[] = Array.from({ length: totalTiles }, (_, i) => ({
+    originalIndex: i,
+    rotation: 0,
+  }));
+
+  const scrambledBoard: Tile[] = solvedBoard.map((t) => ({ ...t }));
+  const approxLevelIndex = grid <= 3 ? 0 : grid === 4 ? 3 : 6;
+  const profile = getDifficultyProfile(approxLevelIndex, level.visualComplexity);
+  const roll = rng();
   let solution: Solution;
-  let proceduralHints: string[];
+  let proceduralHints: string[] = [];
 
-  // Decide whether to make a swap or a rotation puzzle
-  if (rng() > 0.3) { // 70% chance for a swap puzzle
-    const index1 = Math.floor(rng() * totalTiles);
-    let index2 = Math.floor(rng() * totalTiles);
-    while (index1 === index2) {
-      index2 = Math.floor(rng() * totalTiles);
-    }
-    
-    [scrambledBoard[index1], scrambledBoard[index2]] = [scrambledBoard[index2], scrambledBoard[index1]];
-    solution = { type: 'swap', indices: [index1, index2] };
-    proceduralHints = generateHints(grid, solution.indices);
-
-  } else { // 30% chance for a rotation puzzle
+  if (roll < profile.rotateChance) {
     const index = Math.floor(rng() * totalTiles);
-    const possibleRotations: (90 | 180 | 270)[] = [90, 180, 270];
-    const rotation = possibleRotations[Math.floor(rng() * possibleRotations.length)];
+    const rotation = chooseRotation(rng);
     scrambledBoard[index].rotation = rotation;
-    
-    solution = { type: 'rotate', index, correctRotation: 0 };
-    proceduralHints = generateHints(grid, [solution.index]);
+
+    solution = { type: "rotate", index, correctRotation: 0 };
+    proceduralHints = generateHints(grid, [index]);
+
+  } else {
+    const roll2 = rng();
+    if (roll2 < profile.symmetryChance) {
+      const pick = pickNonSelfMirroredIndex(rng, grid);
+      const i1 = pick.idx;
+      const i2 = pick.mir;
+
+      [scrambledBoard[i1], scrambledBoard[i2]] = [scrambledBoard[i2], scrambledBoard[i1]];
+
+      solution = { type: "symmetry-swap", indices: [i1, i2], axis: pick.axis };
+
+      const base = generateHints(grid, [i1, i2]);
+      const symmetryLine =
+        pick.axis === "vertical"
+          ? "Look for a mistake across the vertical mirror line (left ↔ right)."
+          : "Look for a mistake across the horizontal mirror line (top ↔ bottom).";
+      proceduralHints = [symmetryLine, ...base];
+
+    } else {
+      const index1 = Math.floor(rng() * totalTiles);
+      let index2 = Math.floor(rng() * totalTiles);
+      while (index2 === index1) index2 = Math.floor(rng() * totalTiles);
+
+      [scrambledBoard[index1], scrambledBoard[index2]] = [
+        scrambledBoard[index2],
+        scrambledBoard[index1],
+      ];
+
+      solution = { type: "swap", indices: [index1, index2] };
+      proceduralHints = generateHints(grid, solution.indices);
+    }
   }
 
+  proceduralHints = proceduralHints.slice(0, profile.maxHints);
 
   return {
     solvedBoard,
     scrambledBoard,
     solution,
-    imageUrl: imageUrl,
-    imageHint: imageHint,
+    imageUrl,
+    imageHint,
     hints: proceduralHints,
-    facts: facts,
+    facts,
   };
 };

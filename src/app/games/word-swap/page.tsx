@@ -1,4 +1,3 @@
-
 import GameContainer from '@/components/games/word-swap/game-container';
 
 export default function PlayPage() {

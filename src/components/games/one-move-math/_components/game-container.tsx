@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -19,7 +20,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { generatePuzzle, getHint, type MathPuzzle, getMathPuzzleConfig, mathLevels } from '@/lib/math-puzzles';
 import PuzzleBoard from '../puzzle-board';
-import { Loader2, RefreshCw, Info, Play, ArrowRight, PartyPopper, BrainCircuit, Plus, Minus, X, Divide } from 'lucide-react';
+import { Loader2, RefreshCw, Info, Play, ArrowRight, PartyPopper, BrainCircuit, Plus, Minus, X, Divide, Trophy } from 'lucide-react';
 import { useSound } from '@/contexts/sound-context';
 import { playSound } from '@/lib/sounds';
 import { cn } from '@/lib/utils';
@@ -28,11 +29,12 @@ import { trackEvent } from '@/lib/analytics';
 import { useGameTimer } from "@/hooks/use-game-timer";
 import { getTodaysDateKey } from '@/lib/daily-challenge';
 import { useUser, useFirestore } from "@/firebase";
-import { addDoc, collection } from "firebase/firestore";
+import { submitDailyScore } from '@/lib/submit-daily-score';
 
 type GameState = 'READY' | 'PLAYING' | 'SOLVED_VISUALIZING' | 'SOLVED_COMPLETE' | 'FAILED' | 'GAME_OVER' | 'ALL_LEVELS_COMPLETE';
 
-const MAX_MISTAKES = 0; // Game over on first mistake
+const MAX_MISTAKES = 0;
+const GAME_ID = "math" as const;
 
 interface GameContainerProps {
   isDailyChallenge?: boolean;
@@ -51,14 +53,15 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const { isSoundOn } = useSound();
   const { time, reset: resetTimer, getDuration } = useGameTimer(gameState === 'PLAYING');
   const [showAlreadyCompleted, setShowAlreadyCompleted] = useState(false);
+  const [hintViewed, setHintViewed] = useState(false);
   const { user } = useUser();
   const firestore = useFirestore();
 
-  // Load progress on mount
   useEffect(() => {
     if (isDailyChallenge) {
         const todayKey = getTodaysDateKey();
-        if (localStorage.getItem(`dailyChallengeCompletion:${todayKey}`) === "1") {
+        const completionKey = `dailyChallengeCompletion:${todayKey}:${GAME_ID}`;
+        if (localStorage.getItem(completionKey) === "1") {
             setShowAlreadyCompleted(true);
             setIsLoading(false);
             return;
@@ -82,7 +85,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     setIsLoading(false);
   }, [isDailyChallenge, dailyLevel]);
 
-  // Save progress whenever level changes
   useEffect(() => {
     if (isLoading || isDailyChallenge) return;
     localStorage.setItem('mathCurrentLevel', level.toString());
@@ -108,19 +110,27 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
 
     if (isDailyChallenge && user && firestore) {
         const todayKey = getTodaysDateKey();
-        localStorage.setItem(`dailyChallengeCompletion:${todayKey}`, "1");
-        const leaderboardRef = collection(firestore, `dailyLeaderboards/${todayKey}/entries`);
-        await addDoc(leaderboardRef, {
-            userId: user.uid,
-            userName: user.displayName || 'Anonymous',
-            timeTaken: duration,
-            hintsUsed: false, // Assuming no hints for now
-            timestamp: new Date(),
-        });
+        const completionKey = `dailyChallengeCompletion:${todayKey}:${GAME_ID}`;
+        if (localStorage.getItem(completionKey) !== "1") {
+            try {
+                await submitDailyScore({
+                    firestore,
+                    todayKey,
+                    gameId: GAME_ID,
+                    user,
+                    timeTaken: duration,
+                    hintsUsed: hintViewed, 
+                    level: dailyLevel,
+                });
+                localStorage.setItem(completionKey, "1");
+            } catch (e) {
+                console.error("Daily score submission failed:", e);
+                alert("Your score could not be saved. Please check your internet connection and try again.");
+            }
+        }
     }
 
     setTimeout(() => {
-        // There are 50 levels, indexed 0-49
         if (level >= mathLevels.length - 1 && !isDailyChallenge) { 
             playSound('win', isSoundOn);
             trackEvent('game_all_levels_complete', { game: 'math' });
@@ -139,7 +149,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
 
     if (isDailyChallenge) {
         const todayKey = getTodaysDateKey();
-        localStorage.setItem(`dailyChallengeCompletion:${todayKey}`, "1");
+        localStorage.setItem(`dailyChallengeCompletion:${todayKey}:${GAME_ID}`, "1");
         setGameState("GAME_OVER");
     } else {
         const newMistakeCount = mistakeCount + 1;
@@ -160,6 +170,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     playSound('ui', isSoundOn);
     setMistakeCount(0);
     setRetryCount(0);
+    setHintViewed(false);
     setLevel(prev => prev + 1);
     setGameState('READY');
   };
@@ -179,6 +190,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     setHighestLevel(0);
     setMistakeCount(0);
     setRetryCount(0);
+    setHintViewed(false);
     setGameState("READY");
     localStorage.removeItem('mathCurrentLevel');
     localStorage.removeItem('mathHighestLevel');
@@ -193,6 +205,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
 
   const handleViewHint = () => {
     trackEvent('hint_viewed', { game: 'math', level: level + 1 });
+    setHintViewed(true);
   }
 
   const handleBackToHome = () => {
@@ -349,7 +362,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 onSuccess={() => {}}
                 onFail={() => {}}
                 isReadOnly={true}
-                showSolution={true}
             />
         )}
         { gameState === 'READY' && (

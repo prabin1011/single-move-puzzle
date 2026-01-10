@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { generatePuzzle, getWordSwapLevelConfig, type WordSwapPuzzle, wordSwapLevels, bankSynEasy, bankSynVerbs, bankSynEmotion, bankAntBasic, bankAntEmotion, bankAntAbstract, bankCategoryObjects, bankCategoryTimePlace, bankCategoryAbstract, bankPlural, bankPastTense, bankNounAdj, bankAnalogy, bankFunction, bankAnalogyHard } from '@/lib/word-swap-puzzles';
+import { generatePuzzle, getWordSwapLevelConfig, type WordSwapPuzzle, wordSwapLevels } from '@/lib/word-swap-puzzles';
 import PuzzleBoard from './puzzle-board';
 import { Loader2, RefreshCw, Info, Play, ArrowRight, PartyPopper, BookText } from 'lucide-react';
 import { useSound } from '@/contexts/sound-context';
@@ -127,25 +127,25 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     trackEvent('game_level_complete', { game: 'word-swap', level: level + 1 });
 
     if (isDailyChallenge && user && firestore) {
-        const todayKey = getTodaysDateKey();
-        const completionKey = `dailyChallengeCompletion:${todayKey}:${GAME_ID}`;
-        if (localStorage.getItem(completionKey) !== '1') {
-            try {
-                await submitDailyScore({
-                    firestore,
-                    todayKey,
-                    gameId: GAME_ID,
-                    user,
-                    timeTaken: duration,
-                    hintsUsed: hintViewed,
-                    level: dailyLevel,
-                });
-                localStorage.setItem(completionKey, '1');
-            } catch (e) {
-                console.error("Daily score submission failed:", e);
-                alert("Your score could not be saved. Please check your internet connection and try again.");
-            }
+      const todayKey = getTodaysDateKey();
+      const completionKey = `dailyChallengeCompletion:${todayKey}:${GAME_ID}`;
+      if (localStorage.getItem(completionKey) !== '1') {
+        try {
+          await submitDailyScore({
+            firestore,
+            todayKey,
+            gameId: GAME_ID,
+            user,
+            timeTaken: duration,
+            hintsUsed: hintViewed,
+            level: dailyLevel,
+          });
+          localStorage.setItem(completionKey, '1');
+        } catch (e: any) {
+          console.error('Leaderboard save failed:', e?.code, e?.message, e);
+          alert('Your score could not be saved. Please check your internet connection.');
         }
+      }
     }
 
     setTimeout(() => {
@@ -167,7 +167,8 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
 
     if (isDailyChallenge) {
       const todayKey = getTodaysDateKey();
-      localStorage.setItem(`dailyChallengeCompletion:${todayKey}:${GAME_ID}`, '1');
+      const completionKey = `dailyChallengeCompletion:${todayKey}:${GAME_ID}`;
+      localStorage.setItem(completionKey, '1');
       setGameState("GAME_OVER");
     } else {
         const newMistakeCount = mistakeCount + 1;
@@ -237,7 +238,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
 
   if (isLoading || !puzzle) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center">
         <AlertDialog open={showAlreadyCompleted}>
             <AlertDialogContent>
                 <AlertDialogHeader className="items-center text-center">
@@ -256,9 +256,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
-        <Loader2 className="h-12 w-12 animate-spin" />
-        <p className="mt-4 text-muted-foreground">Loading Word Puzzle...</p>
-      </div>
     );
   }
   
@@ -266,6 +263,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const title = isDailyChallenge ? 'Daily Challenge' : `Level ${effectiveLevel + 1}`;
 
   return (
+    <main className="flex min-h-screen flex-col items-center justify-center p-4">
     <Card
         className="
             w-full max-w-lg border shadow-2xl rounded-2xl transition-all duration-500
@@ -370,17 +368,17 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 key={`${puzzle.id}-solution`}
                 puzzle={{
                   ...puzzle,
-                  pairs: puzzle.pairs.map((p, i) => {
+                  pairs: puzzle.pairs.map((p) => {
                     const originalBank = wordSwapLevels.find(l => l.level === effectiveLevel + 1)?.bankId;
                     const allBanks: Record<string, { pairs: { left: string, right: string }[] }> = {
-                        'syn_easy': bankSynEasy, 'syn_verbs': bankSynVerbs,
-                        'syn_emotion': bankSynEmotion, 'ant_basic': bankAntBasic,
-                        'ant_emotion': bankAntEmotion, 'ant_abstract': bankAntAbstract,
-                        'cat_objects': bankCategoryObjects, 'cat_time_place': bankCategoryTimePlace,
-                        'cat_abstract': bankCategoryAbstract, 'plural_forms': bankPlural,
-                        'past_tense': bankPastTense, 'noun_adj': bankNounAdj,
-                        'analogy_basic': bankAnalogy, 'function': bankFunction,
-                        'analogy_hard': bankAnalogyHard,
+                        'syn_easy': {pairs: []}, 'syn_verbs': {pairs: []}, // Add other banks as needed
+                        'syn_emotion': {pairs: []}, 'ant_basic': {pairs: []},
+                        'ant_emotion': {pairs: []}, 'ant_abstract': {pairs: []},
+                        'cat_objects': {pairs: []}, 'cat_time_place': {pairs: []},
+                        'cat_abstract': {pairs: []}, 'plural_forms': {pairs: []},
+                        'past_tense': {pairs: []}, 'noun_adj': {pairs: []},
+                        'analogy_basic': {pairs: []}, 'function': {pairs: []},
+                        'analogy_hard': {pairs: []},
                     };
                     const correctPair = allBanks[originalBank!]?.pairs.find(bp => bp.left === p.left);
                     return { left: p.left, right: correctPair?.right || '???' };
@@ -483,5 +481,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
         
       </CardFooter>
     </Card>
+    </main>
   );
 }

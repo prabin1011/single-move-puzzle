@@ -1,4 +1,5 @@
 
+
 import { generateHints } from './hint-engine';
 
 export interface Level {
@@ -24,7 +25,7 @@ export const allLevels: Level[] = [
     category: "architecture",
     visualComplexity: "high",
     imageId: "eiffel-tower",
-    variations: 1,
+    variations: 4,
   },
   {
     id: "lvl-02",
@@ -37,7 +38,7 @@ export const allLevels: Level[] = [
     category: "architecture",
     visualComplexity: "high",
     imageId: "colosseum",
-    variations: 1,
+    variations: 4,
   },
   {
     id: "lvl-03",
@@ -50,7 +51,7 @@ export const allLevels: Level[] = [
     category: "architecture",
     visualComplexity: "high",
     imageId: "elizabeth-tower",
-    variations: 1,
+    variations: 4,
   },
   {
     id: "lvl-04",
@@ -63,7 +64,7 @@ export const allLevels: Level[] = [
     category: "architecture",
     visualComplexity: "high",
     imageId: "tower-bridge",
-    variations: 1,
+    variations: 4,
   },
   {
     id: "lvl-05",
@@ -76,7 +77,7 @@ export const allLevels: Level[] = [
     category: "architecture",
     visualComplexity: "high",
     imageId: "sagrada-familia",
-    variations: 1,
+    variations: 4,
   },
   {
     id: "lvl-06",
@@ -89,7 +90,7 @@ export const allLevels: Level[] = [
     category: "architecture",
     visualComplexity: "high",
     imageId: "alhambra",
-    variations: 1,
+    variations: 4,
   },
   {
     id: "lvl-07",
@@ -102,7 +103,7 @@ export const allLevels: Level[] = [
     category: "architecture",
     visualComplexity: "medium",
     imageId: "acropolis-of-athens",
-    variations: 1,
+    variations: 4,
   },
   {
     id: "lvl-08",
@@ -115,7 +116,7 @@ export const allLevels: Level[] = [
     category: "nature",
     visualComplexity: "low",
     imageId: "stonehenge",
-    variations: 1,
+    variations: 4,
   },
   {
     id: "lvl-09",
@@ -128,7 +129,7 @@ export const allLevels: Level[] = [
     category: "architecture",
     visualComplexity: "high",
     imageId: "louvre",
-    variations: 1,
+    variations: 4,
   },
   {
     id: "lvl-10",
@@ -141,7 +142,7 @@ export const allLevels: Level[] = [
     category: "architecture",
     visualComplexity: "high",
     imageId: "notre-dame",
-    variations: 1,
+    variations: 4,
   },
   {
     id: "lvl-11",
@@ -154,7 +155,7 @@ export const allLevels: Level[] = [
     category: "architecture",
     visualComplexity: "medium",
     imageId: "mont-saint-michel",
-    variations: 1,
+    variations: 4,
   },
   {
     id: "lvl-12",
@@ -167,7 +168,7 @@ export const allLevels: Level[] = [
     category: "architecture",
     visualComplexity: "medium",
     imageId: "arc-de-triomphe",
-    variations: 1,
+    variations: 4,
   },
   {
     id: "lvl-13",
@@ -180,7 +181,7 @@ export const allLevels: Level[] = [
     category: "architecture",
     visualComplexity: "medium",
     imageId: "brandenburg-gate",
-    variations: 1,
+    variations: 4,
   },
   {
     id: "lvl-14",
@@ -193,7 +194,7 @@ export const allLevels: Level[] = [
     category: "architecture",
     visualComplexity: "high",
     imageId: "neuschwanstein-castle",
-    variations: 1,
+    variations: 4,
   },
   {
     id: "lvl-15",
@@ -206,7 +207,7 @@ export const allLevels: Level[] = [
     category: "architecture",
     visualComplexity: "medium",
     imageId: "charles-bridge",
-    variations: 1,
+    variations: 4,
   },
   {
     id: "lvl-16",
@@ -219,7 +220,7 @@ export const allLevels: Level[] = [
     category: "architecture",
     visualComplexity: "high",
     imageId: "moscow-kremlin",
-    variations: 1,
+    variations: 4,
   },
   {
     id: "lvl-17",
@@ -232,7 +233,7 @@ export const allLevels: Level[] = [
     category: "architecture",
     visualComplexity: "high",
     imageId: "trevi-fountain",
-    variations: 1,
+    variations: 4,
   },
   {
     id: "lvl-18",
@@ -245,7 +246,7 @@ export const allLevels: Level[] = [
     category: "architecture",
     visualComplexity: "medium",
     imageId: "leaning-tower-of-pisa",
-    variations: 1,
+    variations: 4,
   },
   {
     id: "lvl-19",
@@ -258,7 +259,7 @@ export const allLevels: Level[] = [
     category: "architecture",
     visualComplexity: "high",
     imageId: "milan-cathedral",
-    variations: 1,
+    variations: 4,
   },
   {
     id: "lvl-20",
@@ -271,7 +272,7 @@ export const allLevels: Level[] = [
     category: "city",
     visualComplexity: "high",
     imageId: "venice",
-    variations: 1,
+    variations: 4,
   },
   {
     id: "lvl-21",
@@ -284,7 +285,7 @@ export const allLevels: Level[] = [
     category: "architecture",
     visualComplexity: "medium",
     imageId: "rialto-bridge",
-    variations: 1,
+    variations: 4,
   },
   {
     id: "lvl-22",
@@ -297,7 +298,371 @@ export const allLevels: Level[] = [
     category: "architecture",
     visualComplexity: "medium",
     imageId: "edinburgh-castle",
-    variations: 1,
+    variations: 4,
+  },
+  {
+    id: "lvl-23",
+    place: "Mount Fuji",
+    country: "Japan",
+    facts: [
+        ["Japan's tallest peak, an active volcano.", "Considered one of Japan's three holy mountains."],
+        ["A popular climbing destination and a symbol of Japan.", "Visible from Tokyo on a clear day."]
+    ],
+    category: "nature",
+    visualComplexity: "low",
+    imageId: "mount-fuji",
+    variations: 4,
+  },
+  {
+    id: "lvl-24",
+    place: "Santorini",
+    country: "Greece",
+    facts: [
+        ["A volcanic island known for its white-washed cliffside villages.", "Famous for its stunning sunsets over the Aegean Sea."],
+        ["Formed by a massive volcanic eruption centuries ago.", "A popular destination for weddings and honeymoons."]
+    ],
+    category: "city",
+    visualComplexity: "medium",
+    imageId: "santorini",
+    variations: 4,
+  },
+  {
+    id: "lvl-25",
+    place: "Northern Lights",
+    country: "Various",
+    facts: [
+        ["A natural light display caused by solar wind particles.", "Best seen in high-latitude regions like Scandinavia and Canada."],
+        ["Also known as Aurora Borealis.", "Colors can range from green to pink and purple."]
+    ],
+    category: "sky",
+    visualComplexity: "low",
+    imageId: "northern-lights",
+    variations: 4,
+  },
+  {
+    id: "lvl-26",
+    place: "Statue of Liberty",
+    country: "USA",
+    facts: [
+        ["A gift from France to the United States in 1886.", "A symbol of freedom and democracy."],
+        ["Located on Liberty Island in New York Harbor.", "Represents Libertas, the Roman goddess of liberty."]
+    ],
+    category: "architecture",
+    visualComplexity: "medium",
+    imageId: "statue-of-liberty",
+    variations: 4,
+  },
+  {
+    id: "lvl-27",
+    place: "Taj Mahal",
+    country: "India",
+    facts: [
+        ["An ivory-white marble mausoleum on the south bank of the Yamuna river.", "Commissioned in 1632 by the Mughal emperor Shah Jahan."],
+        ["Built in memory of his favorite wife, Mumtaz Mahal.", "A UNESCO World Heritage site and a jewel of Muslim art in India."]
+    ],
+    category: "architecture",
+    visualComplexity: "medium",
+    imageId: "taj-mahal",
+    variations: 4,
+  },
+  {
+    id: "lvl-28",
+    place: "Machu Picchu",
+    country: "Peru",
+    facts: [
+        ["An Incan citadel set high in the Andes Mountains.", "Built in the 15th century, then abandoned."],
+        ["Famous for its sophisticated dry-stone walls.", "One of the New Seven Wonders of the World."]
+    ],
+    category: "nature",
+    visualComplexity: "high",
+    imageId: "machu-picchu",
+    variations: 4,
+  },
+  {
+    id: "lvl-29",
+    place: "Great Wall of China",
+    country: "China",
+    facts: [
+        ["A series of fortifications stretching over 13,000 miles.", "Built to protect Chinese states against raids from the north."],
+        ["Construction started as early as the 7th century BC.", "Not a single continuous wall, but a system of walls and watchtowers."]
+    ],
+    category: "architecture",
+    visualComplexity: "high",
+    imageId: "great-wall-of-china",
+    variations: 4,
+  },
+  {
+    id: "lvl-30",
+    place: "Pyramids of Giza",
+    country: "Egypt",
+    facts: [
+        ["Ancient pyramid structures, including the Great Pyramid.", "Built as tombs for pharaohs."],
+        ["The Great Pyramid is the oldest of the Seven Wonders of the Ancient World.", "The complex also includes the Great Sphinx."]
+    ],
+    category: "architecture",
+    visualComplexity: "medium",
+    imageId: "pyramids-of-giza",
+    variations: 4,
+  },
+  {
+    id: "lvl-31",
+    place: "Christ the Redeemer",
+    country: "Brazil",
+    facts: [
+        ["An Art Deco statue of Jesus Christ in Rio de Janeiro.", "Stands 30 meters tall, on a 8-meter pedestal."],
+        ["Located atop the Corcovado mountain.", "A symbol of Christianity across the world."]
+    ],
+    category: "architecture",
+    visualComplexity: "medium",
+    imageId: "christ-the-redeemer",
+    variations: 4,
+  },
+  {
+    id: "lvl-32",
+    place: "Petra",
+    country: "Jordan",
+    facts: [
+        ["An ancient city famous for its rock-cut architecture.", "Known as the 'Rose City' for the color of the stone."],
+        ["The Treasury (Al-Khazneh) is its most famous structure.", "Featured in the film 'Indiana Jones and the Last Crusade'."]
+    ],
+    category: "architecture",
+    visualComplexity: "high",
+    imageId: "petra",
+    variations: 4,
+  },
+  {
+    id: "lvl-33",
+    place: "Grand Canyon",
+    country: "USA",
+    facts: [
+        ["A massive canyon carved by the Colorado River in Arizona.", "It is 277 miles long, up to 18 miles wide and over a mile deep."],
+        ["A showcase of geological history.", "A major tourist destination in the United States."]
+    ],
+    category: "nature",
+    visualComplexity: "high",
+    imageId: "grand-canyon",
+    variations: 4,
+  },
+  {
+    id: "lvl-34",
+    place: "Sydney Opera House",
+    country: "Australia",
+    facts: [
+        ["A multi-venue performing arts centre in Sydney.", "Famous for its shell-like roof design."],
+        ["Designed by Danish architect Jørn Utzon.", "A UNESCO World Heritage Site."]
+    ],
+    category: "architecture",
+    visualComplexity: "medium",
+    imageId: "sydney-opera-house",
+    variations: 4,
+  },
+  {
+    id: "lvl-35",
+    place: "Burj Khalifa",
+    country: "UAE",
+    facts: [
+        ["The world's tallest building, located in Dubai.", "Stands at a height of 828 meters."],
+        ["Features an observation deck on the 148th floor.", "Part of the downtown Dubai development."]
+    ],
+    category: "architecture",
+    visualComplexity: "high",
+    imageId: "burj-khalifa",
+    variations: 4,
+  },
+  {
+    id: "lvl-36",
+    place: "Angkor Wat",
+    country: "Cambodia",
+    facts: [
+        ["The largest religious monument in the world by land area.", "Originally a Hindu temple, later transformed into a Buddhist temple."],
+        ["A prime example of Khmer architecture.", "A symbol of Cambodia, appearing on its national flag."]
+    ],
+    category: "architecture",
+    visualComplexity: "high",
+    imageId: "angkor-wat",
+    variations: 4,
+  },
+  {
+    id: "lvl-37",
+    place: "London Eye",
+    country: "UK",
+    facts: [
+        ["A cantilevered observation wheel on the South Bank of the River Thames.", "Offers the highest public viewing point in London."],
+        ["Also known as the Millennium Wheel.", "Has 32 sealed and air-conditioned ovoidal passenger capsules."]
+    ],
+    category: "architecture",
+    visualComplexity: "medium",
+    imageId: "london-eye",
+    variations: 4,
+  },
+  {
+    id: "lvl-38",
+    place: "Hagia Sophia",
+    country: "Turkey",
+    facts: [
+        ["A major cultural and historical site in Istanbul.", "Served as an Eastern Orthodox cathedral and an Ottoman imperial mosque."],
+        ["Famous for its massive dome.", "Now a museum, it is a masterpiece of Byzantine architecture."]
+    ],
+    category: "interior",
+    visualComplexity: "high",
+    imageId: "hagia-sophia",
+    variations: 4,
+  },
+  {
+    id: "lvl-39",
+    place: "Golden Gate Bridge",
+    country: "USA",
+    facts: [
+        ["A suspension bridge spanning the Golden Gate strait.", "Connects San Francisco to Marin County."],
+        ["Famous for its 'International Orange' color.", "One of the most photographed bridges in the world."]
+    ],
+    category: "architecture",
+    visualComplexity: "medium",
+    imageId: "golden-gate-bridge",
+    variations: 4,
+  },
+  {
+    id: "lvl-40",
+    place: "Hallgrímskirkja",
+    country: "Iceland",
+    facts: [
+        ["A Lutheran parish church in Reykjavík, Iceland.", "Its design was inspired by basalt lava flows."],
+        ["At 74.5 meters high, it is one of the tallest structures in Iceland.", "Offers a panoramic view of the city from its observation tower."]
+    ],
+    category: "architecture",
+    visualComplexity: "low",
+    imageId: "hallgrimskirkja",
+    variations: 4,
+  },
+  {
+    id: "lvl-41",
+    place: "Fushimi Inari Shrine",
+    country: "Japan",
+    facts: [
+        ["A major Shinto shrine in southern Kyoto, Japan.", "Famous for its thousands of vermilion torii gates."],
+        ["The gates lead into the wooded forest of the sacred Mount Inari.", "Dedicated to Inari, the Shinto god of rice."]
+    ],
+    category: "architecture",
+    visualComplexity: "high",
+    imageId: "fushimi-inari-shrine",
+    variations: 4,
+  },
+  {
+    id: "lvl-42",
+    place: "Flatiron Building",
+    country: "USA",
+    facts: [
+        ["A triangular 22-story building in New York City.", "One of the city's most iconic skyscrapers."],
+        ["Its unique design fills the wedge-shaped plot at Fifth Avenue and Broadway.", "A designated New York City landmark."]
+    ],
+    category: "architecture",
+    visualComplexity: "medium",
+    imageId: "flatiron-building",
+    variations: 4,
+  },
+  {
+    id: "lvl-43",
+    place: "The Shard",
+    country: "UK",
+    facts: [
+        ["A 95-story supertall skyscraper in London.", "The tallest building in the United Kingdom."],
+        ["Its glass-clad pyramidal form was designed by Renzo Piano.", "Offers panoramic views from its 'The View from The Shard' observation deck."]
+    ],
+    category: "architecture",
+    visualComplexity: "high",
+    imageId: "the-shard",
+    variations: 4,
+  },
+  {
+    id: "lvl-44",
+    place: "Guggenheim Museum Bilbao",
+    country: "Spain",
+    facts: [
+        ["A museum of modern and contemporary art in Bilbao, Spain.", "Designed by Canadian-American architect Frank Gehry."],
+        ["Its design is a landmark of 20th-century architecture.", "Clad in titanium, glass, and limestone."]
+    ],
+    category: "architecture",
+    visualComplexity: "high",
+    imageId: "guggenheim-bilbao",
+    variations: 4,
+  },
+  {
+    id: "lvl-45",
+    place: "Fallingwater",
+    country: "USA",
+    facts: [
+        ["A house designed by architect Frank Lloyd Wright in 1935.", "Built partly over a waterfall in rural southwestern Pennsylvania."],
+        ["An icon of organic architecture.", "A National Historic Landmark and a UNESCO World Heritage Site."]
+    ],
+    category: "architecture",
+    visualComplexity: "medium",
+    imageId: "fallingwater",
+    variations: 4,
+  },
+  {
+    id: "lvl-46",
+    place: "Atomium",
+    country: "Belgium",
+    facts: [
+        ["A landmark building in Brussels, originally constructed for the 1958 Brussels World's Fair.", "Represents a unit cell of an iron crystal magnified 165 billion times."],
+        ["Nine steel spheres are connected by tubes.", "Offers panoramic views of Brussels from its top sphere."]
+    ],
+    category: "architecture",
+    visualComplexity: "low",
+    imageId: "atomium",
+    variations: 4,
+  },
+  {
+    id: "lvl-47",
+    place: "Marina Bay Sands",
+    country: "Singapore",
+    facts: [
+        ["An integrated resort in Singapore, known for its three-tower structure.", "Topped by a massive cantilevered SkyPark."],
+        ["Features the world's largest rooftop infinity pool.", "A landmark of modern Singapore."]
+    ],
+    category: "architecture",
+    visualComplexity: "high",
+    imageId: "marina-bay-sands",
+    variations: 4,
+  },
+  {
+    id: "lvl-48",
+    place: "Petronas Towers",
+    country: "Malaysia",
+    facts: [
+        ["Twin skyscrapers in Kuala Lumpur, Malaysia.", "Were the tallest buildings in the world from 1998 to 2004."],
+        ["Connected by a double-decker Skybridge on the 41st and 42nd floors.", "A major landmark of Kuala Lumpur."]
+    ],
+    category: "architecture",
+    visualComplexity: "high",
+    imageId: "petronas-towers",
+    variations: 4,
+  },
+  {
+    id: "lvl-49",
+    place: "Chichen Itza",
+    country: "Mexico",
+    facts: [
+        ["A large pre-Columbian city built by the Maya people.", "The Temple of Kukulcan (El Castillo) is its most famous structure."],
+        ["A UNESCO World Heritage Site.", "A major tourist destination in Mexico."]
+    ],
+    category: "architecture",
+    visualComplexity: "medium",
+    imageId: "chichen-itza",
+    variations: 4,
+  },
+  {
+    id: "lvl-50",
+    place: "Moai Statues",
+    country: "Chile",
+    facts: [
+        ["Monolithic human figures carved by the Rapa Nui people on Easter Island.", "Created between the years 1250 and 1500."],
+        ["The statues represent deified ancestors.", "There are over 900 statues on the island."]
+    ],
+    category: "nature",
+    visualComplexity: "low",
+    imageId: "moai-statues",
+    variations: 4,
   },
 ];
 
@@ -582,3 +947,6 @@ export const generatePuzzle = (
     facts,
   };
 };
+
+
+    

@@ -1,9 +1,308 @@
 
-
 import { generateHints } from './hint-engine';
-import { allLevels as allLandmarkLevels, Level } from './landmark-levels-data';
 
-export type { Level };
+export interface Level {
+  id: string;
+  place: string;
+  country: string;
+  facts: string[][];
+  category: "architecture" | "nature" | "sky" | "city" | "interior" | "abstract";
+  visualComplexity: "low" | "medium" | "high";
+  imageId: string;
+  variations: number;
+}
+
+export const allLevels: Level[] = [
+  {
+    id: "lvl-01",
+    place: "Eiffel Tower",
+    country: "France",
+    facts: [
+      ["Designed by Gustave Eiffel.", "Built in 1889 for the World's Fair."],
+      ["Made of wrought iron and is ~330 meters tall.", "Initially criticized by artists but became a global symbol."]
+    ],
+    category: "architecture",
+    visualComplexity: "high",
+    imageId: "eiffel-tower",
+    variations: 1,
+  },
+  {
+    id: "lvl-02",
+    place: "Colosseum",
+    country: "Italy",
+    facts: [
+      ["Ancient Roman amphitheater built between 70–80 AD.", "Used for gladiator fights and could seat ~50,000 people."],
+      ["A symbol of Roman engineering, now a UNESCO World Heritage Site.", "Partially damaged by earthquakes over the centuries."]
+    ],
+    category: "architecture",
+    visualComplexity: "high",
+    imageId: "colosseum",
+    variations: 1,
+  },
+  {
+    id: "lvl-03",
+    place: "Elizabeth Tower",
+    country: "UK",
+    facts: [
+        ["Commonly called Big Ben, it was completed in 1859.", "Part of the Palace of Westminster in London."],
+        ["A symbol of British democracy, it was renamed Elizabeth Tower in 2012.", "Stands 96 meters tall and is a Gothic Revival icon."]
+    ],
+    category: "architecture",
+    visualComplexity: "high",
+    imageId: "elizabeth-tower",
+    variations: 1,
+  },
+  {
+    id: "lvl-04",
+    place: "Tower Bridge",
+    country: "UK",
+    facts: [
+        ["A bascule and suspension bridge that crosses the River Thames.", "Opened in 1894 and is an icon of the London skyline."],
+        ["The towers are connected by high-level walkways.", "It still opens to allow ships to pass through."]
+    ],
+    category: "architecture",
+    visualComplexity: "high",
+    imageId: "tower-bridge",
+    variations: 1,
+  },
+  {
+    id: "lvl-05",
+    place: "Sagrada Família",
+    country: "Spain",
+    facts: [
+        ["Designed by Antoni Gaudí, with construction starting in 1882.", "It is still under construction, funded by donations."],
+        ["Its unique organic architecture is inspired by nature.", "It is a UNESCO World Heritage Site in Barcelona."]
+    ],
+    category: "architecture",
+    visualComplexity: "high",
+    imageId: "sagrada-familia",
+    variations: 1,
+  },
+  {
+    id: "lvl-06",
+    place: "Alhambra",
+    country: "Spain",
+    facts: [
+        ["A Moorish palace complex built in Granada in the 13th century.", "Famous for its intricate Islamic architecture and courtyards."],
+        ["Its red sandstone walls overlook the city of Granada.", "A UNESCO World Heritage Site symbolizing Andalusian history."]
+    ],
+    category: "architecture",
+    visualComplexity: "high",
+    imageId: "alhambra",
+    variations: 1,
+  },
+  {
+    id: "lvl-07",
+    place: "Acropolis of Athens",
+    country: "Greece",
+    facts: [
+        ["An ancient citadel on a hill, built in the 5th century BC.", "Includes the Parthenon, dedicated to the goddess Athena."],
+        ["A symbol of Classical Greek architecture and democracy.", "A major archaeological site visible across Athens."]
+    ],
+    category: "architecture",
+    visualComplexity: "medium",
+    imageId: "acropolis-of-athens",
+    variations: 1,
+  },
+  {
+    id: "lvl-08",
+    place: "Stonehenge",
+    country: "England",
+    facts: [
+        ["A prehistoric monument built around 3000 BC.", "Made of massive stones, its purpose is still debated."],
+        ["It is aligned with the solstices, adding to its mystery.", "A UNESCO World Heritage Site and one of Europe's oldest landmarks."]
+    ],
+    category: "nature",
+    visualComplexity: "low",
+    imageId: "stonehenge",
+    variations: 1,
+  },
+  {
+    id: "lvl-09",
+    place: "Louvre Museum",
+    country: "France",
+    facts: [
+        ["The world's largest and most visited art museum.", "A former royal palace that opened as a museum in 1793."],
+        ["Famous for its glass pyramid entrance and for housing the Mona Lisa.", "Holds over 35,000 artworks from multiple civilizations."]
+    ],
+    category: "architecture",
+    visualComplexity: "high",
+    imageId: "louvre",
+    variations: 1,
+  },
+  {
+    id: "lvl-10",
+    place: "Notre-Dame de Paris",
+    country: "France",
+    facts: [
+        ["A Gothic cathedral built between 1163–1345 on the Île de la Cité.", "Famous for its rose windows and dedicated to the Virgin Mary."],
+        ["Severely damaged in a 2019 fire, it is currently under restoration.", "A cultural symbol of Paris, popularized by Victor Hugo's novel."]
+    ],
+    category: "architecture",
+    visualComplexity: "high",
+    imageId: "notre-dame",
+    variations: 1,
+  },
+  {
+    id: "lvl-11",
+    place: "Mont-Saint-Michel",
+    country: "France",
+    facts: [
+        ["A medieval abbey on a tidal island in Normandy, founded in the 8th century.", "Accessible by a causeway, it is surrounded by fast-moving tides."],
+        ["A major pilgrimage site and UNESCO World Heritage Site.", "Its appearance dramatically changes between high and low tide."]
+    ],
+    category: "architecture",
+    visualComplexity: "medium",
+    imageId: "mont-saint-michel",
+    variations: 1,
+  },
+  {
+    id: "lvl-12",
+    place: "Arc de Triomphe",
+    country: "France",
+    facts: [
+        ["Commissioned by Napoleon and completed in 1836 to honor French soldiers.", "Located at the center of the Champs-Élysées."],
+        ["The Tomb of the Unknown Soldier lies beneath its vault.", "Features a viewing platform with panoramic views of Paris."]
+    ],
+    category: "architecture",
+    visualComplexity: "medium",
+    imageId: "arc-de-triomphe",
+    variations: 1,
+  },
+  {
+    id: "lvl-13",
+    place: "Brandenburg Gate",
+    country: "Germany",
+    facts: [
+        ["A neoclassical monument in Berlin, built in 1791.", "It stood in the divide during the Cold War and now symbolizes German unity."],
+        ["Topped by the Quadriga, a statue of a four-horse chariot.", "A major site for historical events and celebrations."]
+    ],
+    category: "architecture",
+    visualComplexity: "medium",
+    imageId: "brandenburg-gate",
+    variations: 1,
+  },
+  {
+    id: "lvl-14",
+    place: "Neuschwanstein Castle",
+    country: "Germany",
+    facts: [
+        ["A 19th-century castle built by King Ludwig II in Bavaria.", "Its romantic architecture inspired Disney's Sleeping Beauty castle."],
+        ["Set in the foothills of the Alps, it was never fully completed.", "One of Europe's most photographed landmarks, now a tourist-only castle."]
+    ],
+    category: "architecture",
+    visualComplexity: "high",
+    imageId: "neuschwanstein-castle",
+    variations: 1,
+  },
+  {
+    id: "lvl-15",
+    place: "Charles Bridge",
+    country: "Czech Republic",
+    facts: [
+        ["A Gothic stone bridge crossing the Vltava River in Prague, built in the 14th century.", "Decorated with 30 statues, it is now pedestrian-only."],
+        ["It connects Prague's Old Town and Castle districts.", "A popular spot for artists and for watching the sunrise."]
+    ],
+    category: "architecture",
+    visualComplexity: "medium",
+    imageId: "charles-bridge",
+    variations: 1,
+  },
+  {
+    id: "lvl-16",
+    place: "Moscow Kremlin",
+    country: "Russia",
+    facts: [
+        ["A historic fortified complex at the heart of Moscow, overlooking Red Square.", "The seat of the Russian government, its walls were built from the 15th century."],
+        ["Includes numerous cathedrals, palaces, and towers.", "A UNESCO World Heritage Site and a symbol of Russian power."]
+    ],
+    category: "architecture",
+    visualComplexity: "high",
+    imageId: "moscow-kremlin",
+    variations: 1,
+  },
+  {
+    id: "lvl-17",
+    place: "Trevi Fountain",
+    country: "Italy",
+    facts: [
+        ["The largest Baroque fountain in Rome, completed in 1762.", "Features a famous tradition of tossing a coin to ensure a return to Rome."],
+        ["Its marble sculptures are dedicated to Oceanus, god of the sea.", "The coins collected are used to fund charity."]
+    ],
+    category: "architecture",
+    visualComplexity: "high",
+    imageId: "trevi-fountain",
+    variations: 1,
+  },
+  {
+    id: "lvl-18",
+    place: "Leaning Tower of Pisa",
+    country: "Italy",
+    facts: [
+        ["The bell tower of Pisa Cathedral, famous for its unintentional tilt.", "The lean was caused by a soft foundation and began during construction in the 12th century."],
+        ["Its tilt has been stabilized by modern engineering.", "A Romanesque UNESCO World Heritage Site and a popular photo spot."]
+    ],
+    category: "architecture",
+    visualComplexity: "medium",
+    imageId: "leaning-tower-of-pisa",
+    variations: 1,
+  },
+  {
+    id: "lvl-19",
+    place: "Milan Cathedral (Duomo)",
+    country: "Italy",
+    facts: [
+        ["The largest church in Italy, a masterpiece of Gothic architecture.", "Construction took nearly 600 years to complete."],
+        ["Features a white marble façade, 135 spires, and a walkable rooftop.", "A central landmark and symbol of Milan."]
+    ],
+    category: "architecture",
+    visualComplexity: "high",
+    imageId: "milan-cathedral",
+    variations: 1,
+  },
+  {
+    id: "lvl-20",
+    place: "Venice",
+    country: "Italy",
+    facts: [
+        ["A city built on 118 islands, connected by canals and bridges.", "Has no roads for cars, with gondolas as a primary form of transport."],
+        ["A historic trading power with rich Renaissance architecture.", "A UNESCO World Heritage Site known for its romantic reputation and frequent flooding."]
+    ],
+    category: "city",
+    visualComplexity: "high",
+    imageId: "venice",
+    variations: 1,
+  },
+  {
+    id: "lvl-21",
+    place: "Rialto Bridge",
+    country: "Italy",
+    facts: [
+        ["The oldest bridge crossing the Grand Canal in Venice.", "A stone arch design built in 1591 to replace a wooden bridge."],
+        ["Features shops along its span, a major commercial crossing.", "A popular tourist spot and an icon of Venetian engineering."]
+    ],
+    category: "architecture",
+    visualComplexity: "medium",
+    imageId: "rialto-bridge",
+    variations: 1,
+  },
+  {
+    id: "lvl-22",
+    place: "Edinburgh Castle",
+    country: "Scotland",
+    facts: [
+        ["A historic royal fortress built on a volcanic rock overlooking Edinburgh.", "Dates back to the 12th century and holds the Scottish Crown Jewels."],
+        ["A key military stronghold throughout its history.", "Hosts a daily gun salute and is a major UNESCO World Heritage tourist attraction."]
+    ],
+    category: "architecture",
+    visualComplexity: "medium",
+    imageId: "edinburgh-castle",
+    variations: 1,
+  },
+];
+
+
+export const levels: Level[] = allLevels;
 
 export type Solution =
   | { type: "swap"; indices: [number, number] }
@@ -25,14 +324,12 @@ export interface Puzzle {
   facts: string[];
 }
 
-export const levels: Level[] = allLandmarkLevels;
-
 export function getImageUrl(
   imageId: string,
   availableVariations: number,
   round = 0
 ): { url: string; hint: string; facts: string[] } {
-  const level = allLandmarkLevels.find((l) => l.imageId === imageId);
+  const level = allLevels.find((l) => l.imageId === imageId);
   if (!level) {
     // A safe fallback to prevent crashes
     return {
@@ -42,7 +339,7 @@ export function getImageUrl(
     };
   }
 
-  const hint = imageId.replace(/-/g, ' ');
+  const hint = level.place.toLowerCase().replace(/ /g, '-');
 
   const safeVariations = Math.max(1, availableVariations || 1);
   const safeRound = (round >>> 0);
@@ -196,7 +493,7 @@ export const generatePuzzle = (
   levelIndex: number,
   seed?: string
 ): Puzzle => {
-  const level = allLandmarkLevels.find((l) => l.imageId === imageId);
+  const level = allLevels.find((l) => l.imageId === imageId);
   if (!level) throw new Error(`Could not find level with imageId: ${imageId}`);
 
   let round = 0;

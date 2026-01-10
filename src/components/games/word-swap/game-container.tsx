@@ -142,8 +142,8 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
           });
           localStorage.setItem(completionKey, '1');
         } catch (e: any) {
-          console.error('Leaderboard save failed:', e?.code, e?.message, e);
-          alert('Your score could not be saved. Please check your internet connection.');
+          console.error("Leaderboard save failed:", e?.code, e?.message, e);
+          alert("Your score could not be saved. Please check your internet connection.");
         }
       }
     }
@@ -238,6 +238,16 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
 
   if (isLoading || !puzzle) {
     return (
+      <main className="flex min-h-screen flex-col items-center justify-center p-4">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        <p className="mt-4 text-muted-foreground">Loading Words...</p>
+      </main>
+    );
+  }
+
+  if (showAlreadyCompleted) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center p-4">
         <AlertDialog open={showAlreadyCompleted}>
             <AlertDialogContent>
                 <AlertDialogHeader className="items-center text-center">
@@ -256,6 +266,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
+      </main>
     );
   }
   

@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
@@ -714,30 +713,30 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
             )}
 
             {(gameState === "GAME_OVER" || gameState === "ALL_LEVELS_COMPLETE") && !isDailyChallenge && (
-            <div className="w-full text-center space-y-4">
-                <Button
-                onClick={restartGame}
-                size="lg"
-                className="
-                    w-full
-                    bg-gradient-to-r from-[#34C759] to-[#0A84FF]
-                    text-white shadow-md shadow-emerald-200
-                    hover:brightness-110 hover:shadow-lg
-                    active:scale-[0.98] transition
-                "
-                >
-                Play Again
-                </Button>
-                <Button
-                asChild
-                variant="link"
-                className="text-muted-foreground"
-                onClick={handleBackToHome}
-                >
-                <Link href="/">Back to Home</Link>
-                </Button>
-            </div>
-            )}
+          <div className="w-full text-center space-y-4">
+            <Button
+              onClick={restartGame}
+              size="lg"
+              className="
+                w-full
+                bg-gradient-to-r from-[#34C759] to-[#0A84FF]
+                text-white shadow-md shadow-emerald-200
+                hover:brightness-110 hover:shadow-lg
+                active:scale-[0.98] transition
+              "
+            >
+              Play Again
+            </Button>
+            <Button
+              asChild
+              variant="link"
+              className="text-muted-foreground"
+              onClick={handleBackToHome}
+            >
+              <Link href="/">Back to Home</Link>
+            </Button>
+          </div>
+        )}
 
         </CardFooter>
         </Card>

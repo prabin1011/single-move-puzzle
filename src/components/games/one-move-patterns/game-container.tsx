@@ -90,10 +90,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
       const currentLevel = isDailyChallenge ? dailyLevel : level;
       let seed = isDailyChallenge && puzzleSeed ? puzzleSeed : `${retryCount}`;
       
-      const newPuzzle = generatePatternPuzzle(currentLevel, seed);
-      
-      const config = getPatternPuzzleConfig(currentLevel);
-      
       let hintSeed = 0;
       if (puzzleSeed) {
           for (let i = 0; i < puzzleSeed.length; i++) {
@@ -102,6 +98,9 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
       } else {
           hintSeed = retryCount;
       }
+      
+      const config = getPatternPuzzleConfig(currentLevel);
+      const newPuzzle = config.generate(currentLevel, hintSeed);
       
       setCurrentHint(config.hintLevels[hintSeed % config.hintLevels.length]);
       
@@ -270,6 +269,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const title = isDailyChallenge ? 'Daily Challenge' : `Level ${effectiveLevel + 1}`;
 
   return (
+    <main className="flex min-h-screen flex-col items-center justify-center p-4">
     <Card
         className="
             w-full max-w-sm border shadow-2xl rounded-2xl transition-all duration-500
@@ -471,5 +471,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
         
       </CardFooter>
     </Card>
+    </main>
   );
 }

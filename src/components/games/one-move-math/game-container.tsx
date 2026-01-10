@@ -98,7 +98,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const puzzle = useMemo(() => {
     const currentLevel = isDailyChallenge ? dailyLevel : level;
     let seed = isDailyChallenge && puzzleSeed ? puzzleSeed : `${retryCount}`;
-    return generatePuzzle(currentLevel, seed);
+    return generatePuzzle(currentLevel, retryCount);
   }, [level, retryCount, dailyLevel, isDailyChallenge, puzzleSeed]);
 
 
@@ -262,6 +262,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const title = isDailyChallenge ? 'Daily Challenge' : `Level ${effectiveLevel + 1}`;
 
   return (
+    <main className="flex min-h-screen flex-col items-center justify-center p-4">
     <Card
         className="
             w-full max-w-lg border shadow-2xl rounded-2xl transition-all duration-500
@@ -479,5 +480,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
         
       </CardFooter>
     </Card>
+    </main>
   );
 }

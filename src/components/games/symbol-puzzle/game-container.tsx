@@ -163,7 +163,8 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     trackEvent('game_level_fail', { game: 'symbol-puzzle', level: level + 1 });
     if (isDailyChallenge) {
         const todayKey = getTodaysDateKey();
-        localStorage.setItem(`dailyChallengeCompletion:${todayKey}:${GAME_ID}`, "1");
+        const completionKey = `dailyChallengeCompletion:${todayKey}:${GAME_ID}`;
+        localStorage.setItem(completionKey, "1");
         setGameState("GAME_OVER");
     } else {
         const newMistakeCount = mistakeCount + 1;
@@ -268,6 +269,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const title = isDailyChallenge ? 'Daily Challenge' : `Level ${effectiveLevel + 1}`;
 
   return (
+    <main className="flex min-h-screen flex-col items-center justify-center p-4">
     <Card
         className="
             w-full max-w-sm border shadow-2xl rounded-2xl transition-all duration-500
@@ -469,5 +471,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
         
       </CardFooter>
     </Card>
+    </main>
   );
 }

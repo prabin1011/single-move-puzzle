@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -138,7 +139,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 });
                 localStorage.setItem(completionKey, "1");
             } catch (e) {
-                console.error("Daily score submission failed:", e);
+                console.error("Daily score submit failed:", e);
                 alert("Your score could not be saved. Please check your internet connection and try again.");
             }
         }
@@ -232,12 +233,16 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   
   if (isLoading || !puzzle) {
     return (
+      <main className="flex min-h-screen flex-col items-center justify-center">
         <Loader2 className="h-12 w-12 animate-spin" />
+        <p className="mt-4 text-muted-foreground">Loading Symbols...</p>
+      </main>
     );
   }
 
     if (showAlreadyCompleted) {
     return (
+      <main className="flex min-h-screen flex-col items-center justify-center">
         <AlertDialog open={true}>
             <AlertDialogContent>
                 <AlertDialogHeader className="items-center text-center">
@@ -256,6 +261,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
+      </main>
     )
   }
   
@@ -265,6 +271,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const title = isDailyChallenge ? 'Daily Challenge' : `Level ${effectiveLevel + 1}`;
 
   return (
+    <main className="flex min-h-screen flex-col items-center justify-center p-4">
     <Card
         className="
             w-full max-w-sm border shadow-2xl rounded-2xl transition-all duration-500
@@ -466,5 +473,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
         
       </CardFooter>
     </Card>
+    </main>
   );
 }

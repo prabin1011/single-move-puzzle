@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -98,7 +97,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const puzzle = useMemo(() => {
     const currentLevel = isDailyChallenge ? dailyLevel : level;
     let seed = isDailyChallenge && puzzleSeed ? puzzleSeed : `${retryCount}`;
-    return generatePuzzle(currentLevel, seed);
+    return generatePuzzle(currentLevel, retryCount);
   }, [level, retryCount, dailyLevel, isDailyChallenge, puzzleSeed]);
 
 

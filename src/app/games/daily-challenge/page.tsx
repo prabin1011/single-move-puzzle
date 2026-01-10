@@ -6,11 +6,13 @@ import LandmarkGame from "@/components/games/one-move-landmark/game-container";
 import MathGame from "@/components/games/one-move-math/game-container";
 import PatternsGame from "@/components/games/one-move-patterns/game-container";
 import SymbolGame from "@/components/games/symbol-puzzle/game-container";
+import WordSwapGame from "@/components/games/word-swap/game-container";
 import { levels as landmarkLevels } from "@/lib/levels";
 import { TOTAL_SYMBOL_LEVELS } from "@/lib/symbol-puzzles";
 import { pickDailyChallenge, getTodaysDateKey } from "@/lib/daily-challenge";
 import { mathLevels } from "@/lib/math-puzzles";
 import { patternLevels } from "@/lib/pattern-puzzles";
+import { wordSwapLevels } from "@/lib/word-swap-puzzles";
 
 export default function DailyChallengePage() {
   const daily = useMemo(() => {
@@ -20,6 +22,7 @@ export default function DailyChallengePage() {
       mathLevelCount: mathLevels.length,
       patternsLevelCount: patternLevels.length,
       symbolLevelCount: TOTAL_SYMBOL_LEVELS,
+      wordSwapLevelCount: wordSwapLevels.length,
     });
   }, []);
 
@@ -33,6 +36,7 @@ export default function DailyChallengePage() {
   if (daily.game === "math") return <MathGame {...props} />;
   if (daily.game === "patterns") return <PatternsGame {...props} />;
   if (daily.game === "symbol-puzzle") return <SymbolGame {...props} />;
+  if (daily.game === "word-swap") return <WordSwapGame {...props} />;
 
   // Fallback or loading state
   return <div>Loading Daily Challenge...</div>;

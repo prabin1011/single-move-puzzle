@@ -19,7 +19,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { generatePatternPuzzle, getPatternPuzzleConfig, type PatternPuzzle, patternLevels } from '@/lib/pattern-puzzles';
 import PuzzleBoard from '../puzzle-board';
-import { Loader2, RefreshCw, CheckCircle, Info, Play, ArrowRight, PartyPopper, Shapes, Square, Circle, Triangle } from 'lucide-react';
+import { Loader2, RefreshCw, CheckCircle, Info, Play, ArrowRight, PartyPopper, Shapes, Square, Circle, Triangle, Trophy } from 'lucide-react';
 import { useSound } from '@/contexts/sound-context';
 import { playSound } from '@/lib/sounds';
 import { cn } from '@/lib/utils';
@@ -27,11 +27,12 @@ import { trackEvent } from '@/lib/analytics';
 import { useGameTimer } from "@/hooks/use-game-timer";
 import { getTodaysDateKey } from '@/lib/daily-challenge';
 import { useUser, useFirestore } from "@/firebase";
-import { addDoc, collection } from "firebase/firestore";
+import { submitDailyScore } from '@/lib/submit-daily-score';
 
 type GameState = 'READY' | 'PLAYING' | 'SOLVED_VISUALIZING' | 'SOLVED_COMPLETE' | 'FAILED' | 'GAME_OVER' | 'ALL_LEVELS_COMPLETE';
 
-const MAX_MISTAKES = 0; // Game over on first mistake
+const MAX_MISTAKES = 0;
+const GAME_ID = "patterns" as const;
 
 interface GameContainerProps {
   isDailyChallenge?: boolean;
@@ -51,14 +52,15 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const [currentHint, setCurrentHint] = useState('');
   const { time, reset: resetTimer, getDuration } = useGameTimer(gameState === 'PLAYING');
   const [showAlreadyCompleted, setShowAlreadyCompleted] = useState(false);
+  const [hintViewed, setHintViewed] = useState(false);
   const { user } = useUser();
   const firestore = useFirestore();
 
-  // Load progress on mount
   useEffect(() => {
     if (isDailyChallenge) {
         const todayKey = getTodaysDateKey();
-        if (localStorage.getItem(`dailyChallengeCompletion:${todayKey}`) === "1") {
+        const completionKey = `dailyChallengeCompletion:${todayKey}:${GAME_ID}`;
+        if (localStorage.getItem(completionKey) === "1") {
             setShowAlreadyCompleted(true);
             setIsLoading(false);
             return;
@@ -87,10 +89,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
       const currentLevel = isDailyChallenge ? dailyLevel : level;
       let seed = isDailyChallenge && puzzleSeed ? puzzleSeed : `${retryCount}`;
       
-      const newPuzzle = generatePatternPuzzle(currentLevel, seed);
-      
-      const config = getPatternPuzzleConfig(currentLevel);
-      
       let hintSeed = 0;
       if (puzzleSeed) {
           for (let i = 0; i < puzzleSeed.length; i++) {
@@ -100,12 +98,14 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
           hintSeed = retryCount;
       }
       
+      const config = getPatternPuzzleConfig(currentLevel);
+      const newPuzzle = config.generate(currentLevel, hintSeed);
+      
       setCurrentHint(config.hintLevels[hintSeed % config.hintLevels.length]);
       
       return newPuzzle;
   }, [level, retryCount, dailyLevel, isDailyChallenge, puzzleSeed, isLoading]);
 
-  // Save progress whenever level changes
   useEffect(() => {
     if (isLoading || isDailyChallenge) return;
     localStorage.setItem('patternCurrentLevel', level.toString());
@@ -125,15 +125,24 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     
     if(isDailyChallenge && user && firestore) {
         const todayKey = getTodaysDateKey();
-        localStorage.setItem(`dailyChallengeCompletion:${todayKey}`, "1");
-        const leaderboardRef = collection(firestore, `dailyLeaderboards/${todayKey}/entries`);
-        await addDoc(leaderboardRef, {
-            userId: user.uid,
-            userName: user.displayName || 'Anonymous',
-            timeTaken: duration,
-            hintsUsed: currentHint !== '', // A simple check if a hint was generated
-            timestamp: new Date(),
-        });
+        const completionKey = `dailyChallengeCompletion:${todayKey}:${GAME_ID}`;
+        if (localStorage.getItem(completionKey) !== "1") {
+            try {
+                await submitDailyScore({
+                    firestore,
+                    todayKey,
+                    gameId: GAME_ID,
+                    user,
+                    timeTaken: duration,
+                    hintsUsed: hintViewed,
+                    level: dailyLevel,
+                });
+                localStorage.setItem(completionKey, "1");
+            } catch (e) {
+                console.error("Daily score submission failed:", e);
+                alert("Your score could not be saved. Please check your internet connection and try again.");
+            }
+        }
     }
 
     setTimeout(() => {
@@ -154,7 +163,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     trackEvent('game_level_fail', { game: 'patterns', level: level + 1 });
     if (isDailyChallenge) {
       const todayKey = getTodaysDateKey();
-      localStorage.setItem(`dailyChallengeCompletion:${todayKey}`, "1");
+      localStorage.setItem(`dailyChallengeCompletion:${todayKey}:${GAME_ID}`, "1");
       setGameState("GAME_OVER");
     } else {
         const newMistakeCount = mistakeCount + 1;
@@ -175,6 +184,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     playSound('ui', isSoundOn);
     setMistakeCount(0);
     setRetryCount(0);
+    setHintViewed(false);
     setLevel(prev => prev + 1);
     setGameState('READY');
   };
@@ -194,6 +204,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     setHighestLevel(0);
     setMistakeCount(0);
     setRetryCount(0);
+    setHintViewed(false);
     setGameState("READY");
     localStorage.removeItem('patternCurrentLevel');
     localStorage.removeItem('patternHighestLevel');
@@ -208,6 +219,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   
   const handleViewHint = () => {
     trackEvent('hint_viewed', { game: 'patterns', level: level + 1 });
+    setHintViewed(true);
   };
   
   const handleBackToHome = () => {

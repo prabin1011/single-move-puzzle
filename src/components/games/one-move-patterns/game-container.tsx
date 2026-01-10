@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -233,10 +232,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   
   if (isLoading || !puzzle) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center">
         <Loader2 className="h-12 w-12 animate-spin" />
-        <p className="mt-4 text-muted-foreground">Loading Patterns...</p>
-      </div>
     );
   }
 
@@ -269,7 +265,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const title = isDailyChallenge ? 'Daily Challenge' : `Level ${effectiveLevel + 1}`;
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-4">
     <Card
         className="
             w-full max-w-sm border shadow-2xl rounded-2xl transition-all duration-500
@@ -371,6 +366,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                         onSuccess={() => {}}
                         onFail={() => {}}
                         isReadOnly={true}
+                        showSolution={true}
                     />
                     <div className="w-full max-w-xs text-center p-3 mt-2 rounded-lg bg-yellow-100/70 dark:bg-yellow-900/40 border border-yellow-200/70 dark:border-yellow-700/60">
                         <h4 className="font-bold font-headline text-yellow-900 dark:text-yellow-200">The Logic Was:</h4>
@@ -471,6 +467,5 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
         
       </CardFooter>
     </Card>
-    </main>
   );
 }

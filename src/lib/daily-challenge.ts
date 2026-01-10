@@ -1,7 +1,7 @@
 
 // src/lib/daily-challenge.ts
 
-export type DailyGame = "landmark" | "math" | "patterns" | "symbol-puzzle";
+export type DailyGame = "landmark" | "math" | "patterns" | "symbol-puzzle" | "word-swap";
 
 // Choose ONE. If you want the same puzzle globally, use UTC.
 // If you want it to follow a specific timezone, set it here.
@@ -48,11 +48,12 @@ export function pickDailyChallenge(args: {
   mathLevelCount: number;           // 50
   patternsLevelCount: number;       // 50
   symbolLevelCount: number;         // TOTAL_SYMBOL_LEVELS
+  wordSwapLevelCount: number;       // 100
 }) {
   const dateKey = args.dateKey ?? getTodaysDateKey();
   const seedBase = hash32(`daily:${dateKey}`);
 
-  const games: DailyGame[] = ["landmark", "math", "patterns", "symbol-puzzle"]; // word-swap excluded
+  const games: DailyGame[] = ["landmark", "math", "patterns", "symbol-puzzle", "word-swap"];
   const rng = mulberry32(seedBase);
 
   const game = games[Math.floor(rng() * games.length)];
@@ -62,6 +63,7 @@ export function pickDailyChallenge(args: {
     math: Math.max(1, args.mathLevelCount),
     patterns: Math.max(1, args.patternsLevelCount),
     "symbol-puzzle": Math.max(1, args.symbolLevelCount),
+    "word-swap": Math.max(1, args.wordSwapLevelCount),
   };
 
   const max = maxByGame[game];

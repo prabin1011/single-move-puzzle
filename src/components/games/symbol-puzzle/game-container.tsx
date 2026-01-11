@@ -139,7 +139,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 });
                 localStorage.setItem(completionKey, "1");
             } catch (e) {
-                console.error("Daily score submit failed:", e);
+                console.error("Daily score submission failed:", e);
                 alert("Your score could not be saved. Please check your internet connection and try again.");
             }
         }
@@ -402,7 +402,13 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                     <Button
                     onClick={handleNextLevel}
                     size="lg"
-                    className="w-full"
+                    className="
+                        w-full
+                        bg-gradient-to-r from-[#0A84FF] via-[#2F6BFF] to-[#9B5CFF]
+                        text-white shadow-md shadow-blue-200
+                        hover:brightness-110 hover:shadow-lg
+                        active:scale-[0.98] transition
+                    "
                     >
                     Next Puzzle <ArrowRight className="ml-2" />
                     </Button>
@@ -434,7 +440,13 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
       <CardFooter className="flex flex-col items-center justify-center p-6 space-y-4 min-h-[110px]">
         {gameState === 'READY' && (
              <div className="w-full text-center space-y-4">
-                <Button onClick={handleStart} size="lg" className="w-full">
+                <Button onClick={handleStart} size="lg" className="
+                    w-full
+                    bg-gradient-to-r from-[#FFD447] via-[#FF8A3D] to-[#FF4EC7]
+                    text-white shadow-lg shadow-orange-200
+                    hover:brightness-110 hover:shadow-xl
+                    active:scale-[0.98] transition
+                ">
                     <Play className="mr-2" /> Start Puzzle
                 </Button>
                 <Button asChild variant="link" className="text-muted-foreground" onClick={handleBackToHome}>
@@ -451,7 +463,13 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
         
         {gameState === "FAILED" && !isDailyChallenge && (
            <div className="w-full text-center space-y-4">
-            <Button onClick={handleTryAgain} size="lg" className="w-full" variant="destructive">
+            <Button onClick={handleTryAgain} size="lg" className="
+                w-full
+                bg-gradient-to-r from-[#FF9F0A] to-[#FF375F]
+                text-white shadow-md shadow-rose-200
+                hover:brightness-110 hover:shadow-lg
+                active:scale-[0.98] transition
+              ">
               <RefreshCw className="mr-2 h-4 w-4" /> Try Again
             </Button>
             <Button asChild variant="link" className="text-muted-foreground" onClick={handleBackToHome}>
@@ -462,7 +480,13 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
 
         {(gameState === "GAME_OVER" || gameState === "ALL_LEVELS_COMPLETE") && !isDailyChallenge && (
           <div className="w-full text-center space-y-4">
-            <Button onClick={restartGame} size="lg" className="w-full">
+            <Button onClick={restartGame} size="lg" className="
+                w-full
+                bg-gradient-to-r from-[#34C759] to-[#0A84FF]
+                text-white shadow-md shadow-emerald-200
+                hover:brightness-110 hover:shadow-lg
+                active:scale-[0.98] transition
+              ">
               Play Again
             </Button>
             <Button asChild variant="link" className="text-muted-foreground" onClick={handleBackToHome}>

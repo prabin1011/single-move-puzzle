@@ -258,6 +258,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const title = isDailyChallenge ? 'Daily Challenge' : `Level ${effectiveLevel + 1}`;
 
   return (
+    <main className="flex min-h-screen flex-col items-center justify-center p-4">
     <Card
         className="
             w-full max-w-lg border shadow-2xl rounded-2xl transition-all duration-500
@@ -390,7 +391,13 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                     <Button
                     onClick={handleNextLevel}
                     size="lg"
-                    className="w-full"
+                     className="
+                        w-full
+                        bg-gradient-to-r from-[#0A84FF] via-[#2F6BFF] to-[#9B5CFF]
+                        text-white shadow-md shadow-blue-200
+                        hover:brightness-110 hover:shadow-lg
+                        active:scale-[0.98] transition
+                    "
                     >
                     Next Puzzle <ArrowRight className="ml-2" />
                     </Button>
@@ -421,7 +428,11 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
       <CardFooter className="flex flex-col items-center justify-center p-6 space-y-4 min-h-[110px]">
         {gameState === 'READY' && (
              <div className="w-full text-center space-y-4">
-                <Button onClick={handleStart} size="lg" className="w-full">
+                <Button onClick={handleStart} size="lg" className="w-full
+                    bg-gradient-to-r from-[#FFD447] via-[#FF8A3D] to-[#FF4EC7]
+                    text-white shadow-lg shadow-orange-200
+                    hover:brightness-110 hover:shadow-xl
+                    active:scale-[0.98] transition">
                     <Play className="mr-2" /> Start Puzzle
                 </Button>
                 <Button asChild variant="link" className="text-muted-foreground" onClick={handleBackToHome}>
@@ -464,7 +475,13 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
 
         {(gameState === "GAME_OVER" || gameState === "ALL_LEVELS_COMPLETE") && !isDailyChallenge && (
           <div className="w-full text-center space-y-4">
-            <Button onClick={restartGame} size="lg" className="w-full">
+            <Button onClick={restartGame} size="lg" className="
+                w-full
+                bg-gradient-to-r from-[#34C759] to-[#0A84FF]
+                text-white shadow-md shadow-emerald-200
+                hover:brightness-110 hover:shadow-lg
+                active:scale-[0.98] transition
+              ">
               Play Again
             </Button>
             <Button asChild variant="link" className="text-muted-foreground" onClick={handleBackToHome}>
@@ -475,5 +492,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
         
       </CardFooter>
     </Card>
+    </main>
   );
 }

@@ -113,7 +113,7 @@ export function generateHints(args: {
 
   // Hint 1: vague quadrant + ranges
   const quadrantText = getQuadrantHint(row, col, grid);
-  const hint1 = `Hint 1: One incorrect tile is somewhere in the ${quadrantText}.`;
+  const hint1 = `Hint 1: A tile involved in the solution is somewhere in the ${quadrantText}.`;
 
   // Hint 2: exact column revealed through a math prompt
   const hint2 = `Hint 2: ${generateMathProblem(col, "The column", rng)}.`;

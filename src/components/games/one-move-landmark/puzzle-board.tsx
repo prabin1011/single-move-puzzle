@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -145,6 +146,7 @@ export default function PuzzleBoard({
           }
 
           const scale = isSelected || shouldHighlight ? 1.06 : 1.0;
+          const bgSize = puzzleSize * 1.05; // 5% bigger to create crop effect
 
           return (
             <div
@@ -160,8 +162,8 @@ export default function PuzzleBoard({
                 width: `${TILE_SIZE}px`,
                 height: `${TILE_SIZE}px`,
                 backgroundImage: `url('${imageUrl}')`,
-                backgroundSize: `${puzzleSize}px ${puzzleSize}px`,
-                backgroundPosition: `-${col * TILE_SIZE}px -${row * TILE_SIZE}px`,
+                backgroundSize: `${bgSize}px ${bgSize}px`,
+                backgroundPosition: `-${col * (bgSize / grid)}px -${row * (bgSize / grid)}px`,
                 transform: `rotate(${tile.rotation}deg) scale(${scale})`,
               }}
             />

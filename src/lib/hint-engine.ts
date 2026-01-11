@@ -1,5 +1,4 @@
 
-
 /**
  * Converts a tile's linear index into its row and column.
  * Rows and columns are 1-based for user-friendliness.
@@ -18,7 +17,7 @@ function getCoords(index: number, grid: number): { row: number; col: number } {
  * Generates a simple mathematical puzzle for a given coordinate.
  * @param value The actual coordinate value (row or column).
  * @param label The name of the coordinate (e.g., "Row", "Column").
- * @returns A string representing a simple equation, e.g., "Row is 2 + 1".
+ * @returns A string representing a simple equation, e.g., "The Row is 2 + 1".
  */
 function generateMathProblem(value: number, label: string): string {
   if (value === 1) {
@@ -38,11 +37,11 @@ function generateMathProblem(value: number, label: string): string {
 }
 
 /**
- * Generates a procedural hint for one of the swapped tiles.
- * Provides up to 3 tiers of hints.
+ * Generates procedural hints for one of the swapped tiles.
+ * Provides up to 3 tiers of hints: general location, exact column, and exact row.
  * @param grid The size of the puzzle grid.
  * @param swappedIndices An array containing the one or two swapped indices.
- * @returns An array of two hint strings.
+ * @returns An array of hint strings.
  */
 export function generateHints(grid: number, swappedIndices: number[]): string[] {
   // Pick one of the two swapped tiles to give a hint for.
@@ -51,16 +50,21 @@ export function generateHints(grid: number, swappedIndices: number[]): string[] 
   
   const hints: string[] = [];
 
-  // Hint 1: Vague positional hint (quadrant)
+  // Hint 1: Vague positional hint (quadrant or edge)
   const getQuadrant = (r: number, c: number, g: number) => {
     const mid = Math.ceil(g / 2);
-    if (r <= mid && c <= mid) return "top-left";
-    if (r <= mid && c > mid) return "top-right";
-    if (r > mid && c <= mid) return "bottom-left";
-    return "bottom-right";
+    if (r === 1) return "on the top edge";
+    if (r === g) return "on the bottom edge";
+    if (c === 1) return "on the left edge";
+    if (c === g) return "on the right edge";
+
+    if (r <= mid && c <= mid) return "in the top-left quadrant";
+    if (r <= mid && c > mid) return "in the top-right quadrant";
+    if (r > mid && c <= mid) return "in the bottom-left quadrant";
+    return "in the bottom-right quadrant";
   };
   const quadrant = getQuadrant(row, col, grid);
-  hints.push(`One of the incorrect tiles is in the ${quadrant} quadrant.`);
+  hints.push(`One of the incorrect tiles is ${quadrant}.`);
 
   // Hint 2: Specific column hint (math problem)
   hints.push(generateMathProblem(col, "The column"));
@@ -70,4 +74,3 @@ export function generateHints(grid: number, swappedIndices: number[]): string[] 
 
   return hints;
 }
-

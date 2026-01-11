@@ -230,7 +230,7 @@ export const allLevels: Level[] = [
     facts: [['Located on Castle Rock', 'Ancient volcanic plug'], ['Used as royal residence', 'Military stronghold']],
     category: 'architecture',
     visualComplexity: 'medium',
-    imageId: 'edinburgh-castle',
+    imageId: 'edinburgh-castle-scotland',
     variations: 4
   },
   {
@@ -280,7 +280,7 @@ export const allLevels: Level[] = [
     facts: [['Erected in 1923', 'Originally read “Hollywoodland”'], ['Located on Mount Lee', 'Symbol of film industry']],
     category: 'architecture',
     visualComplexity: 'low',
-    imageId: 'hollywood-sign',
+    imageId: 'hollywood-sign-los-angeles',
     variations: 4
   },
   {
@@ -380,7 +380,7 @@ export const allLevels: Level[] = [
     facts: [['Opened in 1971', 'Largest Disney resort'], ['Located in Orlando area', 'Four theme parks']],
     category: 'city',
     visualComplexity: 'high',
-    imageId: 'walt-disney-world',
+    imageId: 'walt-disney-world-florida',
     variations: 4
   },
   {
@@ -510,7 +510,7 @@ export const allLevels: Level[] = [
     facts: [['Opened in 1950', 'Located in Rio'], ['Historic football stadium', 'Hosted World Cup finals']],
     category: 'architecture',
     visualComplexity: 'high',
-    imageId: 'maracana-stadium',
+    imageId: 'maracana-stadium-brazil',
     variations: 4
   },
 ];
@@ -781,4 +781,5 @@ export const generatePuzzle = (
 
 
 
+    
     

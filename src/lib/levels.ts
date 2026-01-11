@@ -755,8 +755,3 @@ export const generatePuzzle = (
     facts,
   };
 };
-
-
-
-    
-    

@@ -88,6 +88,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const { isSoundOn } = useSound();
   const [showAlreadyCompleted, setShowAlreadyCompleted] = useState(false);
   const [hintTier, setHintTier] = useState(0);
+  const [isHintOpen, setIsHintOpen] = useState(false);
   const { user } = useUser();
   const firestore = useFirestore();
 
@@ -165,6 +166,13 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     let seed = isDailyChallenge && puzzleSeed ? puzzleSeed : `${retryCount}`;
     return generatePuzzle(currentLevelData.imageId, currentGridSize, effectiveLevel, seed);
   }, [currentLevelData, currentGridSize, retryCount, isDailyChallenge, puzzleSeed, effectiveLevel]);
+  
+  const hints = useMemo(() => {
+    if (!currentPuzzle) return [];
+    let seed = isDailyChallenge && puzzleSeed ? puzzleSeed : `${retryCount}`;
+    return generatePuzzle(currentLevelData!.imageId, currentGridSize, effectiveLevel, seed).hints;
+  }, [currentPuzzle, isDailyChallenge, puzzleSeed, retryCount, currentLevelData, currentGridSize, effectiveLevel]);
+
 
   useEffect(() => {
     if (gameState === 'PREVIEW' && time >= previewTime) {
@@ -216,7 +224,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     )
   }
 
-  const { imageUrl, hints, imageHint, facts, solvedBoard, solution } = currentPuzzle;
+  const { imageUrl, imageHint, facts, solvedBoard, solution } = currentPuzzle;
   const { scrambledBoard } = currentPuzzle;
 
   const handleSuccess = async () => {
@@ -336,11 +344,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     setGameState("PLAYING");
     resetTimer();
   };
-
-  const handleViewHint = () => {
-    trackEvent('hint_viewed', { game: 'landmark', level: levelIndex + 1, tier: hintTier + 1 });
-    setHintTier(prev => Math.min(3, prev + 1));
-  };
   
   const handleBackToHome = () => {
     playSound("ui", isSoundOn);
@@ -356,8 +359,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     solution.type === "swap"
         ? "Find the two swapped pieces."
         : "Find the one rotated piece.";
-
-  const visibleHints = hints.slice(0, hintTier);
 
   return (
      <main className="flex min-h-screen flex-col items-center justify-center p-4">
@@ -449,27 +450,57 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 You have {isDailyChallenge ? 1 : (MAX_MISTAKES - mistakeCount + 1)} chance remaining.
                 </CardDescription>
                 {hints.length > 0 && (
-                <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="mx-auto mt-2" onClick={handleViewHint} disabled={hintTier >= 3}>
-                        <HelpCircle className="mr-2 h-4 w-4" /> 
-                        {hintTier < 3 ? `Get Hint (${hintTier + 1}/3)` : "All Hints Used"}
+                <AlertDialog open={isHintOpen} onOpenChange={setIsHintOpen}>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mx-auto mt-2"
+                      onClick={() => {
+                        setIsHintOpen(true);
+                        setHintTier((t) => Math.max(1, t));
+                        trackEvent('hint_viewed', { game: 'landmark', level: levelIndex + 1, tier: 1 });
+                      }}
+                      disabled={hintTier >= 3 && !isHintOpen}
+                    >
+                      <HelpCircle className="mr-2 h-4 w-4" />
+                      {hintTier === 0 ? "Get Hint" : hintTier < 3 ? `Hints (${hintTier}/3)` : "All Hints Unlocked"}
                     </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
+                  </AlertDialogTrigger>
+                
+                  <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle className="font-headline">Hints for {currentLevelData!.place}</AlertDialogTitle>
-                        <AlertDialogDescription asChild>
+                      <AlertDialogTitle className="font-headline">
+                        Hints for {currentLevelData!.place}
+                      </AlertDialogTitle>
+                
+                      <AlertDialogDescription asChild>
                         <div className="text-left text-base space-y-2 p-4 rounded-lg mt-2 bg-yellow-100/70 dark:bg-yellow-900/40 border border-yellow-200/70 dark:border-yellow-700/60">
-                           {visibleHints.map((hint, index) => (
-                             <p key={index}>{hint}</p>
-                           ))}
-                           {hintTier === 0 && <p className="text-muted-foreground">Click the "Get Hint" button again for more clues.</p>}
+                          {hints.slice(0, hintTier).map((hint, index) => (
+                            <p key={index}>{hint}</p>
+                          ))}
                         </div>
-                        </AlertDialogDescription>
+                      </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <AlertDialogAction>Got it!</AlertDialogAction>
-                    </AlertDialogContent>
+                
+                    <AlertDialogFooter className="gap-2">
+                      <Button
+                        variant="secondary"
+                        onClick={() => {
+                          const newTier = Math.min(3, hintTier + 1);
+                          setHintTier(newTier);
+                          trackEvent('hint_viewed', { game: 'landmark', level: levelIndex + 1, tier: newTier });
+                        }}
+                        disabled={hintTier >= 3}
+                      >
+                        {hintTier < 3 ? `Reveal Hint ${hintTier + 1}` : "All hints revealed"}
+                      </Button>
+                
+                      <AlertDialogAction onClick={() => setIsHintOpen(false)}>
+                        Got it!
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
                 </AlertDialog>
                 )}
             </>

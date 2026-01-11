@@ -360,20 +360,14 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 />
             )}
             {gameState === 'GAME_OVER' && puzzle && !isDailyChallenge && (
-                <div className="flex flex-col items-center gap-4 w-full">
-                    <PuzzleBoard
-                        key={`${puzzle.id}-solution`}
-                        puzzle={{ ...puzzle, grid: solvedGrid }}
-                        onSuccess={() => {}}
-                        onFail={() => {}}
-                        isReadOnly={true}
-                        showSolution={true}
-                    />
-                    <div className="w-full max-w-xs text-center p-3 mt-2 rounded-lg bg-yellow-100/70 dark:bg-yellow-900/40 border border-yellow-200/70 dark:border-yellow-700/60">
-                        <h4 className="font-bold font-headline text-yellow-900 dark:text-yellow-200">The Logic Was:</h4>
-                        <p className="text-sm text-yellow-800 dark:text-yellow-300/90 mt-1">{puzzle.solution.rule}</p>
-                    </div>
-                </div>
+              <PuzzleBoard
+                  key={`${puzzle.id}-solution`}
+                  puzzle={{ ...puzzle, grid: puzzle.correctGrid }}
+                  onSuccess={() => {}}
+                  onFail={() => {}}
+                  isReadOnly={true}
+                  showSolution={true}
+              />
             )}
          <AlertDialog open={gameState === 'SOLVED_COMPLETE'}>
           <AlertDialogContent>

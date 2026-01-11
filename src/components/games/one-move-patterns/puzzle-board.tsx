@@ -149,7 +149,7 @@ export default function PuzzleBoard({
           {!isReadOnly && !showIncorrect && selectedIndices.length === 0 && <p className="text-sm text-muted-foreground">Select the first tile to swap.</p>}
           {!isReadOnly && !showIncorrect && selectedIndices.length === 1 && <p className="text-sm text-muted-foreground">Select the second tile to swap.</p>}
           {isReadOnly && !showIncorrect && !showSolution && <p className="text-sm text-muted-foreground">&nbsp;</p>}
-          {showSolution && <p className="text-sm text-success">This was the correct swap.</p>}
+          {showSolution && <p className="text-sm text-success animate-pulse">This was the correct swap.</p>}
        </div>
     </div>
   );

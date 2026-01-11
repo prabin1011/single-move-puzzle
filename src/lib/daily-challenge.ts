@@ -1,4 +1,5 @@
 
+
 // src/lib/daily-challenge.ts
 
 export type DailyGame = "landmark" | "math" | "patterns" | "symbol-puzzle" | "word-swap";
@@ -85,3 +86,4 @@ export function pickDailyChallenge(args: {
 
   return { dateKey, game, level, puzzleSeed };
 }
+

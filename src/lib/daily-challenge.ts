@@ -6,7 +6,7 @@ export type DailyGame = "landmark" | "math" | "patterns" | "symbol-puzzle" | "wo
 
 // Choose ONE. If you want the same puzzle globally, use UTC.
 // If you want it to follow a specific timezone, set it here.
-const DAILY_TIMEZONE: "UTC" = "UTC";
+const DAILY_TIMEZONE = "UTC" as const;
 
 export function getTodaysDateKey(): string {
   const now = new Date();
@@ -54,10 +54,23 @@ export function pickDailyChallenge(args: {
   const dateKey = args.dateKey ?? getTodaysDateKey();
   const seedBase = hash32(`daily:${dateKey}`);
 
-  const games: DailyGame[] = ["landmark", "math", "patterns", "symbol-puzzle", "word-swap"];
-  const rng = mulberry32(seedBase);
+  const availableGames: DailyGame[] = [
+    ...(args.landmarkLevelCount > 0 ? ["landmark" as const] : []),
+    ...(args.mathLevelCount > 0 ? ["math" as const] : []),
+    ...(args.patternsLevelCount > 0 ? ["patterns" as const] : []),
+    ...(args.symbolLevelCount > 0 ? ["symbol-puzzle" as const] : []),
+    ...(args.wordSwapLevelCount > 0 ? ["word-swap" as const] : []),
+  ];
 
-  const game = games[Math.floor(rng() * games.length)];
+  if (availableGames.length === 0) {
+      // Fallback or throw error if no games have levels
+      console.error("No daily games available with any levels.");
+      // Fallback to landmark just in case, though this state should be avoided.
+      return { dateKey, game: "landmark" as DailyGame, level: 0, puzzleSeed: `daily:${dateKey}:landmark:L0` };
+  }
+
+  const rngGame = mulberry32(seedBase);
+  const game = availableGames[Math.floor(rngGame() * availableGames.length)];
 
   const maxByGame: Record<DailyGame, number> = {
     landmark: Math.max(1, args.landmarkLevelCount),
@@ -79,7 +92,9 @@ export function pickDailyChallenge(args: {
 
   // deterministic pick inside [clampedStart..clampedEnd]
   const span = Math.max(1, clampedEnd - clampedStart + 1);
-  const level = clampedStart + Math.floor(rng() * span);
+
+  const rngLevel = mulberry32(hash32(`daily:${dateKey}:${game}`));
+  const level = clampedStart + Math.floor(rngLevel() * span);
 
   // A stable seed string (used by game containers to derive numeric seed)
   const puzzleSeed = `daily:${dateKey}:${game}:L${level}`;
@@ -87,3 +102,6 @@ export function pickDailyChallenge(args: {
   return { dateKey, game, level, puzzleSeed };
 }
 
+
+
+    

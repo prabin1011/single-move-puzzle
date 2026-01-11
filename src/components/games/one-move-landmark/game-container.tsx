@@ -455,7 +455,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                         setIsHintOpen(true);
                         setHintTier((t) => {
                           const next = Math.max(1, t);
-                          trackEvent("hint_viewed", { game: "landmark", level: levelIndex + 1, tier: next });
+                          trackEvent("hint_opened", { game: "landmark", level: levelIndex + 1, tier: next });
                           return next;
                         });
                       }}
@@ -781,5 +781,3 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
      </main>
   );
 }
-
-    

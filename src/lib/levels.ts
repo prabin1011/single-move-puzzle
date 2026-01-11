@@ -520,8 +520,7 @@ export const levels: Level[] = allLevels;
 
 export type Solution =
   | { type: "swap"; indices: [number, number] }
-  | { type: "rotate"; index: number; correctRotation: number }
-  | { type: "symmetry-swap"; indices: [number, number]; axis: "vertical" | "horizontal" };
+  | { type: "rotate"; index: number; correctRotation: number };
 
 export interface Tile {
   originalIndex: number;
@@ -595,28 +594,6 @@ function rowColToIdx(row: number, col: number, grid: number) {
   return row * grid + col;
 }
 
-function mirroredIndex(idx: number, grid: number, axis: "vertical" | "horizontal") {
-  const { row, col } = idxToRowCol(idx, grid);
-  if (axis === "vertical") {
-    return rowColToIdx(row, grid - 1 - col, grid);
-  }
-  return rowColToIdx(grid - 1 - row, col, grid);
-}
-
-function pickNonSelfMirroredIndex(rng: () => number, grid: number) {
-  const total = grid * grid;
-  for (let tries = 0; tries < 50; tries++) {
-    const idx = Math.floor(rng() * total);
-    const axis: "vertical" | "horizontal" = rng() < 0.5 ? "vertical" : "horizontal";
-    const mir = mirroredIndex(idx, grid, axis);
-    if (mir !== idx) return { idx, axis, mir };
-  }
-  const idx = 0;
-  const axis: "vertical" | "horizontal" = "vertical";
-  const mir = mirroredIndex(idx, grid, axis);
-  return { idx, axis, mir: mir === idx ? 1 : mir };
-}
-
 function chooseRotation(rng: () => number): 90 | 180 | 270 {
   const opts: (90 | 180 | 270)[] = [90, 180, 270];
   return opts[Math.floor(rng() * opts.length)];
@@ -637,14 +614,10 @@ function getDifficultyProfile(levelIndex: number, visualComplexity: Level["visua
     : hard ? baseRotate + 0.10
     : baseRotate;
 
-  // Symmetry has been removed as per user request
-  const symmetryChance = 0.0;
-
   const maxHints = insane ? 2 : veryHard ? 3 : hard ? 3 : 3;
 
   return {
     rotateChance: Math.min(0.85, rotateChance),
-    symmetryChance, // Will be 0
     maxHints,
   };
 }
@@ -713,6 +686,7 @@ export const generatePuzzle = (
 
   let round = 0;
   let rng = Math.random;
+  let puzzleSeed = seed || `r${round}`;
 
   if (seed) {
     const numericSeed = hashSeedToUint(seed);
@@ -720,6 +694,7 @@ export const generatePuzzle = (
     round = numericSeed;
   } else if (typeof window !== "undefined") {
     round = parseInt(localStorage.getItem("gameRound") || "0", 10) >>> 0;
+    puzzleSeed = `r${round}`;
   }
 
   const { url: imageUrl, hint: imageHint, facts } = getImageUrl(
@@ -751,7 +726,6 @@ export const generatePuzzle = (
     scrambledBoard[index].rotation = rotation;
 
     solution = { type: "rotate", index, correctRotation: 0 };
-    proceduralHints = generateHints(grid, [index]);
 
   } else {
     // NORMAL SWAP (harder: nearby swaps)
@@ -763,10 +737,13 @@ export const generatePuzzle = (
     ];
 
     solution = { type: "swap", indices: [index1, index2] };
-    proceduralHints = generateHints(grid, solution.indices);
   }
 
-  proceduralHints = proceduralHints.slice(0, profile.maxHints);
+  proceduralHints = generateHints({
+    grid, 
+    swappedIndices: 'indices' in solution ? solution.indices : [solution.index],
+    seed: puzzleSeed,
+  });
 
   return {
     solvedBoard,

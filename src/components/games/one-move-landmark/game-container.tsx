@@ -87,7 +87,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const [retryCount, setRetryCount] = useState(0);
   const { isSoundOn } = useSound();
   const [showAlreadyCompleted, setShowAlreadyCompleted] = useState(false);
-  const [hintViewed, setHintViewed] = useState(false);
+  const [hintTier, setHintTier] = useState(0);
   const { user } = useUser();
   const firestore = useFirestore();
 
@@ -236,7 +236,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
             gameId: GAME_ID,
             user,
             timeTaken: duration,
-            hintsUsed: hintViewed,
+            hintsUsed: hintTier > 0,
             level: dailyLevel,
           });
           localStorage.setItem(completionKey, "1");
@@ -287,6 +287,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     playSound("ui", isSoundOn);
     trackEvent('puzzle_retry', { game: 'landmark', level: levelIndex + 1 });
     setMistakeCount(0);
+    setHintTier(0);
     setRetryCount((prev) => prev + 1);
     setGameState("PREVIEW");
     resetTimer();
@@ -304,7 +305,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     setHighestLevel(0);
     setMistakeCount(0);
     setRetryCount(0);
-    setHintViewed(false);
+    setHintTier(0);
     setShowFacts(false);
     setGameState("READY");
   }
@@ -317,7 +318,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     setGameState("READY");
     setShowFacts(false);
     setRetryCount(0);
-    setHintViewed(false);
+    setHintTier(0);
     setMistakeCount(0);
   };
   
@@ -337,8 +338,8 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   };
 
   const handleViewHint = () => {
-    trackEvent('hint_viewed', { game: 'landmark', level: levelIndex + 1 });
-    setHintViewed(true);
+    trackEvent('hint_viewed', { game: 'landmark', level: levelIndex + 1, tier: hintTier + 1 });
+    setHintTier(prev => Math.min(3, prev + 1));
   };
   
   const handleBackToHome = () => {
@@ -354,9 +355,9 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
   const playInstructions =
     solution.type === "swap"
         ? "Find the two swapped pieces."
-        : solution.type === "symmetry-swap"
-        ? `Find the mirrored mistake (${solution.axis === "vertical" ? "left ↔ right" : "top ↔ bottom"}).`
         : "Find the one rotated piece.";
+
+  const visibleHints = hints.slice(0, hintTier);
 
   return (
      <main className="flex min-h-screen flex-col items-center justify-center p-4">
@@ -450,17 +451,20 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 {hints.length > 0 && (
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="mx-auto mt-2" onClick={handleViewHint}>
+                    <Button variant="outline" size="sm" className="mx-auto mt-2" onClick={handleViewHint} disabled={hintTier >= 3}>
                         <HelpCircle className="mr-2 h-4 w-4" /> 
-                        Hint
+                        {hintTier < 3 ? `Get Hint (${hintTier + 1}/3)` : "All Hints Used"}
                     </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle className="font-headline">Hint for {currentLevelData!.place}</AlertDialogTitle>
+                        <AlertDialogTitle className="font-headline">Hints for {currentLevelData!.place}</AlertDialogTitle>
                         <AlertDialogDescription asChild>
-                        <div className="text-left text-base p-4 rounded-lg mt-2 bg-yellow-100/70 dark:bg-yellow-900/40 border border-yellow-200/70 dark:border-yellow-700/60">
-                            {hints[0]}
+                        <div className="text-left text-base space-y-2 p-4 rounded-lg mt-2 bg-yellow-100/70 dark:bg-yellow-900/40 border border-yellow-200/70 dark:border-yellow-700/60">
+                           {visibleHints.map((hint, index) => (
+                             <p key={index}>{hint}</p>
+                           ))}
+                           {hintTier === 0 && <p className="text-muted-foreground">Click the "Get Hint" button again for more clues.</p>}
                         </div>
                         </AlertDialogDescription>
                     </AlertDialogHeader>

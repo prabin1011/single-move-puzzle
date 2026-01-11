@@ -167,13 +167,6 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     return generatePuzzle(currentLevelData.imageId, currentGridSize, effectiveLevel, seed);
   }, [currentLevelData, currentGridSize, retryCount, isDailyChallenge, puzzleSeed, effectiveLevel]);
   
-  const hints = useMemo(() => {
-    if (!currentPuzzle) return [];
-    let seed = isDailyChallenge && puzzleSeed ? puzzleSeed : `${retryCount}`;
-    return generatePuzzle(currentLevelData!.imageId, currentGridSize, effectiveLevel, seed).hints;
-  }, [currentPuzzle, isDailyChallenge, puzzleSeed, retryCount, currentLevelData, currentGridSize, effectiveLevel]);
-
-
   useEffect(() => {
     if (gameState === 'PREVIEW' && time >= previewTime) {
       playSound("preview_done", isSoundOn);
@@ -296,6 +289,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     trackEvent('puzzle_retry', { game: 'landmark', level: levelIndex + 1 });
     setMistakeCount(0);
     setHintTier(0);
+    setIsHintOpen(false);
     setRetryCount((prev) => prev + 1);
     setGameState("PREVIEW");
     resetTimer();
@@ -327,6 +321,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     setShowFacts(false);
     setRetryCount(0);
     setHintTier(0);
+    setIsHintOpen(false);
     setMistakeCount(0);
   };
   
@@ -449,7 +444,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 <CardDescription className="text-muted-foreground">
                 You have {isDailyChallenge ? 1 : (MAX_MISTAKES - mistakeCount + 1)} chance remaining.
                 </CardDescription>
-                {hints.length > 0 && (
+                {(currentPuzzle?.hints?.length ?? 0) > 0 && (
                 <AlertDialog open={isHintOpen} onOpenChange={setIsHintOpen}>
                   <AlertDialogTrigger asChild>
                     <Button
@@ -458,13 +453,19 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                       className="mx-auto mt-2"
                       onClick={() => {
                         setIsHintOpen(true);
-                        setHintTier((t) => Math.max(1, t));
-                        trackEvent('hint_viewed', { game: 'landmark', level: levelIndex + 1, tier: 1 });
+                        setHintTier((t) => {
+                          const next = Math.max(1, t);
+                          trackEvent("hint_viewed", { game: "landmark", level: levelIndex + 1, tier: next });
+                          return next;
+                        });
                       }}
-                      disabled={hintTier >= 3 && !isHintOpen}
                     >
                       <HelpCircle className="mr-2 h-4 w-4" />
-                      {hintTier === 0 ? "Get Hint" : hintTier < 3 ? `Hints (${hintTier}/3)` : "All Hints Unlocked"}
+                      {hintTier === 0
+                        ? "Get Hint"
+                        : hintTier < 3
+                          ? `Hints (${hintTier}/3)`
+                          : "View Hints (3/3)"}
                     </Button>
                   </AlertDialogTrigger>
                 
@@ -476,7 +477,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                 
                       <AlertDialogDescription asChild>
                         <div className="text-left text-base space-y-2 p-4 rounded-lg mt-2 bg-yellow-100/70 dark:bg-yellow-900/40 border border-yellow-200/70 dark:border-yellow-700/60">
-                          {hints.slice(0, hintTier).map((hint, index) => (
+                          {currentPuzzle!.hints.slice(0, hintTier).map((hint, index) => (
                             <p key={index}>{hint}</p>
                           ))}
                         </div>
@@ -487,9 +488,11 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
                       <Button
                         variant="secondary"
                         onClick={() => {
-                          const newTier = Math.min(3, hintTier + 1);
-                          setHintTier(newTier);
-                          trackEvent('hint_viewed', { game: 'landmark', level: levelIndex + 1, tier: newTier });
+                          setHintTier((t) => {
+                            const next = Math.min(3, t + 1);
+                            trackEvent("hint_revealed", { game: "landmark", level: levelIndex + 1, tier: next });
+                            return next;
+                          });
                         }}
                         disabled={hintTier >= 3}
                       >
@@ -778,3 +781,5 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
      </main>
   );
 }
+
+    

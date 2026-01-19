@@ -209,7 +209,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
 
   const handleBackToHome = () => {
     playSound("ui", isSoundOn);
-    router.push('/');
+    router.replace('/');
     trackEvent('navigate_to_home');
   }
 

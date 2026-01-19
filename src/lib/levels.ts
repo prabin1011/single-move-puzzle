@@ -255,12 +255,12 @@ export const allLevels: Level[] = [
   },
   {
     id: 'lvl-25',
-    place: 'Times Square',
-    country: 'USA',
-    facts: [['Major commercial intersection', 'Known for neon billboards'], ['Called “Crossroads of the World”', 'Named after NY Times']],
-    category: 'city',
+    place: 'Great Wall of China',
+    country: 'China',
+    facts: [['Constructed over centuries by various dynasties', 'Primary purpose was defense against invasions'], ['Total length is over 21,000 kilometers', 'The "visible from space" claim is a myth']],
+    category: 'architecture',
     visualComplexity: 'high',
-    imageId: 'times-square',
+    imageId: 'great-wall-of-china',
     variations: 4
   },
   {
@@ -755,3 +755,6 @@ export const generatePuzzle = (
     facts,
   };
 };
+
+
+    

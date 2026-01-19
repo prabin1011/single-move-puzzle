@@ -255,12 +255,12 @@ export const allLevels: Level[] = [
   },
   {
     id: 'lvl-25',
-    place: 'Great Wall of China',
-    country: 'China',
-    facts: [['Constructed over centuries by various dynasties', 'Primary purpose was defense against invasions'], ['Total length is over 21,000 kilometers', 'The "visible from space" claim is a myth']],
+    place: 'Empire State Building',
+    country: 'USA',
+    facts: [['A famous Art Deco skyscraper', 'It was once the world\'s tallest building'], ['Located in Midtown Manhattan', 'Featured in many films']],
     category: 'architecture',
     visualComplexity: 'high',
-    imageId: 'great-wall-of-china',
+    imageId: 'empire-state-building',
     variations: 4
   },
   {
@@ -681,8 +681,13 @@ export const generatePuzzle = (
   levelIndex: number,
   seed?: string
 ): Puzzle => {
-  const level = allLevels.find((l) => l.imageId === imageId);
-  if (!level) throw new Error(`Could not find level with imageId: ${imageId}`);
+  let level = allLevels.find((l) => l.imageId === imageId);
+  if (!level) {
+    console.warn(`Could not find level with imageId: ${imageId}. Falling back to a default level.`);
+    // Fallback to a known-good level to prevent a crash from stale localStorage data
+    level = allLevels[0];
+    imageId = level.imageId;
+  }
 
   let round = 0;
   let rng = Math.random;
@@ -756,5 +761,7 @@ export const generatePuzzle = (
   };
 };
 
+
+    
 
     

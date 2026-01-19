@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -274,7 +273,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     <main className="flex min-h-screen flex-col items-center justify-center p-4">
     <Card
         className="
-            w-full max-w-sm border shadow-2xl rounded-2xl transition-all duration-500
+            w-full max-w-md border shadow-2xl rounded-2xl transition-all duration-500
             bg-card
             bg-[radial-gradient(circle_at_top,_#E0F2FF,_#FFE0F7_55%,_#DBE9FF_100%)]
             dark:bg-[radial-gradient(circle_at_top,_#111827,_#020617_60%,_#1F2933_100%)]
@@ -344,7 +343,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
         </div>
       </CardHeader>
 
-      <CardContent className={cn("flex flex-col items-center justify-center min-h-[256px] transition-opacity duration-500 px-2 sm:px-4")}>
+      <CardContent className={cn("flex flex-col items-center justify-center min-h-[300px] transition-opacity duration-500 p-4")}>
             { gameState === 'READY' && puzzle && (
                 <div className="w-full max-w-[256px] scale-90 opacity-50">
                     <PuzzleBoard

@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -352,7 +351,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
           </div>
         </CardHeader>
 
-        <CardContent className={cn("flex flex-col items-center justify-center min-h-[200px] transition-opacity duration-500 px-4 sm:px-6")}>
+        <CardContent className={cn("flex flex-col items-center justify-center min-h-[200px] transition-opacity duration-500 p-4")}>
           { gameState === 'READY' && (
                <div className="flex justify-center items-center gap-2 text-primary/30 dark:text-primary/20 text-lg font-mono">
                   <span className="opacity-50">word</span>

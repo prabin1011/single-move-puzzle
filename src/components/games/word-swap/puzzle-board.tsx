@@ -104,16 +104,16 @@ export default function PuzzleBoard({
 
             return (
                 <div key={index} className="flex items-center justify-between w-full max-w-md gap-2">
-                    <div className="flex-1 text-right p-2 rounded-md bg-secondary text-secondary-foreground font-semibold text-lg truncate">
+                    <div className="flex-1 text-right p-3 rounded-md bg-secondary text-secondary-foreground font-bold text-xl truncate">
                         {pair.left}
                     </div>
-                    <div className="text-muted-foreground font-bold text-lg">
+                    <div className="text-muted-foreground font-bold text-xl">
                         {relationSymbols[relationType] || ':'}
                     </div>
                     <div 
                         onClick={() => handleTileClick(index)}
                         className={cn(
-                            'flex-1 text-left p-2 rounded-md font-semibold text-lg truncate transition-all duration-300 ease-in-out',
+                            'flex-1 text-left p-3 rounded-md font-bold text-xl truncate transition-all duration-300 ease-in-out',
                             'bg-card text-card-foreground shadow-sm border',
                             !isReadOnly && 'cursor-pointer hover:scale-105 active:scale-100',
                             isSelected && 'z-10 scale-[1.08] tile-glow',

@@ -137,7 +137,7 @@ export default function PuzzleBoard({
                 isReadOnly && 'cursor-default'
               )}
             >
-              <div className={cn('h-2/3 w-2/3', colorMap[tile.color])}>
+              <div className={cn('h-3/4 w-3/4', colorMap[tile.color])}>
                 {ShapeComponent && <ShapeComponent className="h-full w-full" strokeWidth={3} />}
                 {DirectionComponent && <DirectionComponent className="h-full w-full" strokeWidth={3} />}
               </div>

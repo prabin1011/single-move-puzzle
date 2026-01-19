@@ -105,7 +105,7 @@ export default function PuzzleBoard({
               key={tile.id}
               onClick={() => handleTileClick(index)}
               className={cn(
-                'flex items-center justify-center rounded-md aspect-square select-none transition-all duration-300 ease-in-out bg-card border text-3xl sm:text-4xl font-mono',
+                'flex items-center justify-center rounded-md aspect-square select-none transition-all duration-300 ease-in-out bg-card border text-4xl sm:text-5xl font-mono',
                 !isReadOnly && !showSolution && 'cursor-pointer hover:scale-105 active:scale-100',
                 isSelected && 'z-10 scale-[1.08] tile-glow',
                 showIncorrectHighlight && 'z-10 ring-4 ring-red-500 ring-offset-2 ring-offset-background animate-pulse',

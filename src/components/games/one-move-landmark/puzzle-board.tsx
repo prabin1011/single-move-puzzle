@@ -35,8 +35,10 @@ export default function PuzzleBoard({
 
   useEffect(() => {
     const handleResize = () => {
-      const newSize = window.innerWidth - 32 - 32 - 32;
-      setPuzzleSize(Math.min(300, newSize));
+      // Use a more generous sizing calculation for mobile
+      const newSize = window.innerWidth - 64; 
+      // Increase max size for larger screens
+      setPuzzleSize(Math.min(360, newSize));
     };
     handleResize();
     window.addEventListener("resize", handleResize);

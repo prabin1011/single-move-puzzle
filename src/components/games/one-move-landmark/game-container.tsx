@@ -309,6 +309,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
     setRetryCount(0);
     setHintTier(0);
     setShowFacts(false);
+    setIsHintOpen(false);
     setGameState("READY");
   }
 
@@ -359,7 +360,7 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
      <main className="flex min-h-screen flex-col items-center justify-center p-4">
         <Card
         className="
-            w-full max-w-sm border shadow-2xl rounded-2xl transition-all duration-500
+            w-full max-w-md border shadow-2xl rounded-2xl transition-all duration-500
             bg-card
             bg-[radial-gradient(circle_at_top,_#FFF9DB,_#FFE0F7_45%,_#E0F2FF_85%)]
             dark:bg-[radial-gradient(circle_at_top,_#1F2933,_#111827_55%,_#020617_100%)]
@@ -549,15 +550,15 @@ export default function GameContainer({ isDailyChallenge = false, dailyLevel = 0
             )}
         </CardHeader>
 
-        <CardContent className="flex flex-col items-center gap-4 sm:gap-6 px-2 sm:px-6">
+        <CardContent className="flex flex-col items-center gap-4 p-4">
             {(gameState === "READY" || gameState === "PREVIEW") && (
-            <div className="relative w-full max-w-[300px] aspect-square rounded-lg overflow-hidden shadow-lg border-2 flex items-center justify-center">
+            <div className="relative w-full max-w-xs mx-auto aspect-square rounded-lg overflow-hidden shadow-lg border-2 flex items-center justify-center">
                 <Image
                 key={imageUrl}
                 src={imageUrl}
                 alt={currentLevelData!.place}
                 fill
-                sizes="(max-width: 640px) 90vw, 300px"
+                sizes="(max-width: 640px) 90vw, 320px"
                 data-ai-hint={imageHint}
                 className={cn(
                     "object-cover transition-all duration-500",
